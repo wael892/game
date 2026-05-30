@@ -308,7 +308,7 @@
                 <div class="color-circle" style="background: #06d6a0;" onclick="changeColor('#06d6a0', this)"></div>
                 <div class="color-circle" style="background: #118ab2;" onclick="changeColor('#118ab2', this)"></div>
                 <button class="btn btn-clear" onclick="sendClear()">Limpar</button>
-                <button class="btn btn-start-game" onclick="drawNewRound()" style="margin-left: auto;">Nova Rodada 🎲</button>
+                <button class="btn btn-start-game" onclick="drawNewRound()" style="margin-left: auto;">Próxima Rodada 🎲</button>
             </div>
         </div>
 
@@ -333,6 +333,7 @@
         let currentWord = "";
         let currentDrawerName = "";
         let roundActive = false;
+        let currentDrawerIndex = -1;
 
         const PALAVRAS = ["Cachorro", "Gato", "Carro", "Aviao", "Banana", "Maca", "Casa", "Arvore", "Bola", "Computador", "Celular", "Caneta", "Chave", "Livro", "Relogio", "Cadeira", "Garfo", "Sapato", "Oculos", "Sol", "Lua", "Flor", "Peixe", "Passaro"];
 
@@ -462,19 +463,21 @@
             });
         }
 
-        // Lógica de Sorteio e Controle de Turnos
+        // Lógica de Ordem Sequencial e Controle de Turnos
         function drawNewRound() {
             if (!mqttClient) return;
             const playersArr = Array.from(listaJogadores);
             if (playersArr.length === 0) return;
 
-            // Escolhe um desenhista e uma palavra aleatória do array
-            const randomDrawer = playersArr[Math.floor(Math.random() * playersArr.length)];
+            // Incrementa o índice atual e rotaciona sequencialmente usando o operador de resto (%)
+            currentDrawerIndex = (currentDrawerIndex + 1) % playersArr.length;
+            const nextDrawer = playersArr[currentDrawerIndex];
             const randomWord = PALAVRAS[Math.floor(Math.random() * PALAVRAS.length)];
 
             const flowPayload = JSON.stringify({
-                drawer: randomDrawer,
-                word: randomWord
+                drawer: nextDrawer,
+                word: randomWord,
+                currentIndex: currentDrawerIndex
             });
 
             mqttClient.publish(baseTopic + "/gameflow", flowPayload);
@@ -483,6 +486,7 @@
         function handleGameFlow(data) {
             currentDrawerName = data.drawer;
             currentWord = data.word;
+            currentDrawerIndex = data.currentIndex; // Sincroniza o index entre as janelas dos clientes
             roundActive = true;
 
             // Limpa o canvas automaticamente para a nova rodada
@@ -553,61 +557,4 @@
             const palpiteLimpo = msgText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             const respostaLimpa = currentWord.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-            if (roundActive && !isDrawer && palpiteLimpo === respostaLimpa) {
-                // Notifica a sala inteira que houve um acerto
-                const payload = JSON.stringify({ 
-                    sender: username, 
-                    text: `Acertou a palavra secreta: ${currentWord.toUpperCase()}! 🎯`, 
-                    isCorrect: true 
-                });
-                mqttClient.publish(baseTopic + "/chat", payload);
-                
-                // Encerra a rodada atual
-                roundActive = false;
-            } else {
-                const payload = JSON.stringify({ sender: username, text: msgText, isCorrect: false });
-                mqttClient.publish(baseTopic + "/chat", payload);
-            }
-            input.value = "";
-        }
-
-        document.getElementById('chat-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') sendChatMessage();
-        });
-
-        function addSystemMessage(text) {
-            const chatMessages = document.getElementById('chat-messages');
-            const m = document.createElement('div');
-            m.className = "msg msg-system";
-            m.innerText = text;
-            chatMessages.appendChild(m);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function addSuccessMessage(sender, text) {
-            const chatMessages = document.getElementById('chat-messages');
-            const m = document.createElement('div');
-            m.className = "msg msg-success";
-            m.innerText = `${sender} ${text}`;
-            chatMessages.appendChild(m);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            document.getElementById('word-display').innerText = "Adivinhado! Aguarde a nova rodada.";
-        }
-
-        function renderNormalMessage(sender, text) {
-            const chatMessages = document.getElementById('chat-messages');
-            const m = document.createElement('div');
-            m.className = "msg msg-normal";
-            
-            const spanName = document.createElement('span');
-            spanName.className = "username";
-            spanName.innerText = sender + ": ";
-
-            m.appendChild(spanName);
-            m.appendChild(document.createTextNode(text));
-            chatMessages.appendChild(m);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-    </script>
-</body>
-</html>
+            if (roundActive && !is
