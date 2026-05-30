@@ -278,13 +278,19 @@
 
         /* Otimizações Responsivas Mobile */
         @media (max-width: 768px) {
-            body { padding: 4px; }
+            body { 
+                padding: 4px; 
+                position: relative;
+                height: 100vh;
+                height: -webkit-fill-available;
+            }
             
             header { 
                 padding: 6px 12px; 
                 margin-bottom: 4px; 
                 border-radius: 12px;
                 gap: 6px;
+                height: 45px;
             }
             
             h1 { font-size: 13px; }
@@ -306,15 +312,19 @@
             
             #main-container {
                 flex-direction: column;
-                height: calc(100vh - 65px);
+                position: absolute;
+                top: 59px; /* Colado abaixo do header */
+                left: 4px;
+                right: 4px;
+                bottom: 4px;
+                height: auto;
                 gap: 4px;
                 overflow: hidden;
-                justify-content: space-between;
             }
             
             #canvas-container { 
                 flex: none; 
-                height: 40vh; 
+                height: 38vh; 
                 border-radius: 12px;
             }
             
@@ -340,7 +350,7 @@
                 display: flex;
                 flex-direction: column;
                 overflow: hidden;
-                height: auto;
+                margin-bottom: 0px;
             }
 
             #chat-messages {
@@ -357,20 +367,21 @@
             
             #chat-input-area {
                 padding: 6px;
-                height: 48px;
+                height: 50px;
                 background: #f8f9fa;
                 display: flex;
                 align-items: center;
+                border-top: 2px solid #dee2e6;
             }
 
             #chat-input {
-                padding: 6px 8px;
+                padding: 8px;
                 font-size: 14px;
                 height: 100%;
             }
 
             #btn-send {
-                padding: 0 12px;
+                padding: 0 14px;
                 font-size: 13px;
                 height: 100%;
                 margin-left: 4px;
@@ -464,6 +475,21 @@
         }
 
         window.addEventListener('resize', resizeCanvas);
+
+        // Script para ajustar o layout mobile dinamicamente quando o teclado abrir
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                const mainContainer = document.getElementById('main-container');
+                if (window.innerWidth <= 768 && mainContainer) {
+                    // Define a base do app baseada na altura real visível do Viewport (acima do teclado)
+                    mainContainer.style.bottom = `${window.innerHeight - window.visualViewport.height + 4}px`;
+                    setTimeout(() => {
+                        const chatMessages = document.getElementById('chat-messages');
+                        if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }, 50);
+                }
+            });
+        }
 
         // Eventos de Mouse
         canvas.addEventListener('mousedown', (e) => startDrawing(e.clientX, e.clientY));
@@ -662,6 +688,7 @@
             }, 1000);
         }
 
+        // Controla o encerramento e engata a próxima rodada sem cliques de botão
         function handleRoundEndAutomatically() {
             roundActive = false;
             clearInterval(countdownInterval);
