@@ -129,7 +129,7 @@
             overflow: hidden;
         }
 
-        /* Painel Lateral de Jogadores (Desktop) */
+        /* Painel Lateral de Jogadores */
         #scoreboard {
             flex: 1;
             background: white;
@@ -139,13 +139,6 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-        }
-
-        #scoreboard h3 {
-            color: #555;
-            padding-bottom: 5px;
-            border-bottom: 2px solid #f1f3f5;
-            font-size: 16px;
         }
 
         #players-list {
@@ -167,7 +160,6 @@
             border-left: 4px solid #118ab2;
             display: flex;
             justify-content: space-between;
-            align-items: center;
         }
 
         .player-item.drawing {
@@ -289,7 +281,7 @@
             margin-left: 6px;
         }
 
-        /* Otimizações Mobile Críticas Atualizadas e Calibradas */
+        /* Otimizações Mobile Críticas Completas */
         @media (max-width: 768px) {
             body { 
                 padding: 5px;
@@ -332,51 +324,10 @@
                 height: auto;
                 gap: 5px;
             }
-
-            /* Scoreboard Mobile transformado em barra de rolagem horizontal superior */
-            #scoreboard {
-                display: flex !important;
-                flex: none !important;
-                height: 40px !important;
-                width: 100%;
-                padding: 4px 8px;
-                border-radius: 8px;
-                flex-direction: row;
-                align-items: center;
-                gap: 6px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            }
-
-            #scoreboard h3 {
-                display: none !important; /* Esconde o título de texto fixo no mobile */
-            }
-
-            #players-list {
-                margin-top: 0;
-                flex-direction: row !important;
-                overflow-x: auto;
-                overflow-y: hidden;
-                width: 100%;
-                height: 100%;
-                gap: 6px;
-                align-items: center;
-            }
-
-            .player-item {
-                padding: 4px 8px;
-                font-size: 11px;
-                height: 100%;
-                white-space: nowrap;
-                border-left: 3px solid #118ab2;
-                border-radius: 4px;
-                display: inline-flex;
-                align-items: center;
-            }
             
-            /* Canvas Container expandido substancialmente para prover melhor área de desenho */
             #canvas-container { 
                 flex: none !important;
-                height: 55% !important; 
+                height: 40% !important;
                 width: 100%;
                 border-radius: 10px;
                 display: flex;
@@ -390,19 +341,18 @@
             }
 
             .color-circle {
-                width: 22px;
-                height: 22px;
+                width: 20px;
+                height: 20px;
             }
 
             .btn {
-                padding: 4px 10px;
-                font-size: 11px;
+                padding: 4px 8px;
+                font-size: 10px;
             }
             
-            /* Chat container preenche com precisão o espaço inferior */
             #chat-container { 
                 flex: none !important;
-                height: calc(45% - 45px) !important; 
+                height: calc(60% - 5px) !important;
                 width: 100%;
                 border-radius: 10px;
                 display: flex;
@@ -443,7 +393,7 @@
 
             #chat-input {
                 padding: 8px;
-                font-size: 16px;
+                font-size: 16px; /* Impede zoom indesejado no iOS */
                 height: 100%;
                 border: 1px solid #ced4da;
             }
@@ -457,6 +407,8 @@
                 align-items: center;
                 justify-content: center;
             }
+
+            #scoreboard { display: none !important; }
         }
     </style>
 </head>
@@ -482,7 +434,7 @@
 
     <div id="main-container">
         <div id="scoreboard">
-            <h3>Jogadores na Sala:</h3>
+            <h3 style="color: #555; padding-bottom: 5px; border-bottom: 2px solid #f1f3f5;">Jogadores na Sala:</h3>
             <div id="players-list"></div>
         </div>
 
@@ -531,6 +483,7 @@
         let drawing = false;
         let currentColor = '#000000';
 
+        // Definição de resolução estável compartilhada universalmente (800x600)
         const VIRTUAL_WIDTH = 800;
         const VIRTUAL_HEIGHT = 600;
 
@@ -551,11 +504,15 @@
         }
         initCanvasResolution();
 
+        // CAPTURA DE COORDENADAS CORRIGIDA: Resolve o bug de desenhar em outro lugar
         function getCanvasCoordinates(clientX, clientY) {
             const rect = canvas.getBoundingClientRect();
+            
+            // Pega a posição exata baseada nos limites de renderização física atual na viewport
             const physicalX = clientX - rect.left;
             const physicalY = clientY - rect.top;
             
+            // Normalização estrita cruzando os pixels internos reais com o tamanho físico da janela visual
             const virtualX = (physicalX / rect.width) * canvas.width;
             const virtualY = (physicalY / rect.height) * canvas.height;
             
@@ -574,7 +531,7 @@
         canvas.addEventListener('mouseup', stopDrawing);
         canvas.addEventListener('mouseout', stopDrawing);
 
-        // Eventos de Toque Mobile
+        // Eventos de Toque Mobile califrados cirurgicamente para evitar rolagem de tela paralela
         canvas.addEventListener('touchstart', (e) => { 
             if (e.touches.length === 1) {
                 e.preventDefault();
@@ -650,3 +607,232 @@
                 mqttClient.subscribe(baseTopic + "/presence");
                 mqttClient.subscribe(baseTopic + "/presence/echo");
                 mqttClient.subscribe(baseTopic + "/gameflow");
+
+                const identityPayload = JSON.stringify({ sender: "Sistema", text: `${username} entrou na sala.`, name: username });
+                mqttClient.publish(baseTopic + "/chat", identityPayload);
+                mqttClient.publish(baseTopic + "/presence", identityPayload);
+
+                setTimeout(() => {
+                    checkAndAutoStart();
+                }, 2000);
+            });
+
+            mqttClient.on('message', (topic, message) => {
+                const data = JSON.parse(message.toString());
+
+                if (topic === baseTopic + "/chat") {
+                    if (data.sender === "Sistema") {
+                        addSystemMessage(data.text);
+                        if (data.name) {
+                            adicionarJogadorLista(data.name);
+                            checkAndAutoStart();
+                        }
+                    } else if (data.isCorrect) {
+                        addSuccessMessage(data.sender, data.text);
+                        handleRoundEndAutomatically();
+                    } else {
+                        renderNormalMessage(data.sender, data.text);
+                    }
+                } else if (topic === baseTopic + "/draw" && !isDrawer) {
+                    renderRemoteDraw(data);
+                } else if (topic === baseTopic + "/presence") {
+                    if (data.name && data.name !== username) {
+                        adicionarJogadorLista(data.name);
+                        mqttClient.publish(baseTopic + "/presence/echo", JSON.stringify({ name: username }));
+                        checkAndAutoStart();
+                    }
+                } else if (topic === baseTopic + "/presence/echo") {
+                    if (data.name && data.name !== username) {
+                        adicionarJogadorLista(data.name);
+                        checkAndAutoStart();
+                    }
+                } else if (topic === baseTopic + "/gameflow") {
+                    handleGameFlow(data);
+                }
+            });
+        }
+
+        function checkAndAutoStart() {
+            if (!roundActive && currentDrawerName === "" && listaJogadores.size > 0) {
+                const playersArr = Array.from(listaJogadores);
+                if (playersArr[0] === username) {
+                    drawNewRound();
+                }
+            }
+        }
+
+        function drawNewRound() {
+            if (!mqttClient) return;
+            const playersArr = Array.from(listaJogadores);
+            if (playersArr.length === 0) return;
+
+            currentDrawerIndex = (currentDrawerIndex + 1) % playersArr.length;
+            const nextDrawer = playersArr[currentDrawerIndex];
+            const randomWord = PALAVRAS[Math.floor(Math.random() * PALAVRAS.length)];
+
+            const flowPayload = JSON.stringify({
+                drawer: nextDrawer,
+                word: randomWord,
+                currentIndex: currentDrawerIndex
+            });
+
+            mqttClient.publish(baseTopic + "/gameflow", flowPayload);
+        }
+
+        function handleGameFlow(data) {
+            clearInterval(countdownInterval);
+            clearTimeout(nextRoundTimeout);
+
+            currentDrawerName = data.drawer;
+            currentWord = data.word;
+            currentDrawerIndex = data.currentIndex;
+            roundActive = true;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            document.querySelectorAll('.player-item').forEach(el => el.classList.remove('drawing'));
+            const drawerEl = document.getElementById("p-" + currentDrawerName.replace(/\s+/g, '-'));
+            if (drawerEl) drawerEl.classList.add('drawing');
+
+            if (currentDrawerName === username) {
+                isDrawer = true;
+                document.getElementById('word-display').innerText = "Sua Palavra: " + currentWord.toUpperCase();
+                addSystemMessage(`Sua vez de desenhar! Palavra: ${currentWord.toUpperCase()}`);
+            } else {
+                isDrawer = false;
+                let underscores = "_ ".repeat(currentWord.length).trim();
+                document.getElementById('word-display').innerText = "Desenho de " + currentDrawerName + " (" + underscores + ")";
+                addSystemMessage(`${currentDrawerName} está desenhando... tente adivinhar!`);
+            }
+
+            startLocalTimer(TEMPO_RODADA);
+        }
+
+        function startLocalTimer(seconds) {
+            let timeLeft = seconds;
+            document.getElementById('timer-display').innerText = "Tempo: " + timeLeft + "s";
+
+            countdownInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    document.getElementById('timer-display').innerText = "Tempo: 0s";
+                    addSystemMessage(`O tempo acabou! A palavra era: ${currentWord.toUpperCase()}`);
+                    handleRoundEndAutomatically();
+                } else {
+                    document.getElementById('timer-display').innerText = "Tempo: " + timeLeft + "s";
+                }
+            }, 1000);
+        }
+
+        function handleRoundEndAutomatically() {
+            roundActive = false;
+            clearInterval(countdownInterval);
+
+            if (currentDrawerName === username) {
+                nextRoundTimeout = setTimeout(() => {
+                    drawNewRound();
+                }, 4000);
+            }
+        }
+
+        function adicionarJogadorLista(nome) {
+            if (listaJogadores.has(nome)) return;
+            listaJogadores.add(nome);
+
+            const container = document.getElementById('players-list');
+            if (!container) return;
+            const item = document.createElement('div');
+            item.className = "player-item";
+            item.id = "p-" + nome.replace(/\s+/g, '-');
+            item.innerText = nome;
+            container.appendChild(item);
+        }
+
+        function sendDrawData(action, x, y, color) {
+            if (!mqttClient) return;
+            const payload = JSON.stringify({ action, x, y, color });
+            mqttClient.publish(baseTopic + "/draw", payload);
+        }
+
+        function renderRemoteDraw(data) {
+            ctx.strokeStyle = data.color;
+            if (data.action === 'start') {
+                ctx.beginPath();
+                ctx.moveTo(data.x, data.y);
+            } else if (data.action === 'draw') {
+                ctx.lineTo(data.x, data.y);
+                ctx.stroke();
+            } else if (data.action === 'clear') {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        function sendClear() {
+            if (!isDrawer) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (mqttClient) mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action: 'clear' }));
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const msgText = input.value.trim();
+            if (!msgText || !mqttClient) return;
+
+            const palpiteLimpo = msgText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const respostaLimpa = currentWord.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+            if (roundActive && !isDrawer && palpiteLimpo === respostaLimpa) {
+                const payload = JSON.stringify({ 
+                    sender: username, 
+                    text: `Acertou a palavra secreta: ${currentWord.toUpperCase()}! 🎯`, 
+                    isCorrect: true 
+                });
+                mqttClient.publish(baseTopic + "/chat", payload);
+            } else {
+                const payload = JSON.stringify({ sender: username, text: msgText, isCorrect: false });
+                mqttClient.publish(baseTopic + "/chat", payload);
+            }
+            input.value = "";
+        }
+
+        document.getElementById('chat-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendChatMessage();
+        });
+
+        function addSystemMessage(text) {
+            const chatMessages = document.getElementById('chat-messages');
+            const m = document.createElement('div');
+            m.className = "msg msg-system";
+            m.innerText = text;
+            chatMessages.appendChild(m);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addSuccessMessage(sender, text) {
+            const chatMessages = document.getElementById('chat-messages');
+            const m = document.createElement('div');
+            m.className = "msg msg-success";
+            m.innerText = `${sender} ${text}`;
+            chatMessages.appendChild(m);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            document.getElementById('word-display').innerText = "Adivinhado! Próxima rodada em instantes...";
+        }
+
+        function renderNormalMessage(sender, text) {
+            const chatMessages = document.getElementById('chat-messages');
+            const m = document.createElement('div');
+            m.className = "msg msg-normal";
+            
+            const spanName = document.createElement('span');
+            spanName.className = "username";
+            spanName.innerText = sender + ": ";
+
+            m.appendChild(spanName);
+            m.appendChild(document.createTextNode(text));
+            chatMessages.appendChild(m);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    </script>
+</body>
+</html>
