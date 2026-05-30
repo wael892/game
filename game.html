@@ -306,14 +306,15 @@
             
             #main-container {
                 flex-direction: column;
-                height: calc(100vh - 55px);
+                height: calc(100vh - 65px);
                 gap: 4px;
                 overflow: hidden;
+                justify-content: space-between;
             }
             
             #canvas-container { 
                 flex: none; 
-                height: 35vh; 
+                height: 40vh; 
                 border-radius: 12px;
             }
             
@@ -339,6 +340,7 @@
                 display: flex;
                 flex-direction: column;
                 overflow: hidden;
+                height: auto;
             }
 
             #chat-messages {
@@ -355,19 +357,23 @@
             
             #chat-input-area {
                 padding: 6px;
-                height: 46px;
+                height: 48px;
                 background: #f8f9fa;
+                display: flex;
+                align-items: center;
             }
 
             #chat-input {
-                padding: 6px;
+                padding: 6px 8px;
                 font-size: 14px;
+                height: 100%;
             }
 
             #btn-send {
                 padding: 0 12px;
                 font-size: 13px;
                 height: 100%;
+                margin-left: 4px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -392,7 +398,7 @@
         <h1>GARTIC</h1>
         <div id="word-display">Aguardando jogadores...</div>
         <div id="room-display">
-            <span id="room-id">Sala: Non conectado</span>
+            <span id="room-id">Sala: Não conectado</span>
             <span id="timer-display">Tempo: --</span>
         </div>
     </header>
