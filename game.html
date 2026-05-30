@@ -80,11 +80,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 10px;
         }
 
         h1 {
             color: #118ab2;
             font-size: 20px;
+            flex-shrink: 0;
         }
 
         #word-display {
@@ -95,6 +97,8 @@
             padding: 5px 15px;
             border-radius: 20px;
             border: 2px dashed #ef476f;
+            text-align: center;
+            word-break: break-word;
         }
 
         #room-display {
@@ -105,6 +109,7 @@
             flex-direction: column;
             align-items: flex-end;
             gap: 2px;
+            flex-shrink: 0;
         }
 
         #timer-display {
@@ -240,6 +245,7 @@
             border-radius: 5px;
             font-size: 13px;
             word-break: break-all;
+            line-height: 1.4;
         }
 
         .msg-system { background: #e2f0d9; color: #385723; font-weight: bold; }
@@ -269,18 +275,91 @@
             margin-left: 6px;
         }
 
+        /* Otimizações Responsivas Mobile */
         @media (max-width: 768px) {
-            body { padding: 5px; }
-            header { padding: 8px 15px; margin-bottom: 5px; }
-            h1 { font-size: 14px; }
-            #word-display { font-size: 14px; padding: 3px 10px; }
+            body { padding: 4px; }
+            
+            header { 
+                padding: 6px 12px; 
+                margin-bottom: 4px; 
+                border-radius: 12px;
+                gap: 6px;
+            }
+            
+            h1 { font-size: 13px; }
+            
+            #word-display { 
+                font-size: 11px; 
+                padding: 4px 8px; 
+                border-radius: 8px;
+                line-height: 1.2;
+                flex: 1;
+            }
+            
+            #room-display { 
+                font-size: 10px; 
+                align-items: flex-end;
+            }
+            
+            #timer-display { font-size: 11px; }
+            
             #main-container {
                 flex-direction: column;
                 height: calc(100vh - 55px);
-                gap: 5px;
+                gap: 4px;
             }
-            #canvas-container { flex: 2; height: 42vh; }
-            #chat-container { flex: 1.5; height: 35vh; }
+            
+            #canvas-container { 
+                flex: none; 
+                height: 38vh; 
+                border-radius: 12px;
+            }
+            
+            #tools {
+                height: 44px;
+                padding: 0 6px;
+                gap: 6px;
+            }
+
+            .color-circle {
+                width: 24px;
+                height: 24px;
+            }
+
+            .btn {
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+            
+            #chat-container { 
+                flex: 1; 
+                border-radius: 12px;
+            }
+
+            #chat-messages {
+                padding: 6px;
+                gap: 4px;
+            }
+
+            .msg {
+                padding: 4px 8px;
+                font-size: 11px;
+            }
+            
+            #chat-input-area {
+                padding: 4px;
+            }
+
+            #chat-input {
+                padding: 6px;
+                font-size: 13px;
+            }
+
+            #btn-send {
+                padding: 6px 10px;
+                font-size: 13px;
+            }
+
             #scoreboard { display: none; }
         }
     </style>
@@ -451,7 +530,6 @@
                 mqttClient.publish(baseTopic + "/chat", identityPayload);
                 mqttClient.publish(baseTopic + "/presence", identityPayload);
 
-                // Pequeno delay inicial para carregar a lista de players e rodar o fluxo automático
                 setTimeout(() => {
                     checkAndAutoStart();
                 }, 2000);
@@ -492,10 +570,8 @@
             });
         }
 
-        // Verifica se nenhuma rodada está ativa para engatar a primeira automaticamente
         function checkAndAutoStart() {
             if (!roundActive && currentDrawerName === "" && listaJogadores.size > 0) {
-                // Apenas o primeiro jogador da lista dispara a chamada inicial para evitar sobreposição
                 const playersArr = Array.from(listaJogadores);
                 if (playersArr[0] === username) {
                     drawNewRound();
@@ -503,7 +579,6 @@
             }
         }
 
-        // Dispara sequencialmente a nova rodada via MQTT
         function drawNewRound() {
             if (!mqttClient) return;
             const playersArr = Array.from(listaJogadores);
@@ -523,7 +598,6 @@
         }
 
         function handleGameFlow(data) {
-            // Limpa loops anteriores e timeouts ativos de transição
             clearInterval(countdownInterval);
             clearTimeout(nextRoundTimeout);
 
@@ -552,7 +626,6 @@
             startLocalTimer(TEMPO_RODADA);
         }
 
-        // Timer regressivo visual e funcional
         function startLocalTimer(seconds) {
             let timeLeft = seconds;
             document.getElementById('timer-display').innerText = "Tempo: " + timeLeft + "s";
@@ -561,7 +634,7 @@
                 timeLeft--;
                 if (timeLeft <= 0) {
                     clearInterval(countdownInterval);
-                    document.getElementById('timer-display').innerText = "Tempo: Esgotado!";
+                    document.getElementById('timer-display').innerText = "Tempo: 0s";
                     addSystemMessage(`O tempo acabou! A palavra era: ${currentWord.toUpperCase()}`);
                     handleRoundEndAutomatically();
                 } else {
@@ -570,16 +643,14 @@
             }, 1000);
         }
 
-        // Controla o encerramento e engata a próxima rodada sem cliques de botão
         function handleRoundEndAutomatically() {
             roundActive = false;
             clearInterval(countdownInterval);
 
-            // Apenas o desenhista atual gerencia o gatilho da próxima rodada para sincronizar a fila do broker
             if (currentDrawerName === username) {
                 nextRoundTimeout = setTimeout(() => {
                     drawNewRound();
-                }, 4000); // Espera 4 segundos para os players verem o resultado do chat e muda de turno
+                }, 4000);
             }
         }
 
