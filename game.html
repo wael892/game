@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gartic Clone com Videochamada Realtime</title>
+    <title>Gartic Clone Realtime</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -100,9 +99,9 @@
             gap: 20px;
         }
 
-        /* Painel de Câmeras e Conectados */
+        /* Painel Lateral de Jogadores */
         #scoreboard {
-            flex: 1.2;
+            flex: 1;
             background: white;
             border-radius: 15px;
             padding: 15px;
@@ -112,39 +111,22 @@
             overflow: hidden;
         }
 
-        #video-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-            gap: 10px;
+        #players-list {
             margin-top: 10px;
             overflow-y: auto;
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
-        .video-container {
-            position: relative;
-            background: #222;
+        .player-item {
+            background: #f8f9fa;
+            padding: 10px;
             border-radius: 8px;
-            overflow: hidden;
-            aspect-ratio: 4/3;
-        }
-
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .video-label {
-            position: absolute;
-            bottom: 5px;
-            left: 5px;
-            background: rgba(0, 0, 0, 0.6);
-            color: white;
-            padding: 2px 6px;
-            font-size: 11px;
-            border-radius: 4px;
             font-weight: bold;
+            color: #333;
+            border-left: 4px solid #118ab2;
         }
 
         /* Painel de Desenho */
@@ -255,22 +237,22 @@
 
     <div id="login-screen">
         <div class="login-box">
-            <h2>Gartic + Videochamada</h2>
+            <h2>Gartic Clone Realtime</h2>
             <input type="text" id="input-username" placeholder="Seu Nome / Apelido" required>
             <input type="text" id="input-room" placeholder="Nome da Sala (ex: sala123)" required>
-            <button class="btn btn-draw" style="width: 100%; padding: 12px; font-size: 16px;" onclick="connectToGame()">ENTRAR COM CÂMERA</button>
+            <button class="btn btn-draw" style="width: 100%; padding: 12px; font-size: 16px;" onclick="connectToGame()">ENTRAR NO JOGO</button>
         </div>
     </div>
 
     <header>
-        <h1>GARTIC VIDEO REALTIME</h1>
+        <h1>GARTIC REALTIME</h1>
         <div id="room-display">Sala: Não conectado</div>
     </header>
 
     <div id="main-container">
         <div id="scoreboard">
-            <h3 style="color: #555; padding-bottom: 5px; border-bottom: 2px solid #f1f3f5;">Participantes:</h3>
-            <div id="video-grid"></div>
+            <h3 style="color: #555; padding-bottom: 5px; border-bottom: 2px solid #f1f3f5;">Jogadores na Sala:</h3>
+            <div id="players-list"></div>
         </div>
 
         <div id="canvas-container">
@@ -300,11 +282,7 @@
         let roomName = "";
         let mqttClient = null;
         let baseTopic = "";
-        
-        let myPeer = null;
-        let myPeerId = "";
-        let localStream = null;
-        const peersConectados = {};
+        const listaJogadores = new Set();
 
         let isDrawer = false;
         const canvas = document.getElementById('canvas');
@@ -387,45 +365,12 @@
                 return;
             }
 
-            navigator.mediaDevices.getUserMedia({
-                video: true,
-                audio: true
-            }).then(stream => {
-                localStream = stream;
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('room-display').innerText = "Sala: " + roomName;
-                resizeCanvas();
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('room-display').innerText = "Sala: " + roomName;
+            resizeCanvas();
 
-                addVideoStream(localStream, username, true, "my-local-video");
-                initPeerServer();
-            }).catch(err => {
-                alert("Erro ao acessar câmera/microfone. Ative as permissões para jogar com vídeo!");
-                console.error(err);
-            });
-        }
-
-        function initPeerServer() {
-            myPeer = new Peer(undefined, {
-                host: '0.peerjs.com',
-                port: 443,
-                secure: true
-            });
-
-            myPeer.on('open', id => {
-                myPeerId = id;
-                initMqtt();
-            });
-
-            myPeer.on('call', call => {
-                call.answer(localStream);
-                
-                const peerUser = call.metadata?.user || "Jogador";
-                call.on('stream', userVideoStream => {
-                    addVideoStream(userVideoStream, peerUser, false, call.peer);
-                });
-
-                peersConectados[call.peer] = call;
-            });
+            adicionarJogadorLista(username);
+            initMqtt();
         }
 
         function initMqtt() {
@@ -437,11 +382,11 @@
                 mqttClient.subscribe(baseTopic + "/chat");
                 mqttClient.subscribe(baseTopic + "/draw");
                 mqttClient.subscribe(baseTopic + "/presence");
+                mqttClient.subscribe(baseTopic + "/presence/echo");
 
                 const identityPayload = JSON.stringify({ 
                     sender: "Sistema", 
                     text: `${username} entrou na sala.`, 
-                    peerId: myPeerId, 
                     name: username 
                 });
                 mqttClient.publish(baseTopic + "/chat", identityPayload);
@@ -454,73 +399,37 @@
                 if (topic === baseTopic + "/chat") {
                     if (data.sender === "Sistema") {
                         addSystemMessage(data.text);
+                        if (data.name) adicionarJogadorLista(data.name);
                     } else {
                         renderNormalMessage(data.sender, data.text);
                     }
                 } else if (topic === baseTopic + "/draw" && !isDrawer) {
                     renderRemoteDraw(data);
                 } else if (topic === baseTopic + "/presence") {
-                    if (data.peerId && data.peerId !== myPeerId && !peersConectados[data.peerId]) {
-                        ligarParaPeer(data.peerId, data.name);
+                    if (data.name && data.name !== username) {
+                        adicionarJogadorLista(data.name);
                         
-                        const respondPresence = JSON.stringify({
-                            peerId: myPeerId,
-                            name: username
-                        });
+                        const respondPresence = JSON.stringify({ name: username });
                         mqttClient.publish(baseTopic + "/presence/echo", respondPresence);
                     }
                 } else if (topic === baseTopic + "/presence/echo") {
-                    if (data.peerId && data.peerId !== myPeerId && !peersConectados[data.peerId]) {
-                        ligarParaPeer(data.peerId, data.name);
+                    if (data.name && data.name !== username) {
+                        adicionarJogadorLista(data.name);
                     }
                 }
             });
-
-            mqttClient.subscribe(baseTopic + "/presence/echo");
         }
 
-        function ligarParaPeer(peerId, remotoNome) {
-            const options = { metadata: { user: username } };
-            const call = myPeer.call(peerId, localStream, options);
-            
-            call.on('stream', userVideoStream => {
-                addVideoStream(userVideoStream, remotoNome, false, peerId);
-            });
+        function adicionarJogadorLista(nome) {
+            if (listaJogadores.has(nome)) return;
+            listaJogadores.add(nome);
 
-            call.on('close', () => {
-                removerVideo(peerId);
-            });
-
-            peersConectados[peerId] = call;
-        }
-
-        function addVideoStream(stream, labelText, isLocal, idElemento) {
-            if (document.getElementById(idElemento)) return;
-
-            const grid = document.getElementById('video-grid');
-            const container = document.createElement('div');
-            container.classList.add('video-container');
-            container.id = idElemento;
-
-            const video = document.createElement('video');
-            video.srcObject = stream;
-            video.autoplay = true;
-            video.playsInline = true;
-            if (isLocal) video.muted = true;
-
-            const label = document.createElement('div');
-            label.classList.add('video-label');
-            label.innerText = labelText;
-
-            container.appendChild(video);
-            container.appendChild(label);
-            grid.appendChild(container);
-        }
-
-        function removerVideo(peerId) {
-            const videoElem = document.getElementById(peerId);
-            if (videoElem) videoElem.remove();
-            if (peersConectados[peerId]) delete peersConectados[peerId];
+            const container = document.getElementById('players-list');
+            const item = document.createElement('div');
+            item.className = "player-item";
+            item.id = "p-" + nome.replace(/\s+/g, '-');
+            item.innerText = nome;
+            container.appendChild(item);
         }
 
         function sendDrawData(action, x, y, color) {
