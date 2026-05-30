@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Gartic Clone Realtime</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
@@ -19,6 +19,7 @@
             flex-direction: column;
             align-items: center;
             height: 100vh;
+            height: 100dvh;
             padding: 10px;
             overscroll-behavior: none;
             overflow: hidden;
@@ -81,6 +82,7 @@
             justify-content: space-between;
             align-items: center;
             gap: 10px;
+            flex-shrink: 0;
         }
 
         h1 {
@@ -123,8 +125,8 @@
             width: 100%;
             max-width: 1200px;
             flex: 1;
-            height: calc(100vh - 70px);
             gap: 10px;
+            overflow: hidden;
         }
 
         /* Painel Lateral de Jogadores */
@@ -193,6 +195,7 @@
             gap: 10px;
             border-top: 2px solid #dee2e6;
             overflow-x: auto;
+            flex-shrink: 0;
         }
 
         .color-circle {
@@ -276,13 +279,10 @@
             margin-left: 6px;
         }
 
-        /* Otimizações Responsivas Mobile */
+        /* Comportamento de Fluxo igual ao WhatsApp para Mobile */
         @media (max-width: 768px) {
             body { 
                 padding: 4px; 
-                position: relative;
-                height: 100vh;
-                height: -webkit-fill-available;
             }
             
             header { 
@@ -290,67 +290,61 @@
                 margin-bottom: 4px; 
                 border-radius: 12px;
                 gap: 6px;
-                height: 45px;
+                height: 40px;
             }
             
-            h1 { font-size: 13px; }
+            h1 { font-size: 12px; }
             
             #word-display { 
                 font-size: 11px; 
-                padding: 4px 8px; 
+                padding: 3px 6px; 
                 border-radius: 8px;
                 line-height: 1.2;
                 flex: 1;
             }
             
             #room-display { 
-                font-size: 10px; 
-                align-items: flex-end;
+                font-size: 9px; 
             }
             
-            #timer-display { font-size: 11px; }
+            #timer-display { font-size: 10px; }
             
             #main-container {
                 flex-direction: column;
-                position: absolute;
-                top: 59px; /* Colado abaixo do header */
-                left: 4px;
-                right: 4px;
-                bottom: 4px;
-                height: auto;
+                flex: 1;
+                width: 100%;
                 gap: 4px;
-                overflow: hidden;
             }
             
             #canvas-container { 
                 flex: none; 
-                height: 38vh; 
+                height: 32vh; 
                 border-radius: 12px;
             }
             
             #tools {
-                height: 44px;
+                height: 40px;
                 padding: 0 6px;
                 gap: 6px;
             }
 
             .color-circle {
-                width: 24px;
-                height: 24px;
+                width: 22px;
+                height: 22px;
             }
 
             .btn {
-                padding: 6px 10px;
+                padding: 4px 8px;
                 font-size: 11px;
             }
             
+            /* O Chat vira o elemento elástico principal (igualmente ao campo de conversas do Whats) */
             #chat-container { 
                 flex: 1; 
                 border-radius: 12px;
                 display: flex;
                 flex-direction: column;
                 overflow: hidden;
-                margin-bottom: 0px;
             }
 
             #chat-messages {
@@ -367,21 +361,21 @@
             
             #chat-input-area {
                 padding: 6px;
-                height: 50px;
+                height: 46px;
                 background: #f8f9fa;
                 display: flex;
                 align-items: center;
-                border-top: 2px solid #dee2e6;
+                border-top: 1px solid #dee2e6;
             }
 
             #chat-input {
-                padding: 8px;
+                padding: 6px;
                 font-size: 14px;
                 height: 100%;
             }
 
             #btn-send {
-                padding: 0 14px;
+                padding: 0 12px;
                 font-size: 13px;
                 height: 100%;
                 margin-left: 4px;
@@ -460,12 +454,12 @@
         let nextRoundTimeout = null;
         const TEMPO_RODADA = 60; // Tempo em segundos de cada turno
 
-        const PALAVRAS = ["Cachorro", "Gato", "Carro", "Aviao", "Banana", "Maca", "Casa", "Arvore", "Bola", "Computador", "Celular", "Caneta", "Chave", "Livro", "Relogio", "Cadeira", "Garfo", "Sapato", "Oculos", "Sol", "Lua", "Flor", "Peixe", "Passaro"];
-
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         let drawing = false;
         let currentColor = '#000000';
+
+        const PALAVRAS = ["Cachorro", "Gato", "Carro", "Aviao", "Banana", "Maca", "Casa", "Arvore", "Bola", "Computador", "Celular", "Caneta", "Chave", "Livro", "Relogio", "Cadeira", "Garfo", "Sapato", "Oculos", "Sol", "Lua", "Flor", "Peixe", "Passaro"];
 
         function resizeCanvas() {
             canvas.width = canvas.clientWidth;
@@ -476,18 +470,13 @@
 
         window.addEventListener('resize', resizeCanvas);
 
-        // Script para ajustar o layout mobile dinamicamente quando o teclado abrir
+        // Rolagem automática resiliente do chat ao detectar redimensionamento do teclado virtual
         if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', () => {
-                const mainContainer = document.getElementById('main-container');
-                if (window.innerWidth <= 768 && mainContainer) {
-                    // Define a base do app baseada na altura real visível do Viewport (acima do teclado)
-                    mainContainer.style.bottom = `${window.innerHeight - window.visualViewport.height + 4}px`;
-                    setTimeout(() => {
-                        const chatMessages = document.getElementById('chat-messages');
-                        if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
-                    }, 50);
-                }
+                setTimeout(() => {
+                    const chatMessages = document.getElementById('chat-messages');
+                    if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 80);
             });
         }
 
@@ -554,7 +543,7 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('room-id').innerText = "Sala: " + roomName;
             
-            setTimeout(() => { resizeCanvas(); }, 100);
+            setTimeout(() => { resizeCanvas(); }, 150);
 
             adicionarJogadorLista(username);
             initMqtt();
@@ -688,7 +677,6 @@
             }, 1000);
         }
 
-        // Controla o encerramento e engata a próxima rodada sem cliques de botão
         function handleRoundEndAutomatically() {
             roundActive = false;
             clearInterval(countdownInterval);
