@@ -258,6 +258,7 @@
             padding: 8px;
             border-top: 2px solid #dee2e6;
             background: #f8f9fa;
+            flex-shrink: 0;
         }
 
         #chat-input {
@@ -307,11 +308,12 @@
                 flex-direction: column;
                 height: calc(100vh - 55px);
                 gap: 4px;
+                overflow: hidden;
             }
             
             #canvas-container { 
                 flex: none; 
-                height: 38vh; 
+                height: 35vh; 
                 border-radius: 12px;
             }
             
@@ -334,11 +336,16 @@
             #chat-container { 
                 flex: 1; 
                 border-radius: 12px;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
             }
 
             #chat-messages {
+                flex: 1;
                 padding: 6px;
                 gap: 4px;
+                overflow-y: auto;
             }
 
             .msg {
@@ -347,17 +354,23 @@
             }
             
             #chat-input-area {
-                padding: 4px;
+                padding: 6px;
+                height: 46px;
+                background: #f8f9fa;
             }
 
             #chat-input {
                 padding: 6px;
-                font-size: 13px;
+                font-size: 14px;
             }
 
             #btn-send {
-                padding: 6px 10px;
+                padding: 0 12px;
                 font-size: 13px;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             #scoreboard { display: none; }
@@ -379,7 +392,7 @@
         <h1>GARTIC</h1>
         <div id="word-display">Aguardando jogadores...</div>
         <div id="room-display">
-            <span id="room-id">Sala: Não conectado</span>
+            <span id="room-id">Sala: Non conectado</span>
             <span id="timer-display">Tempo: --</span>
         </div>
     </header>
