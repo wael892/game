@@ -496,25 +496,25 @@
         window.addEventListener('load', ajustarAlturaJanela);
         ajustarAlturaJanela();
 
-        // Inicializa o tamanho lógico fixo do canvas independente da proporção do CSS da tela física
         function initCanvasResolution() {
             canvas.width = VIRTUAL_WIDTH;
             canvas.height = VIRTUAL_HEIGHT;
             ctx.lineCap = 'round';
-            ctx.lineWidth = 6; // Linha ligeiramente mais espessa para manter excelente visibilidade em telas HD
+            ctx.lineWidth = 6; 
         }
         initCanvasResolution();
 
-        // Captura e normaliza as coordenadas físicas da tela para o espaço virtual de 800x600
+        // CAPTURA DE COORDENADAS CORRIGIDA: Resolve o bug de desenhar em outro lugar
         function getCanvasCoordinates(clientX, clientY) {
             const rect = canvas.getBoundingClientRect();
-            // Calcula a posição do toque relativa ao elemento canvas na tela
+            
+            // Pega a posição exata baseada nos limites de renderização física atual na viewport
             const physicalX = clientX - rect.left;
             const physicalY = clientY - rect.top;
             
-            // Transforma proporcionalmente para a escala estrita de 800x600
-            const virtualX = (physicalX / rect.width) * VIRTUAL_WIDTH;
-            const virtualY = (physicalY / rect.height) * VIRTUAL_HEIGHT;
+            // Normalização estrita cruzando os pixels internos reais com o tamanho físico da janela visual
+            const virtualX = (physicalX / rect.width) * canvas.width;
+            const virtualY = (physicalY / rect.height) * canvas.height;
             
             return { x: virtualX, y: virtualY };
         }
@@ -531,7 +531,7 @@
         canvas.addEventListener('mouseup', stopDrawing);
         canvas.addEventListener('mouseout', stopDrawing);
 
-        // Eventos de Toque Mobile corrigidos com suporte para múltiplos DPIs e travas preventivas
+        // Eventos de Toque Mobile califrados cirurgicamente para evitar rolagem de tela paralela
         canvas.addEventListener('touchstart', (e) => { 
             if (e.touches.length === 1) {
                 e.preventDefault();
