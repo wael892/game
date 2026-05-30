@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gartic Clone Multiplayer Basico</title>
-    <!-- Importação da biblioteca que faz a mágica do multiplayer funcionar sem servidor próprio -->
+    <title>Gartic Clone com Videochamada Realtime</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -66,7 +66,7 @@
             border-color: #118ab2;
         }
 
-        /* Estrutura do Jogo */
+        /* Estrutura Principal */
         header {
             text-align: center;
             margin-bottom: 15px;
@@ -75,7 +75,7 @@
             border-radius: 50px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             width: 100%;
-            max-width: 1100px;
+            max-width: 1200px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -95,34 +95,59 @@
         #main-container {
             display: flex;
             width: 100%;
-            max-width: 1100px;
+            max-width: 1200px;
             height: 75vh;
             gap: 20px;
         }
 
-        /* Painel Esquerdo: Lista de Conectados */
+        /* Painel de Câmeras e Conectados */
         #scoreboard {
-            flex: 1;
+            flex: 1.2;
             background: white;
             border-radius: 15px;
             padding: 15px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
-        .player-card {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px;
-            margin-bottom: 10px;
-            background: #f8f9fa;
+        #video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .video-container {
+            position: relative;
+            background: #222;
             border-radius: 8px;
-            border-left: 5px solid #118ab2;
+            overflow: hidden;
+            aspect-ratio: 4/3;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-label {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 2px 6px;
+            font-size: 11px;
+            border-radius: 4px;
             font-weight: bold;
         }
 
-        /* Painel Central: Tela de Desenho */
+        /* Painel de Desenho */
         #canvas-container {
             flex: 3;
             background: white;
@@ -140,7 +165,6 @@
             cursor: crosshair;
         }
 
-        /* Ferramentas de Desenho */
         #tools {
             height: 60px;
             background: #e9ecef;
@@ -171,17 +195,10 @@
             font-weight: bold;
         }
 
-        .btn-clear {
-            background: #ef476f;
-            color: white;
-        }
+        .btn-clear { background: #ef476f; color: white; }
+        .btn-draw { background: #06d6a0; color: white; }
 
-        .btn-draw {
-            background: #06d6a0;
-            color: white;
-        }
-
-        /* Painel Direito: Chat */
+        /* Painel do Chat */
         #chat-container {
             flex: 1.5;
             background: white;
@@ -236,35 +253,28 @@
 </head>
 <body>
 
-    <!-- Tela Inicial Simplificada -->
     <div id="login-screen">
         <div class="login-box">
-            <h2>Gartic Multiplayer</h2>
+            <h2>Gartic + Videochamada</h2>
             <input type="text" id="input-username" placeholder="Seu Nome / Apelido" required>
             <input type="text" id="input-room" placeholder="Nome da Sala (ex: sala123)" required>
-            <button class="btn btn-draw" style="width: 100%; padding: 12px; font-size: 16px;" onclick="connectToGame()">ENTRAR NO JOGO</button>
+            <button class="btn btn-draw" style="width: 100%; padding: 12px; font-size: 16px;" onclick="connectToGame()">ENTRAR COM CÂMERA</button>
         </div>
     </div>
 
-    <!-- Interface do Jogo -->
     <header>
-        <h1>GARTIC MULTIPLAYER REALTIME</h1>
+        <h1>GARTIC VIDEO REALTIME</h1>
         <div id="room-display">Sala: Não conectado</div>
     </header>
 
     <div id="main-container">
-        <!-- Lista de Usuários na Sala -->
         <div id="scoreboard">
-            <h3 style="margin-bottom: 15px; color: #555;">No jogo:</h3>
-            <div id="players-list">
-                <!-- Preenchido via rede -->
-            </div>
+            <h3 style="color: #555; padding-bottom: 5px; border-bottom: 2px solid #f1f3f5;">Participantes:</h3>
+            <div id="video-grid"></div>
         </div>
 
-        <!-- Área de Desenho -->
         <div id="canvas-container">
             <canvas id="canvas"></canvas>
-            
             <div id="tools">
                 <div class="color-circle active" style="background: #000000;" onclick="changeColor('#000000', this)"></div>
                 <div class="color-circle" style="background: #ef476f;" onclick="changeColor('#ef476f', this)"></div>
@@ -276,7 +286,6 @@
             </div>
         </div>
 
-        <!-- Chat Coletivo -->
         <div id="chat-container">
             <div id="chat-messages"></div>
             <div id="chat-input-area">
@@ -291,8 +300,14 @@
         let roomName = "";
         let mqttClient = null;
         let baseTopic = "";
+        
+        // Variáveis do Sistema de Vídeo WebRTC
+        let myPeer = null;
+        let myPeerId = "";
+        let localStream = null;
+        const peersConectados = {};
 
-        // Controle de Desenho e Permissão
+        // Controle de Desenho
         let isDrawer = false;
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -306,7 +321,7 @@
             ctx.lineWidth = 4;
         }
 
-        // Eventos Locais de Mouse/Touch
+        // Eventos de Input na Lousa
         canvas.addEventListener('mousedown', (e) => startDrawing(e.clientX, e.clientY));
         canvas.addEventListener('mousemove', (e) => draw(e.clientX, e.clientY));
         canvas.addEventListener('mouseup', stopDrawing);
@@ -322,11 +337,8 @@
             const rect = canvas.getBoundingClientRect();
             const x = clientX - rect.left;
             const y = clientY - rect.top;
-            
             ctx.beginPath();
             ctx.moveTo(x, y);
-
-            // Transmite o início do traço para a rede
             sendDrawData('start', x, y, currentColor);
         }
 
@@ -335,12 +347,9 @@
             const rect = canvas.getBoundingClientRect();
             const x = clientX - rect.left;
             const y = clientY - rect.top;
-
             ctx.strokeStyle = currentColor;
             ctx.lineTo(x, y);
             ctx.stroke();
-
-            // Transmite a continuação do traço para a rede
             sendDrawData('draw', x, y, currentColor);
         }
 
@@ -356,14 +365,13 @@
             element.classList.add('active');
         }
 
-        // Alternar entre quem desenha e quem assiste de forma livre
         function toggleRole() {
             isDrawer = !isDrawer;
             const btn = document.getElementById('btn-role');
             if (isDrawer) {
                 btn.innerText = "Modo: Desenhista";
                 btn.style.background = "#ef476f";
-                addSystemMessage("Você assumiu a lousa! Agora você pode desenhar.");
+                addSystemMessage("Você assumiu a lousa! Comece a desenhar.");
             } else {
                 btn.innerText = "Modo: Adivinhador";
                 btn.style.background = "#06d6a0";
@@ -371,7 +379,7 @@
             }
         }
 
-        // Conexão com a rede pública (Usando a estrutura de alta performance da Eclipse Foundation)
+        // Inicializa o fluxo de áudio e vídeo e se conecta na rede
         function connectToGame() {
             username = document.getElementById('input-username').value.trim();
             roomName = document.getElementById('input-room').value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -381,116 +389,81 @@
                 return;
             }
 
-            // Oculta tela de login
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('room-display').innerText = "Sala: " + roomName;
-            resizeCanvas();
+            // Pede permissão para acessar Câmera e Microfone do computador/celular
+            navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: true
+            }).then(stream => {
+                localStream = stream;
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('room-display').innerText = "Sala: " + roomName;
+                resizeCanvas();
 
-            // Cria tópicos únicos baseados no nome da sala para não misturar com outros sites
+                // Adiciona o seu próprio vídeo quadrado no painel esquerdo
+                addVideoStream(localStream, username, true);
+
+                // Inicializa o servidor de sinalização WebRTC para as conexões de vídeo
+                initPeerServer();
+            }).catch(err => {
+                alert("Erro ao acessar câmera/microfone. Ative as permissões para jogar com vídeo!");
+                console.error(err);
+            });
+        }
+
+        function initPeerServer() {
+            // Cria um identificador único de chamada p2p baseado na sala para não cruzar dados
+            myPeer = new Peer(undefined, {
+                host: '0.peerjs.com',
+                port: 443,
+                secure: true
+            });
+
+            myPeer.on('open', id => {
+                myPeerId = id;
+                // Depois de gerar a sua linha telefônica virtual, conecta ao servidor de mensagens do Gartic
+                initMqtt();
+            });
+
+            // Escuta quando algum outro jogador ligar para a sua câmera
+            myPeer.on('call', call => {
+                // Atende a chamada enviando o seu fluxo de vídeo de volta
+                call.answer(localStream);
+                
+                // Recebe o sinal de vídeo da outra pessoa e coloca na tela
+                const remoteVideo = document.createElement('video');
+                call.on('stream', userVideoStream => {
+                    // O nome será capturado e atualizado via sincronismo de rede
+                    addVideoStream(userVideoStream, call.metadata?.user || "Jogador", false, call.peer);
+                });
+            });
+        }
+
+        function initMqtt() {
             baseTopic = "gartic_clone_free_2026/" + roomName;
-
-            // Conecta ao servidor estável via WebSockets da Eclipse
+            
+            // Conecta ao servidor estável e aberto da Eclipse Foundation
             mqttClient = mqtt.connect('wss://iot.eclipseorg.co:443/ws');
 
             mqttClient.on('connect', () => {
-                // Se inscreve nos canais de chat e desenho da sua sala específica
                 mqttClient.subscribe(baseTopic + "/chat");
                 mqttClient.subscribe(baseTopic + "/draw");
+                mqttClient.subscribe(baseTopic + "/presence");
 
-                // Envia aviso de entrada
-                const joinMsg = JSON.stringify({ sender: "Sistema", text: `${username} entrou na sala.` });
-                mqttClient.publish(baseTopic + "/chat", joinMsg);
-                
-                // Adiciona você mesmo no placar visual de forma simples
-                addPlayerToList(username);
+                // Envia para a rede o seu apelido e o ID da sua câmera para que os outros te liguem
+                const identityPayload = JSON.stringify({ sender: "Sistema", text: `${username} entrou na sala.`, peerId: myPeerId, name: username });
+                mqttClient.publish(baseTopic + "/chat", identityPayload);
+                mqttClient.publish(baseTopic + "/presence", identityPayload);
             });
 
             mqttClient.on('message', (topic, message) => {
                 const data = JSON.parse(message.toString());
 
                 if (topic === baseTopic + "/chat") {
-                    // Trata mensagens recebidas no chat
                     if (data.sender === "Sistema") {
                         addSystemMessage(data.text);
                     } else {
                         renderNormalMessage(data.sender, data.text);
                     }
                 } else if (topic === baseTopic + "/draw" && !isDrawer) {
-                    // Trata os dados de desenho recebidos de outros jogadores
                     renderRemoteDraw(data);
-                }
-            });
-        }
-
-        // Funções de Transmissão via Rede
-        function sendChatMessage() {
-            const input = document.getElementById('chat-input');
-            const text = input.value.trim();
-            if (!text || !mqttClient) return;
-
-            const payload = JSON.stringify({ sender: username, text: text });
-            mqttClient.publish(baseTopic + "/chat", payload);
-            input.value = "";
-        }
-
-        function sendDrawData(action, x, y, color) {
-            if (!mqttClient) return;
-            const payload = JSON.stringify({ action: action, x: x, y: y, color: color });
-            mqttClient.publish(baseTopic + "/draw", payload);
-        }
-
-        function sendClear() {
-            if (!isDrawer) return;
-            sendDrawData('clear', 0, 0, '');
-        }
-
-        // Funções de Renderização na Tela
-        function renderRemoteDraw(data) {
-            if (data.action === 'start') {
-                ctx.beginPath();
-                ctx.moveTo(data.x, data.y);
-            } else if (data.action === 'draw') {
-                ctx.strokeStyle = data.color;
-                ctx.lineTo(data.x, data.y);
-                ctx.stroke();
-            } else if (data.action === 'clear') {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }
-        }
-
-        function addSystemMessage(text) {
-            const chat = document.getElementById('chat-messages');
-            const div = document.createElement('div');
-            div.className = 'msg msg-system';
-            div.innerText = text;
-            chat.appendChild(div);
-            chat.scrollTop = chat.scrollHeight;
-        }
-
-        function renderNormalMessage(sender, text) {
-            const chat = document.getElementById('chat-messages');
-            const div = document.createElement('div');
-            div.className = 'msg msg-normal';
-            div.innerHTML = `<span class="username">${sender}:</span> ${text}`;
-            chat.appendChild(div);
-            chat.scrollTop = chat.scrollHeight;
-        }
-
-        function addPlayerToList(name) {
-            const list = document.getElementById('players-list');
-            const div = document.createElement('div');
-            div.className = 'player-card';
-            div.innerHTML = `<span>${name}</span><span>Online</span>`;
-            list.appendChild(div);
-        }
-
-        // Atalho de teclado para o chat
-        document.getElementById('chat-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') sendChatMessage();
-        });
-
-        // Redimensionar se a tela mudar
-        window.addEventListener('resize', resizeCanvas);
-    </script>
-</body>
-</html>
+                } else if (topic === baseTopic
