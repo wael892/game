@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gartic Clone Multiplayer Basico</title>
+    <!-- Importação da biblioteca que faz a mágica do multiplayer funcionar sem servidor próprio -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #ffd43b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        /* Tela de Login */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ffd43b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .login-box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-box h2 {
+            color: #118ab2;
+            margin-bottom: 20px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #ced4da;
+            border-radius: 8px;
+            outline: none;
+            font-size: 16px;
+        }
+
+        .login-box input:focus {
+            border-color: #118ab2;
+        }
+
+        /* Estrutura do Jogo */
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+            background: white;
+            padding: 10px 30px;
+            border-radius: 50px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            color: #118ab2;
+            font-size: 24px;
+        }
+
+        #room-display {
+            font-weight: bold;
+            color: #666;
+            font-size: 14px;
+        }
+
+        #main-container {
+            display: flex;
+            width: 100%;
+            max-width: 1100px;
+            height: 75vh;
+            gap: 20px;
+        }
+
+        /* Painel Esquerdo: Lista de Conectados */
+        #scoreboard {
+            flex: 1;
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .player-card {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 5px solid #118ab2;
+            font-weight: bold;
+        }
+
+        /* Painel Central: Tela de Desenho */
+        #canvas-container {
+            flex: 3;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        canvas {
+            flex: 1;
+            background: #ffffff;
+            cursor: crosshair;
+        }
+
+        /* Ferramentas de Desenho */
+        #tools {
+            height: 60px;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 15px;
+            border-top: 2px solid #dee2e6;
+        }
+
+        .color-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .color-circle.active {
+            border-color: #000;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-clear {
+            background: #ef476f;
+            color: white;
+        }
+
+        .btn-draw {
+            background: #06d6a0;
+            color: white;
+        }
+
+        /* Painel Direito: Chat */
+        #chat-container {
+            flex: 1.5;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .msg {
+            padding: 6px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            word-break: break-all;
+        }
+
+        .msg-system { background: #e2f0d9; color: #385723; font-weight: bold; }
+        .msg-normal { background: #f1f3f5; color: #333; }
+        .msg-normal .username { font-weight: bold; color: #118ab2; }
+
+        #chat-input-area {
+            display: flex;
+            padding: 10px;
+            border-top: 2px solid #dee2e6;
+            background: #f8f9fa;
+        }
+
+        #chat-input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ced4da;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        #btn-send {
+            background: #118ab2;
+            color: white;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Tela Inicial Simplificada -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h2>Gartic Multiplayer</h2>
+            <input type="text" id="input-username" placeholder="Seu Nome / Apelido" required>
+            <input type="text" id="input-room" placeholder="Nome da Sala (ex: sala123)" required>
+            <button class="btn btn-draw" style="width: 100%; padding: 12px; font-size: 16px;" onclick="connectToGame()">ENTRAR NO JOGO</button>
+        </div>
+    </div>
+
+    <!-- Interface do Jogo -->
+    <header>
+        <h1>GARTIC MULTIPLAYER REALTIME</h1>
+        <div id="room-display">Sala: Não conectado</div>
+    </header>
+
+    <div id="main-container">
+        <!-- Lista de Usuários na Sala -->
+        <div id="scoreboard">
+            <h3 style="margin-bottom: 15px; color: #555;">No jogo:</h3>
+            <div id="players-list">
+                <!-- Preenchido via rede -->
+            </div>
+        </div>
+
+        <!-- Área de Desenho -->
+        <div id="canvas-container">
+            <canvas id="canvas"></canvas>
+            
+            <div id="tools">
+                <div class="color-circle active" style="background: #000000;" onclick="changeColor('#000000', this)"></div>
+                <div class="color-circle" style="background: #ef476f;" onclick="changeColor('#ef476f', this)"></div>
+                <div class="color-circle" style="background: #ffd166;" onclick="changeColor('#ffd166', this)"></div>
+                <div class="color-circle" style="background: #06d6a0;" onclick="changeColor('#06d6a0', this)"></div>
+                <div class="color-circle" style="background: #118ab2;" onclick="changeColor('#118ab2', this)"></div>
+                <button class="btn btn-clear" onclick="sendClear()">Limpar Tudo</button>
+                <button class="btn btn-draw" id="btn-role" onclick="toggleRole()" style="margin-left: auto;">Modo: Adivinhador</button>
+            </div>
+        </div>
+
+        <!-- Chat Coletivo -->
+        <div id="chat-container">
+            <div id="chat-messages"></div>
+            <div id="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Digite uma mensagem ou palpite..." autocomplete="off">
+                <button id="btn-send" class="btn" onclick="sendChatMessage()">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let username = "";
+        let roomName = "";
+        let mqttClient = null;
+        let baseTopic = "";
+
+        // Controle de Desenho e Permissão
+        let isDrawer = false;
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+        let currentColor = '#000000';
+
+        function resizeCanvas() {
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+            ctx.lineCap = 'round';
+            ctx.lineWidth = 4;
+        }
+
+        // Eventos Locais de Mouse/Touch
+        canvas.addEventListener('mousedown', (e) => startDrawing(e.clientX, e.clientY));
+        canvas.addEventListener('mousemove', (e) => draw(e.clientX, e.clientY));
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e.touches[0].clientX, e.touches[0].clientY); });
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e.touches[0].clientX, e.touches[0].clientY); });
+        canvas.addEventListener('touchend', stopDrawing);
+
+        function startDrawing(clientX, clientY) {
+            if (!isDrawer) return;
+            drawing = true;
+            const rect = canvas.getBoundingClientRect();
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+            
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+
+            // Transmite o início do traço para a rede
+            sendDrawData('start', x, y, currentColor);
+        }
+
+        function draw(clientX, clientY) {
+            if (!drawing || !isDrawer) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+
+            ctx.strokeStyle = currentColor;
+            ctx.lineTo(x, y);
+            ctx.stroke();
+
+            // Transmite a continuação do traço para a rede
+            sendDrawData('draw', x, y, currentColor);
+        }
+
+        function stopDrawing() {
+            if (!isDrawer) return;
+            drawing = false;
+            sendDrawData('stop', 0, 0, currentColor);
+        }
+
+        function changeColor(color, element) {
+            currentColor = color;
+            document.querySelectorAll('.color-circle').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        // Alternar entre quem desenha e quem assiste de forma livre
+        function toggleRole() {
+            isDrawer = !isDrawer;
+            const btn = document.getElementById('btn-role');
+            if (isDrawer) {
+                btn.innerText = "Modo: Desenhista";
+                btn.style.background = "#ef476f";
+                addSystemMessage("Você assumiu a lousa! Agora você pode desenhar.");
+            } else {
+                btn.innerText = "Modo: Adivinhador";
+                btn.style.background = "#06d6a0";
+                drawing = false;
+            }
+        }
+
+        // Conexão com a rede pública (Multiplayer sem dor de cabeça)
+        function connectToGame() {
+            username = document.getElementById('input-username').value.trim();
+            roomName = document.getElementById('input-room').value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+
+            if (!username || !roomName) {
+                alert("Por favor, digite seu nome e o nome da sala!");
+                return;
+            }
+
+            // Oculta tela de login
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('room-display').innerText = "Sala: " + roomName;
+            resizeCanvas();
+
+            // Cria tópicos únicos baseados no nome da sala para não misturar com outros sites
+            baseTopic = "gartic_clone_free_2026/" + roomName;
+
+            // Conecta ao servidor WebSocket MQTT público do HiveMQ
+            mqttClient = mqtt.connect('wss://broker.hivemq.com:8000/mqtt');
+
+            mqttClient.on('connect', () => {
+                // Se inscreve nos canais de chat e desenho da sua sala específica
+                mqttClient.subscribe(baseTopic + "/chat");
+                mqttClient.subscribe(baseTopic + "/draw");
+
+                // Envia aviso de entrada
+                const joinMsg = JSON.stringify({ sender: "Sistema", text: `${username} entrou na sala.` });
+                mqttClient.publish(baseTopic + "/chat", joinMsg);
+                
+                // Adiciona você mesmo no placar visual de forma simples
+                addPlayerToList(username);
+            });
+
+            mqttClient.on('message', (topic, message) => {
+                const data = JSON.parse(message.toString());
+
+                if (topic === baseTopic + "/chat") {
+                    // Trata mensagens recebidas no chat
+                    if (data.sender === "Sistema") {
+                        addSystemMessage(data.text);
+                    } else {
+                        renderNormalMessage(data.sender, data.text);
+                    }
+                } else if (topic === baseTopic + "/draw" && !isDrawer) {
+                    // Trata os dados de desenho recebidos de outros jogadores
+                    renderRemoteDraw(data);
+                }
+            });
+        }
+
+        // Funções de Transmissão via Rede
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text || !mqttClient) return;
+
+            const payload = JSON.stringify({ sender: username, text: text });
+            mqttClient.publish(baseTopic + "/chat", payload);
+            input.value = "";
+        }
+
+        function sendDrawData(action, x, y, color) {
+            if (!mqttClient) return;
+            const payload = JSON.stringify({ action: action, x: x, y: y, color: color });
+            mqttClient.publish(baseTopic + "/draw", payload);
+        }
+
+        function sendClear() {
+            if (!isDrawer) return;
+            sendDrawData('clear', 0, 0, '');
+        }
+
+        // Funções de Renderização na Tela
+        function renderRemoteDraw(data) {
+            if (data.action === 'start') {
+                ctx.beginPath();
+                ctx.moveTo(data.x, data.y);
+            } else if (data.action === 'draw') {
+                ctx.strokeStyle = data.color;
+                ctx.lineTo(data.x, data.y);
+                ctx.stroke();
+            } else if (data.action === 'clear') {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        function addSystemMessage(text) {
+            const chat = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = 'msg msg-system';
+            div.innerText = text;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function renderNormalMessage(sender, text) {
+            const chat = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = 'msg msg-normal';
+            div.innerHTML = `<span class="username">${sender}:</span> ${text}`;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function addPlayerToList(name) {
+            const list = document.getElementById('players-list');
+            const div = document.createElement('div');
+            div.className = 'player-card';
+            div.innerHTML = `<span>${name}</span><span>Online</span>`;
+            list.appendChild(div);
+        }
+
+        // Atalho de teclado para o chat
+        document.getElementById('chat-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendChatMessage();
+        });
+
+        // Redimensionar se a tela mudar
+        window.addEventListener('resize', resizeCanvas);
+    </script>
+</body>
+</html>
