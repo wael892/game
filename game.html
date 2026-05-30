@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gartic Clone Realtime</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
@@ -19,7 +19,9 @@
             flex-direction: column;
             align-items: center;
             height: 100vh;
-            padding: 20px;
+            padding: 10px;
+            overscroll-behavior: none;
+            overflow: hidden;
         }
 
         /* Tela de Login */
@@ -68,9 +70,9 @@
         /* Estrutura Principal */
         header {
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             background: white;
-            padding: 10px 30px;
+            padding: 10px 20px;
             border-radius: 50px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             width: 100%;
@@ -82,21 +84,32 @@
 
         h1 {
             color: #118ab2;
-            font-size: 24px;
+            font-size: 20px;
+        }
+
+        #word-display {
+            font-weight: bold;
+            font-size: 18px;
+            color: #ef476f;
+            background: #f8f9fa;
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 2px dashed #ef476f;
         }
 
         #room-display {
             font-weight: bold;
             color: #666;
-            font-size: 14px;
+            font-size: 12px;
         }
 
         #main-container {
             display: flex;
             width: 100%;
             max-width: 1200px;
-            height: 75vh;
-            gap: 20px;
+            flex: 1;
+            height: calc(100vh - 70px);
+            gap: 10px;
         }
 
         /* Painel Lateral de Jogadores */
@@ -104,7 +117,7 @@
             flex: 1;
             background: white;
             border-radius: 15px;
-            padding: 15px;
+            padding: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
@@ -117,16 +130,24 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
         }
 
         .player-item {
             background: #f8f9fa;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 8px;
+            border-radius: 6px;
             font-weight: bold;
             color: #333;
+            font-size: 13px;
             border-left: 4px solid #118ab2;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .player-item.drawing {
+            border-left-color: #ef476f;
+            background: #ffe3e8;
         }
 
         /* Painel de Desenho */
@@ -145,6 +166,7 @@
             flex: 1;
             background: #ffffff;
             cursor: crosshair;
+            touch-action: none; 
         }
 
         #tools {
@@ -152,17 +174,19 @@
             background: #e9ecef;
             display: flex;
             align-items: center;
-            padding: 0 15px;
-            gap: 15px;
+            padding: 0 10px;
+            gap: 10px;
             border-top: 2px solid #dee2e6;
+            overflow-x: auto;
         }
 
         .color-circle {
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             cursor: pointer;
             border: 2px solid transparent;
+            flex-shrink: 0;
         }
 
         .color-circle.active {
@@ -170,15 +194,17 @@
         }
 
         .btn {
-            padding: 8px 15px;
+            padding: 8px 12px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 13px;
+            flex-shrink: 0;
         }
 
         .btn-clear { background: #ef476f; color: white; }
-        .btn-draw { background: #06d6a0; color: white; }
+        .btn-start-game { background: #118ab2; color: white; }
 
         /* Painel do Chat */
         #chat-container {
@@ -193,43 +219,60 @@
 
         #chat-messages {
             flex: 1;
-            padding: 15px;
+            padding: 12px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
         }
 
         .msg {
             padding: 6px 10px;
             border-radius: 5px;
-            font-size: 14px;
+            font-size: 13px;
             word-break: break-all;
         }
 
         .msg-system { background: #e2f0d9; color: #385723; font-weight: bold; }
+        .msg-success { background: #d1e7dd; color: #0f5132; font-weight: bold; border: 1px solid #badbcc; }
         .msg-normal { background: #f1f3f5; color: #333; }
         .msg-normal .username { font-weight: bold; color: #118ab2; }
 
         #chat-input-area {
             display: flex;
-            padding: 10px;
+            padding: 8px;
             border-top: 2px solid #dee2e6;
             background: #f8f9fa;
         }
 
         #chat-input {
             flex: 1;
-            padding: 10px;
+            padding: 8px;
             border: 2px solid #ced4da;
             border-radius: 5px;
             outline: none;
+            font-size: 14px;
         }
 
         #btn-send {
             background: #118ab2;
             color: white;
-            margin-left: 8px;
+            margin-left: 6px;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 5px; }
+            header { padding: 8px 15px; margin-bottom: 5px; }
+            h1 { font-size: 14px; }
+            #word-display { font-size: 14px; padding: 3px 10px; }
+            #main-container {
+                flex-direction: column;
+                height: calc(100vh - 55px);
+                gap: 5px;
+            }
+            #canvas-container { flex: 2; height: 42vh; }
+            #chat-container { flex: 1.5; height: 35vh; }
+            #scoreboard { display: none; }
         }
     </style>
 </head>
@@ -245,7 +288,8 @@
     </div>
 
     <header>
-        <h1>GARTIC REALTIME</h1>
+        <h1>GARTIC</h1>
+        <div id="word-display">Aguardando rodada...</div>
         <div id="room-display">Sala: Não conectado</div>
     </header>
 
@@ -263,15 +307,15 @@
                 <div class="color-circle" style="background: #ffd166;" onclick="changeColor('#ffd166', this)"></div>
                 <div class="color-circle" style="background: #06d6a0;" onclick="changeColor('#06d6a0', this)"></div>
                 <div class="color-circle" style="background: #118ab2;" onclick="changeColor('#118ab2', this)"></div>
-                <button class="btn btn-clear" onclick="sendClear()">Limpar Tudo</button>
-                <button class="btn btn-draw" id="btn-role" onclick="toggleRole()" style="margin-left: auto;">Modo: Adivinhador</button>
+                <button class="btn btn-clear" onclick="sendClear()">Limpar</button>
+                <button class="btn btn-start-game" onclick="drawNewRound()" style="margin-left: auto;">Nova Rodada 🎲</button>
             </div>
         </div>
 
         <div id="chat-container">
             <div id="chat-messages"></div>
             <div id="chat-input-area">
-                <input type="text" id="chat-input" placeholder="Digite uma mensagem ou palpite..." autocomplete="off">
+                <input type="text" id="chat-input" placeholder="Digite seu palpite aqui..." autocomplete="off">
                 <button id="btn-send" class="btn" onclick="sendChatMessage()">Enviar</button>
             </div>
         </div>
@@ -284,7 +328,14 @@
         let baseTopic = "";
         const listaJogadores = new Set();
 
+        // Variáveis do Estado do Jogo
         let isDrawer = false;
+        let currentWord = "";
+        let currentDrawerName = "";
+        let roundActive = false;
+
+        const PALAVRAS = ["Cachorro", "Gato", "Carro", "Aviao", "Banana", "Maca", "Casa", "Arvore", "Bola", "Computador", "Celular", "Caneta", "Chave", "Livro", "Relogio", "Cadeira", "Garfo", "Sapato", "Oculos", "Sol", "Lua", "Flor", "Peixe", "Passaro"];
+
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         let drawing = false;
@@ -299,17 +350,25 @@
 
         window.addEventListener('resize', resizeCanvas);
 
+        // Eventos de Mouse
         canvas.addEventListener('mousedown', (e) => startDrawing(e.clientX, e.clientY));
         canvas.addEventListener('mousemove', (e) => draw(e.clientX, e.clientY));
         canvas.addEventListener('mouseup', stopDrawing);
         canvas.addEventListener('mouseout', stopDrawing);
 
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e.touches[0].clientX, e.touches[0].clientY); });
-        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e.touches[0].clientX, e.touches[0].clientY); });
+        // Eventos de Touch (Celular)
+        canvas.addEventListener('touchstart', (e) => { 
+            if (e.touches.length === 1) startDrawing(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => { 
+            if (e.touches.length === 1) draw(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: false });
+
         canvas.addEventListener('touchend', stopDrawing);
 
         function startDrawing(clientX, clientY) {
-            if (!isDrawer) return;
+            if (!isDrawer || !roundActive) return;
             drawing = true;
             const rect = canvas.getBoundingClientRect();
             const x = clientX - rect.left;
@@ -320,7 +379,7 @@
         }
 
         function draw(clientX, clientY) {
-            if (!drawing || !isDrawer) return;
+            if (!drawing || !isDrawer || !roundActive) return;
             const rect = canvas.getBoundingClientRect();
             const x = clientX - rect.left;
             const y = clientY - rect.top;
@@ -342,20 +401,6 @@
             element.classList.add('active');
         }
 
-        function toggleRole() {
-            isDrawer = !isDrawer;
-            const btn = document.getElementById('btn-role');
-            if (isDrawer) {
-                btn.innerText = "Modo: Desenhista";
-                btn.style.background = "#ef476f";
-                addSystemMessage("Você assumiu a lousa! Comece a desenhar.");
-            } else {
-                btn.innerText = "Modo: Adivinhador";
-                btn.style.background = "#06d6a0";
-                drawing = false;
-            }
-        }
-
         function connectToGame() {
             username = document.getElementById('input-username').value.trim();
             roomName = document.getElementById('input-room').value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -367,7 +412,8 @@
 
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('room-display').innerText = "Sala: " + roomName;
-            resizeCanvas();
+            
+            setTimeout(() => { resizeCanvas(); }, 100);
 
             adicionarJogadorLista(username);
             initMqtt();
@@ -375,7 +421,6 @@
 
         function initMqtt() {
             baseTopic = "gartic_clone_free_2026/" + roomName;
-            
             mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
 
             mqttClient.on('connect', () => {
@@ -383,12 +428,9 @@
                 mqttClient.subscribe(baseTopic + "/draw");
                 mqttClient.subscribe(baseTopic + "/presence");
                 mqttClient.subscribe(baseTopic + "/presence/echo");
+                mqttClient.subscribe(baseTopic + "/gameflow");
 
-                const identityPayload = JSON.stringify({ 
-                    sender: "Sistema", 
-                    text: `${username} entrou na sala.`, 
-                    name: username 
-                });
+                const identityPayload = JSON.stringify({ sender: "Sistema", text: `${username} entrou na sala.`, name: username });
                 mqttClient.publish(baseTopic + "/chat", identityPayload);
                 mqttClient.publish(baseTopic + "/presence", identityPayload);
             });
@@ -400,6 +442,8 @@
                     if (data.sender === "Sistema") {
                         addSystemMessage(data.text);
                         if (data.name) adicionarJogadorLista(data.name);
+                    } else if (data.isCorrect) {
+                        addSuccessMessage(data.sender, data.text);
                     } else {
                         renderNormalMessage(data.sender, data.text);
                     }
@@ -408,16 +452,58 @@
                 } else if (topic === baseTopic + "/presence") {
                     if (data.name && data.name !== username) {
                         adicionarJogadorLista(data.name);
-                        
-                        const respondPresence = JSON.stringify({ name: username });
-                        mqttClient.publish(baseTopic + "/presence/echo", respondPresence);
+                        mqttClient.publish(baseTopic + "/presence/echo", JSON.stringify({ name: username }));
                     }
                 } else if (topic === baseTopic + "/presence/echo") {
-                    if (data.name && data.name !== username) {
-                        adicionarJogadorLista(data.name);
-                    }
+                    if (data.name && data.name !== username) adicionarJogadorLista(data.name);
+                } else if (topic === baseTopic + "/gameflow") {
+                    handleGameFlow(data);
                 }
             });
+        }
+
+        // Lógica de Sorteio e Controle de Turnos
+        function drawNewRound() {
+            if (!mqttClient) return;
+            const playersArr = Array.from(listaJogadores);
+            if (playersArr.length === 0) return;
+
+            // Escolhe um desenhista e uma palavra aleatória do array
+            const randomDrawer = playersArr[Math.floor(Math.random() * playersArr.length)];
+            const randomWord = PALAVRAS[Math.floor(Math.random() * PALAVRAS.length)];
+
+            const flowPayload = JSON.stringify({
+                drawer: randomDrawer,
+                word: randomWord
+            });
+
+            mqttClient.publish(baseTopic + "/gameflow", flowPayload);
+        }
+
+        function handleGameFlow(data) {
+            currentDrawerName = data.drawer;
+            currentWord = data.word;
+            roundActive = true;
+
+            // Limpa o canvas automaticamente para a nova rodada
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Atualiza a UI visual dos nomes na lista lateral
+            document.querySelectorAll('.player-item').forEach(el => el.classList.remove('drawing'));
+            const drawerEl = document.getElementById("p-" + currentDrawerName.replace(/\s+/g, '-'));
+            if (drawerEl) drawerEl.classList.add('drawing');
+
+            if (currentDrawerName === username) {
+                isDrawer = true;
+                document.getElementById('word-display').innerText = "Sua Palavra: " + currentWord.toUpperCase();
+                addSystemMessage(`Sua vez de desenhar! Palavra: ${currentWord.toUpperCase()}`);
+            } else {
+                isDrawer = false;
+                // Exibe traços equivalentes ao tamanho da palavra secreta para os adivinhadores
+                let underscores = "_ ".repeat(currentWord.length).trim();
+                document.getElementById('word-display').innerText = "Desenho de " + currentDrawerName + " (" + underscores + ")";
+                addSystemMessage(`${currentDrawerName} está desenhando... tente adivinhar!`);
+            }
         }
 
         function adicionarJogadorLista(nome) {
@@ -425,6 +511,7 @@
             listaJogadores.add(nome);
 
             const container = document.getElementById('players-list');
+            if (!container) return;
             const item = document.createElement('div');
             item.className = "player-item";
             item.id = "p-" + nome.replace(/\s+/g, '-');
@@ -454,9 +541,7 @@
         function sendClear() {
             if (!isDrawer) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (mqttClient) {
-                mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action: 'clear' }));
-            }
+            if (mqttClient) mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action: 'clear' }));
         }
 
         function sendChatMessage() {
@@ -464,8 +549,25 @@
             const msgText = input.value.trim();
             if (!msgText || !mqttClient) return;
 
-            const payload = JSON.stringify({ sender: username, text: msgText });
-            mqttClient.publish(baseTopic + "/chat", payload);
+            // Tratamento básico para comparar strings sem caixa alta e espaços sobressalentes
+            const palpiteLimpo = msgText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const respostaLimpa = currentWord.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+            if (roundActive && !isDrawer && palpiteLimpo === respostaLimpa) {
+                // Notifica a sala inteira que houve um acerto
+                const payload = JSON.stringify({ 
+                    sender: username, 
+                    text: `Acertou a palavra secreta: ${currentWord.toUpperCase()}! 🎯`, 
+                    isCorrect: true 
+                });
+                mqttClient.publish(baseTopic + "/chat", payload);
+                
+                // Encerra a rodada atual
+                roundActive = false;
+            } else {
+                const payload = JSON.stringify({ sender: username, text: msgText, isCorrect: false });
+                mqttClient.publish(baseTopic + "/chat", payload);
+            }
             input.value = "";
         }
 
@@ -480,6 +582,16 @@
             m.innerText = text;
             chatMessages.appendChild(m);
             chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addSuccessMessage(sender, text) {
+            const chatMessages = document.getElementById('chat-messages');
+            const m = document.createElement('div');
+            m.className = "msg msg-success";
+            m.innerText = `${sender} ${text}`;
+            chatMessages.appendChild(m);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            document.getElementById('word-display').innerText = "Adivinhado! Aguarde a nova rodada.";
         }
 
         function renderNormalMessage(sender, text) {
