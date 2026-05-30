@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gartic Clone Realtime</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
@@ -19,7 +19,6 @@
             flex-direction: column;
             align-items: center;
             height: 100vh;
-            height: 100dvh;
             padding: 10px;
             overscroll-behavior: none;
             overflow: hidden;
@@ -279,27 +278,29 @@
             margin-left: 6px;
         }
 
-        /* Comportamento de Fluxo igual ao WhatsApp para Mobile */
+        /* Otimizações Mobile Críticas Completas */
         @media (max-width: 768px) {
             body { 
-                padding: 4px; 
+                padding: 5px;
+                overflow: hidden;
+                position: relative;
             }
             
             header { 
-                padding: 6px 12px; 
-                margin-bottom: 4px; 
-                border-radius: 12px;
-                gap: 6px;
-                height: 40px;
+                padding: 6px 10px; 
+                margin-bottom: 5px; 
+                border-radius: 10px;
+                gap: 5px;
+                height: 45px;
+                width: 100%;
             }
             
             h1 { font-size: 12px; }
             
             #word-display { 
                 font-size: 11px; 
-                padding: 3px 6px; 
-                border-radius: 8px;
-                line-height: 1.2;
+                padding: 2px 6px; 
+                border-radius: 6px;
                 flex: 1;
             }
             
@@ -310,60 +311,79 @@
             #timer-display { font-size: 10px; }
             
             #main-container {
+                position: absolute;
+                top: 60px;
+                left: 5px;
+                right: 5px;
+                bottom: 5px;
                 flex-direction: column;
-                flex: 1;
-                width: 100%;
-                gap: 4px;
+                display: flex !important; /* Força exibição correta */
+                height: auto;
+                gap: 5px;
             }
             
             #canvas-container { 
-                flex: none; 
-                height: 32vh; 
-                border-radius: 12px;
+                flex: none !important;
+                height: 40% !important; /* Trava o tamanho do desenho */
+                width: 100%;
+                border-radius: 10px;
+                display: flex;
+                flex-direction: column;
             }
             
             #tools {
-                height: 40px;
-                padding: 0 6px;
-                gap: 6px;
+                height: 38px;
+                padding: 0 5px;
+                gap: 5px;
             }
 
             .color-circle {
-                width: 22px;
-                height: 22px;
+                width: 20px;
+                height: 20px;
             }
 
             .btn {
                 padding: 4px 8px;
-                font-size: 11px;
+                font-size: 10px;
             }
             
-            /* O Chat vira o elemento elástico principal (igualmente ao campo de conversas do Whats) */
             #chat-container { 
-                flex: 1; 
-                border-radius: 12px;
+                flex: none !important;
+                height: calc(60% - 5px) !important; /* Preenche o resto estrito da tela */
+                width: 100%;
+                border-radius: 10px;
                 display: flex;
                 flex-direction: column;
                 overflow: hidden;
+                background: white;
+                position: relative;
             }
 
             #chat-messages {
-                flex: 1;
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 46px; /* Abre espaço exato para a barra estilo WhatsApp abaixo */
                 padding: 6px;
                 gap: 4px;
                 overflow-y: auto;
             }
 
             .msg {
-                padding: 4px 8px;
+                padding: 4px 6px;
                 font-size: 11px;
             }
             
             #chat-input-area {
-                padding: 6px;
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
                 height: 46px;
+                padding: 5px;
                 background: #f8f9fa;
-                display: flex;
+                display: flex !important;
                 align-items: center;
                 border-top: 1px solid #dee2e6;
             }
@@ -376,7 +396,7 @@
 
             #btn-send {
                 padding: 0 12px;
-                font-size: 13px;
+                font-size: 12px;
                 height: 100%;
                 margin-left: 4px;
                 display: flex;
@@ -384,7 +404,7 @@
                 justify-content: center;
             }
 
-            #scoreboard { display: none; }
+            #scoreboard { display: none !important; }
         }
     </style>
 </head>
@@ -470,16 +490,6 @@
 
         window.addEventListener('resize', resizeCanvas);
 
-        // Rolagem automática resiliente do chat ao detectar redimensionamento do teclado virtual
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', () => {
-                setTimeout(() => {
-                    const chatMessages = document.getElementById('chat-messages');
-                    if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
-                }, 80);
-            });
-        }
-
         // Eventos de Mouse
         canvas.addEventListener('mousedown', (e) => startDrawing(e.clientX, e.clientY));
         canvas.addEventListener('mousemove', (e) => draw(e.clientX, e.clientY));
@@ -543,7 +553,7 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('room-id').innerText = "Sala: " + roomName;
             
-            setTimeout(() => { resizeCanvas(); }, 150);
+            setTimeout(() => { resizeCanvas(); }, 200);
 
             adicionarJogadorLista(username);
             initMqtt();
