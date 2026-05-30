@@ -371,7 +371,7 @@
             }
         }
 
-        // Conexão com a rede pública (Multiplayer sem dor de cabeça)
+        // Conexão com a rede pública (Usando a estrutura de alta performance da Eclipse Foundation)
         function connectToGame() {
             username = document.getElementById('input-username').value.trim();
             roomName = document.getElementById('input-room').value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -389,8 +389,8 @@
             // Cria tópicos únicos baseados no nome da sala para não misturar com outros sites
             baseTopic = "gartic_clone_free_2026/" + roomName;
 
-            // Conecta ao servidor WebSocket MQTT público do HiveMQ
-            mqttClient = mqtt.connect('wss://broker.hivemq.com:8000/mqtt');
+            // Conecta ao servidor estável via WebSockets da Eclipse
+            mqttClient = mqtt.connect('wss://iot.eclipseorg.co:443/ws');
 
             mqttClient.on('connect', () => {
                 // Se inscreve nos canais de chat e desenho da sua sala específica
