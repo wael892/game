@@ -318,14 +318,14 @@
                 right: 5px;
                 bottom: 5px;
                 flex-direction: column;
-                display: flex !important; /* Força exibição correta */
+                display: flex !important;
                 height: auto;
                 gap: 5px;
             }
             
             #canvas-container { 
                 flex: none !important;
-                height: 40% !important; /* Trava o tamanho do desenho */
+                height: 40% !important;
                 width: 100%;
                 border-radius: 10px;
                 display: flex;
@@ -350,7 +350,7 @@
             
             #chat-container { 
                 flex: none !important;
-                height: calc(60% - 5px) !important; /* Preenche o resto estrito da tela */
+                height: calc(60% - 5px) !important;
                 width: 100%;
                 border-radius: 10px;
                 display: flex;
@@ -365,7 +365,7 @@
                 top: 0;
                 left: 0;
                 right: 0;
-                bottom: 46px; /* Abre espaço exato para a barra estilo WhatsApp abaixo */
+                bottom: 48px;
                 padding: 6px;
                 gap: 4px;
                 overflow-y: auto;
@@ -381,8 +381,8 @@
                 bottom: 0;
                 left: 0;
                 right: 0;
-                height: 46px;
-                padding: 5px;
+                height: 48px;
+                padding: 6px;
                 background: #f8f9fa;
                 display: flex !important;
                 align-items: center;
@@ -390,16 +390,17 @@
             }
 
             #chat-input {
-                padding: 6px;
-                font-size: 14px;
+                padding: 8px;
+                font-size: 16px; /* 16px impede o zoom automático indesejado no Safari/iOS */
                 height: 100%;
+                border: 1px solid #ced4da;
             }
 
             #btn-send {
-                padding: 0 12px;
-                font-size: 12px;
+                padding: 0 14px;
+                font-size: 13px;
                 height: 100%;
-                margin-left: 4px;
+                margin-left: 6px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -473,19 +474,17 @@
         // Controle de Tempo Local
         let countdownInterval = null;
         let nextRoundTimeout = null;
-        const TEMPO_RODADA = 60; // Tempo em segundos de cada turno
+        const TEMPO_RODADA = 60;
 
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         let drawing = false;
         let currentColor = '#000000';
 
-        // Armazena a largura inicial do dispositivo para identificar mudanças reais de orientação do celular
         let initialScreenWidth = window.innerWidth;
 
         const PALAVRAS = ["Cachorro", "Gato", "Carro", "Aviao", "Banana", "Maca", "Casa", "Arvore", "Bola", "Computador", "Celular", "Caneta", "Chave", "Livro", "Relogio", "Cadeira", "Garfo", "Sapato", "Oculos", "Sol", "Lua", "Flor", "Peixe", "Passaro"];
 
-        // Bloqueia o tamanho do body baseado na dimensão real calculada via JS, evitando colapsos com o teclado
         function ajustarAlturaJanela() {
             document.body.style.height = window.innerHeight + "px";
         }
@@ -494,7 +493,6 @@
         ajustarAlturaJanela();
 
         function resizeCanvas() {
-            // Evita redefinir o tamanho do canvas (o que limpa a tela) se a largura não mudou (ou seja, apenas o teclado abriu)
             if (window.innerWidth === initialScreenWidth && canvas.width > 0) {
                 return;
             }
