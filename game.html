@@ -101,6 +101,16 @@
             font-weight: bold;
             color: #666;
             font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
+
+        #timer-display {
+            font-weight: bold;
+            color: #ef476f;
+            font-size: 14px;
         }
 
         #main-container {
@@ -204,7 +214,6 @@
         }
 
         .btn-clear { background: #ef476f; color: white; }
-        .btn-start-game { background: #118ab2; color: white; }
 
         /* Painel do Chat */
         #chat-container {
@@ -289,8 +298,11 @@
 
     <header>
         <h1>GARTIC</h1>
-        <div id="word-display">Aguardando rodada...</div>
-        <div id="room-display">Sala: Não conectado</div>
+        <div id="word-display">Aguardando jogadores...</div>
+        <div id="room-display">
+            <span id="room-id">Sala: Não conectado</span>
+            <span id="timer-display">Tempo: --</span>
+        </div>
     </header>
 
     <div id="main-container">
@@ -308,7 +320,6 @@
                 <div class="color-circle" style="background: #06d6a0;" onclick="changeColor('#06d6a0', this)"></div>
                 <div class="color-circle" style="background: #118ab2;" onclick="changeColor('#118ab2', this)"></div>
                 <button class="btn btn-clear" onclick="sendClear()">Limpar</button>
-                <button class="btn btn-start-game" onclick="drawNewRound()" style="margin-left: auto;">Próxima Rodada 🎲</button>
             </div>
         </div>
 
@@ -334,6 +345,11 @@
         let currentDrawerName = "";
         let roundActive = false;
         let currentDrawerIndex = -1;
+        
+        // Controle de Tempo Local
+        let countdownInterval = null;
+        let nextRoundTimeout = null;
+        const TEMPO_RODADA = 60; // Tempo em segundos de cada turno
 
         const PALAVRAS = ["Cachorro", "Gato", "Carro", "Aviao", "Banana", "Maca", "Casa", "Arvore", "Bola", "Computador", "Celular", "Caneta", "Chave", "Livro", "Relogio", "Cadeira", "Garfo", "Sapato", "Oculos", "Sol", "Lua", "Flor", "Peixe", "Passaro"];
 
@@ -412,7 +428,7 @@
             }
 
             document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('room-display').innerText = "Sala: " + roomName;
+            document.getElementById('room-id').innerText = "Sala: " + roomName;
             
             setTimeout(() => { resizeCanvas(); }, 100);
 
@@ -434,6 +450,11 @@
                 const identityPayload = JSON.stringify({ sender: "Sistema", text: `${username} entrou na sala.`, name: username });
                 mqttClient.publish(baseTopic + "/chat", identityPayload);
                 mqttClient.publish(baseTopic + "/presence", identityPayload);
+
+                // Pequeno delay inicial para carregar a lista de players e rodar o fluxo automático
+                setTimeout(() => {
+                    checkAndAutoStart();
+                }, 2000);
             });
 
             mqttClient.on('message', (topic, message) => {
@@ -442,9 +463,13 @@
                 if (topic === baseTopic + "/chat") {
                     if (data.sender === "Sistema") {
                         addSystemMessage(data.text);
-                        if (data.name) adicionarJogadorLista(data.name);
+                        if (data.name) {
+                            adicionarJogadorLista(data.name);
+                            checkAndAutoStart();
+                        }
                     } else if (data.isCorrect) {
                         addSuccessMessage(data.sender, data.text);
+                        handleRoundEndAutomatically();
                     } else {
                         renderNormalMessage(data.sender, data.text);
                     }
@@ -454,22 +479,36 @@
                     if (data.name && data.name !== username) {
                         adicionarJogadorLista(data.name);
                         mqttClient.publish(baseTopic + "/presence/echo", JSON.stringify({ name: username }));
+                        checkAndAutoStart();
                     }
                 } else if (topic === baseTopic + "/presence/echo") {
-                    if (data.name && data.name !== username) adicionarJogadorLista(data.name);
+                    if (data.name && data.name !== username) {
+                        adicionarJogadorLista(data.name);
+                        checkAndAutoStart();
+                    }
                 } else if (topic === baseTopic + "/gameflow") {
                     handleGameFlow(data);
                 }
             });
         }
 
-        // Lógica de Ordem Sequencial e Controle de Turnos
+        // Verifica se nenhuma rodada está ativa para engatar a primeira automaticamente
+        function checkAndAutoStart() {
+            if (!roundActive && currentDrawerName === "" && listaJogadores.size > 0) {
+                // Apenas o primeiro jogador da lista dispara a chamada inicial para evitar sobreposição
+                const playersArr = Array.from(listaJogadores);
+                if (playersArr[0] === username) {
+                    drawNewRound();
+                }
+            }
+        }
+
+        // Dispara sequencialmente a nova rodada via MQTT
         function drawNewRound() {
             if (!mqttClient) return;
             const playersArr = Array.from(listaJogadores);
             if (playersArr.length === 0) return;
 
-            // Incrementa o índice atual e rotaciona sequencialmente usando o operador de resto (%)
             currentDrawerIndex = (currentDrawerIndex + 1) % playersArr.length;
             const nextDrawer = playersArr[currentDrawerIndex];
             const randomWord = PALAVRAS[Math.floor(Math.random() * PALAVRAS.length)];
@@ -484,15 +523,17 @@
         }
 
         function handleGameFlow(data) {
+            // Limpa loops anteriores e timeouts ativos de transição
+            clearInterval(countdownInterval);
+            clearTimeout(nextRoundTimeout);
+
             currentDrawerName = data.drawer;
             currentWord = data.word;
-            currentDrawerIndex = data.currentIndex; // Sincroniza o index entre as janelas dos clientes
+            currentDrawerIndex = data.currentIndex;
             roundActive = true;
 
-            // Limpa o canvas automaticamente para a nova rodada
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Atualiza a UI visual dos nomes na lista lateral
             document.querySelectorAll('.player-item').forEach(el => el.classList.remove('drawing'));
             const drawerEl = document.getElementById("p-" + currentDrawerName.replace(/\s+/g, '-'));
             if (drawerEl) drawerEl.classList.add('drawing');
@@ -503,10 +544,42 @@
                 addSystemMessage(`Sua vez de desenhar! Palavra: ${currentWord.toUpperCase()}`);
             } else {
                 isDrawer = false;
-                // Exibe traços equivalentes ao tamanho da palavra secreta para os adivinhadores
                 let underscores = "_ ".repeat(currentWord.length).trim();
                 document.getElementById('word-display').innerText = "Desenho de " + currentDrawerName + " (" + underscores + ")";
                 addSystemMessage(`${currentDrawerName} está desenhando... tente adivinhar!`);
+            }
+
+            startLocalTimer(TEMPO_RODADA);
+        }
+
+        // Timer regressivo visual e funcional
+        function startLocalTimer(seconds) {
+            let timeLeft = seconds;
+            document.getElementById('timer-display').innerText = "Tempo: " + timeLeft + "s";
+
+            countdownInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    document.getElementById('timer-display').innerText = "Tempo: Esgotado!";
+                    addSystemMessage(`O tempo acabou! A palavra era: ${currentWord.toUpperCase()}`);
+                    handleRoundEndAutomatically();
+                } else {
+                    document.getElementById('timer-display').innerText = "Tempo: " + timeLeft + "s";
+                }
+            }, 1000);
+        }
+
+        // Controla o encerramento e engata a próxima rodada sem cliques de botão
+        function handleRoundEndAutomatically() {
+            roundActive = false;
+            clearInterval(countdownInterval);
+
+            // Apenas o desenhista atual gerencia o gatilho da próxima rodada para sincronizar a fila do broker
+            if (currentDrawerName === username) {
+                nextRoundTimeout = setTimeout(() => {
+                    drawNewRound();
+                }, 4000); // Espera 4 segundos para os players verem o resultado do chat e muda de turno
             }
         }
 
@@ -553,21 +626,16 @@
             const msgText = input.value.trim();
             if (!msgText || !mqttClient) return;
 
-            // Tratamento básico para comparar strings sem caixa alta e espaços sobressalentes
             const palpiteLimpo = msgText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             const respostaLimpa = currentWord.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
             if (roundActive && !isDrawer && palpiteLimpo === respostaLimpa) {
-                // Notifica a sala inteira que houve um acerto
                 const payload = JSON.stringify({ 
                     sender: username, 
                     text: `Acertou a palavra secreta: ${currentWord.toUpperCase()}! 🎯`, 
                     isCorrect: true 
                 });
                 mqttClient.publish(baseTopic + "/chat", payload);
-                
-                // Encerra a rodada atual
-                roundActive = false;
             } else {
                 const payload = JSON.stringify({ sender: username, text: msgText, isCorrect: false });
                 mqttClient.publish(baseTopic + "/chat", payload);
@@ -595,7 +663,7 @@
             m.innerText = `${sender} ${text}`;
             chatMessages.appendChild(m);
             chatMessages.scrollTop = chatMessages.scrollHeight;
-            document.getElementById('word-display').innerText = "Adivinhado! Aguarde a nova rodada.";
+            document.getElementById('word-display').innerText = "Adivinhado! Próxima rodada em instantes...";
         }
 
         function renderNormalMessage(sender, text) {
