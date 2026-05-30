@@ -301,13 +301,11 @@
         let mqttClient = null;
         let baseTopic = "";
         
-        // Variáveis do Sistema de Vídeo WebRTC
         let myPeer = null;
         let myPeerId = "";
         let localStream = null;
         const peersConectados = {};
 
-        // Controle de Desenho
         let isDrawer = false;
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -321,7 +319,8 @@
             ctx.lineWidth = 4;
         }
 
-        // Eventos de Input na Lousa
+        window.addEventListener('resize', resizeCanvas);
+
         canvas.addEventListener('mousedown', (e) => startDrawing(e.clientX, e.clientY));
         canvas.addEventListener('mousemove', (e) => draw(e.clientX, e.clientY));
         canvas.addEventListener('mouseup', stopDrawing);
@@ -379,7 +378,6 @@
             }
         }
 
-        // Inicializa o fluxo de áudio e vídeo e se conecta na rede
         function connectToGame() {
             username = document.getElementById('input-username').value.trim();
             roomName = document.getElementById('input-room').value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -389,7 +387,6 @@
                 return;
             }
 
-            // Pede permissão para acessar Câmera e Microfone do computador/celular
             navigator.mediaDevices.getUserMedia({
                 video: true,
                 audio: true
@@ -399,10 +396,7 @@
                 document.getElementById('room-display').innerText = "Sala: " + roomName;
                 resizeCanvas();
 
-                // Adiciona o seu próprio vídeo quadrado no painel esquerdo
-                addVideoStream(localStream, username, true);
-
-                // Inicializa o servidor de sinalização WebRTC para as conexões de vídeo
+                addVideoStream(localStream, username, true, "my-local-video");
                 initPeerServer();
             }).catch(err => {
                 alert("Erro ao acessar câmera/microfone. Ative as permissões para jogar com vídeo!");
@@ -411,7 +405,6 @@
         }
 
         function initPeerServer() {
-            // Cria um identificador único de chamada p2p baseado na sala para não cruzar dados
             myPeer = new Peer(undefined, {
                 host: '0.peerjs.com',
                 port: 443,
@@ -420,37 +413,37 @@
 
             myPeer.on('open', id => {
                 myPeerId = id;
-                // Depois de gerar a sua linha telefônica virtual, conecta ao servidor de mensagens do Gartic
                 initMqtt();
             });
 
-            // Escuta quando algum outro jogador ligar para a sua câmera
             myPeer.on('call', call => {
-                // Atende a chamada enviando o seu fluxo de vídeo de volta
                 call.answer(localStream);
                 
-                // Recebe o sinal de vídeo da outra pessoa e coloca na tela
-                const remoteVideo = document.createElement('video');
+                const peerUser = call.metadata?.user || "Jogador";
                 call.on('stream', userVideoStream => {
-                    // O nome será capturado e atualizado via sincronismo de rede
-                    addVideoStream(userVideoStream, call.metadata?.user || "Jogador", false, call.peer);
+                    addVideoStream(userVideoStream, peerUser, false, call.peer);
                 });
+
+                peersConectados[call.peer] = call;
             });
         }
 
         function initMqtt() {
             baseTopic = "gartic_clone_free_2026/" + roomName;
             
-            // Conecta ao servidor estável e aberto da Eclipse Foundation
-            mqttClient = mqtt.connect('wss://iot.eclipseorg.co:443/ws');
+            mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
 
             mqttClient.on('connect', () => {
                 mqttClient.subscribe(baseTopic + "/chat");
                 mqttClient.subscribe(baseTopic + "/draw");
                 mqttClient.subscribe(baseTopic + "/presence");
 
-                // Envia para a rede o seu apelido e o ID da sua câmera para que os outros te liguem
-                const identityPayload = JSON.stringify({ sender: "Sistema", text: `${username} entrou na sala.`, peerId: myPeerId, name: username });
+                const identityPayload = JSON.stringify({ 
+                    sender: "Sistema", 
+                    text: `${username} entrou na sala.`, 
+                    peerId: myPeerId, 
+                    name: username 
+                });
                 mqttClient.publish(baseTopic + "/chat", identityPayload);
                 mqttClient.publish(baseTopic + "/presence", identityPayload);
             });
@@ -466,4 +459,134 @@
                     }
                 } else if (topic === baseTopic + "/draw" && !isDrawer) {
                     renderRemoteDraw(data);
-                } else if (topic === baseTopic
+                } else if (topic === baseTopic + "/presence") {
+                    if (data.peerId && data.peerId !== myPeerId && !peersConectados[data.peerId]) {
+                        ligarParaPeer(data.peerId, data.name);
+                        
+                        const respondPresence = JSON.stringify({
+                            peerId: myPeerId,
+                            name: username
+                        });
+                        mqttClient.publish(baseTopic + "/presence/echo", respondPresence);
+                    }
+                } else if (topic === baseTopic + "/presence/echo") {
+                    if (data.peerId && data.peerId !== myPeerId && !peersConectados[data.peerId]) {
+                        ligarParaPeer(data.peerId, data.name);
+                    }
+                }
+            });
+
+            mqttClient.subscribe(baseTopic + "/presence/echo");
+        }
+
+        function ligarParaPeer(peerId, remotoNome) {
+            const options = { metadata: { user: username } };
+            const call = myPeer.call(peerId, localStream, options);
+            
+            call.on('stream', userVideoStream => {
+                addVideoStream(userVideoStream, remotoNome, false, peerId);
+            });
+
+            call.on('close', () => {
+                removerVideo(peerId);
+            });
+
+            peersConectados[peerId] = call;
+        }
+
+        function addVideoStream(stream, labelText, isLocal, idElemento) {
+            if (document.getElementById(idElemento)) return;
+
+            const grid = document.getElementById('video-grid');
+            const container = document.createElement('div');
+            container.classList.add('video-container');
+            container.id = idElemento;
+
+            const video = document.createElement('video');
+            video.srcObject = stream;
+            video.autoplay = true;
+            video.playsInline = true;
+            if (isLocal) video.muted = true;
+
+            const label = document.createElement('div');
+            label.classList.add('video-label');
+            label.innerText = labelText;
+
+            container.appendChild(video);
+            container.appendChild(label);
+            grid.appendChild(container);
+        }
+
+        function removerVideo(peerId) {
+            const videoElem = document.getElementById(peerId);
+            if (videoElem) videoElem.remove();
+            if (peersConectados[peerId]) delete peersConectados[peerId];
+        }
+
+        function sendDrawData(action, x, y, color) {
+            if (!mqttClient) return;
+            const payload = JSON.stringify({ action, x, y, color });
+            mqttClient.publish(baseTopic + "/draw", payload);
+        }
+
+        function renderRemoteDraw(data) {
+            ctx.strokeStyle = data.color;
+            if (data.action === 'start') {
+                ctx.beginPath();
+                ctx.moveTo(data.x, data.y);
+            } else if (data.action === 'draw') {
+                ctx.lineTo(data.x, data.y);
+                ctx.stroke();
+            } else if (data.action === 'clear') {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        function sendClear() {
+            if (!isDrawer) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (mqttClient) {
+                mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action: 'clear' }));
+            }
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const msgText = input.value.trim();
+            if (!msgText || !mqttClient) return;
+
+            const payload = JSON.stringify({ sender: username, text: msgText });
+            mqttClient.publish(baseTopic + "/chat", payload);
+            input.value = "";
+        }
+
+        document.getElementById('chat-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendChatMessage();
+        });
+
+        function addSystemMessage(text) {
+            const chatMessages = document.getElementById('chat-messages');
+            const m = document.createElement('div');
+            m.className = "msg msg-system";
+            m.innerText = text;
+            chatMessages.appendChild(m);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function renderNormalMessage(sender, text) {
+            const chatMessages = document.getElementById('chat-messages');
+            const m = document.createElement('div');
+            m.className = "msg msg-normal";
+            
+            const spanName = document.createElement('span');
+            spanName.className = "username";
+            spanName.innerText = sender + ": ";
+
+            m.appendChild(spanName);
+            m.appendChild(document.createTextNode(text));
+            chatMessages.appendChild(m);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    </script>
+</body>
+</html>
