@@ -19,6 +19,7 @@
             flex-direction: column;
             align-items: center;
             height: 100vh;
+            height: -webkit-fill-available; /* Suporte para navegadores iOS */
             padding: 10px;
             overscroll-behavior: none;
             overflow: hidden;
@@ -369,7 +370,7 @@
                 gap: 4px;
                 overflow-y: auto;
             }
-
+            
             .msg {
                 padding: 4px 6px;
                 font-size: 11px;
@@ -479,9 +480,26 @@
         let drawing = false;
         let currentColor = '#000000';
 
+        // Armazena a largura inicial do dispositivo para identificar mudanças reais de orientação do celular
+        let initialScreenWidth = window.innerWidth;
+
         const PALAVRAS = ["Cachorro", "Gato", "Carro", "Aviao", "Banana", "Maca", "Casa", "Arvore", "Bola", "Computador", "Celular", "Caneta", "Chave", "Livro", "Relogio", "Cadeira", "Garfo", "Sapato", "Oculos", "Sol", "Lua", "Flor", "Peixe", "Passaro"];
 
+        // Bloqueia o tamanho do body baseado na dimensão real calculada via JS, evitando colapsos com o teclado
+        function ajustarAlturaJanela() {
+            document.body.style.height = window.innerHeight + "px";
+        }
+        window.addEventListener('resize', ajustarAlturaJanela);
+        window.addEventListener('load', ajustarAlturaJanela);
+        ajustarAlturaJanela();
+
         function resizeCanvas() {
+            // Evita redefinir o tamanho do canvas (o que limpa a tela) se a largura não mudou (ou seja, apenas o teclado abriu)
+            if (window.innerWidth === initialScreenWidth && canvas.width > 0) {
+                return;
+            }
+            initialScreenWidth = window.innerWidth;
+
             canvas.width = canvas.clientWidth;
             canvas.height = canvas.clientHeight;
             ctx.lineCap = 'round';
