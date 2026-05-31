@@ -19,13 +19,12 @@
             flex-direction: column;
             align-items: center;
             height: 100vh;
-            height: -webkit-fill-available; /* Suporte para navegadores iOS */
+            height: -webkit-fill-available;
             padding: 10px;
             overscroll-behavior: none;
             overflow: hidden;
         }
 
-        /* Tela de Login */
         #login-screen {
             position: fixed;
             top: 0;
@@ -36,7 +35,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000; /* Z-index alto para garantir que fique no topo de tudo */
+            z-index: 1000;
         }
 
         .login-box {
@@ -68,7 +67,6 @@
             border-color: #118ab2;
         }
 
-        /* Estrutura Principal */
         header {
             text-align: center;
             margin-bottom: 10px;
@@ -129,7 +127,6 @@
             overflow: hidden;
         }
 
-        /* Painel Lateral de Jogadores */
         #scoreboard {
             flex: 1;
             background: white;
@@ -175,7 +172,46 @@
             background: #ffe3e8;
         }
 
-        /* Painel de Desenho */
+        /* Pontuação no player item */
+        .player-score {
+            background: #118ab2;
+            color: white;
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 12px;
+            font-weight: bold;
+            min-width: 36px;
+            text-align: center;
+            transition: transform 0.2s, background 0.3s;
+        }
+
+        .player-item.drawing .player-score {
+            background: #ef476f;
+        }
+
+        .player-score.bump {
+            transform: scale(1.4);
+            background: #06d6a0 !important;
+        }
+
+        /* Notificação de pontos flutuantes */
+        .score-popup {
+            position: fixed;
+            pointer-events: none;
+            font-size: 22px;
+            font-weight: bold;
+            color: #06d6a0;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.25);
+            animation: floatUp 1.4s ease-out forwards;
+            z-index: 9999;
+        }
+
+        @keyframes floatUp {
+            0%   { opacity: 1; transform: translateY(0) scale(1); }
+            60%  { opacity: 1; transform: translateY(-40px) scale(1.15); }
+            100% { opacity: 0; transform: translateY(-70px) scale(0.9); }
+        }
+
         #canvas-container {
             flex: 3;
             background: white;
@@ -191,7 +227,7 @@
             flex: 1;
             background: #ffffff;
             cursor: crosshair;
-            touch-action: none; 
+            touch-action: none;
             width: 100%;
             height: 100%;
         }
@@ -233,7 +269,6 @@
 
         .btn-clear { background: #ef476f; color: white; }
 
-        /* Painel do Chat */
         #chat-container {
             flex: 1.5;
             background: white;
@@ -261,9 +296,9 @@
             line-height: 1.4;
         }
 
-        .msg-system { background: #e2f0d9; color: #385723; font-weight: bold; }
+        .msg-system  { background: #e2f0d9; color: #385723; font-weight: bold; }
         .msg-success { background: #d1e7dd; color: #0f5132; font-weight: bold; border: 1px solid #badbcc; }
-        .msg-normal { background: #f1f3f5; color: #333; }
+        .msg-normal  { background: #f1f3f5; color: #333; }
         .msg-normal .username { font-weight: bold; color: #118ab2; }
 
         #chat-input-area {
@@ -289,38 +324,34 @@
             margin-left: 6px;
         }
 
-        /* Otimizações Mobile */
         @media (max-width: 768px) {
-            body { 
+            body {
                 padding: 5px;
                 overflow: hidden;
                 position: relative;
             }
-            
-            header { 
-                padding: 6px 10px; 
-                margin-bottom: 5px; 
+
+            header {
+                padding: 6px 10px;
+                margin-bottom: 5px;
                 border-radius: 10px;
                 gap: 5px;
                 height: 45px;
                 width: 100%;
             }
-            
+
             h1 { font-size: 12px; }
-            
-            #word-display { 
-                font-size: 11px; 
-                padding: 2px 6px; 
+
+            #word-display {
+                font-size: 11px;
+                padding: 2px 6px;
                 border-radius: 6px;
                 flex: 1;
             }
-            
-            #room-display { 
-                font-size: 9px; 
-            }
-            
+
+            #room-display { font-size: 9px; }
             #timer-display { font-size: 10px; }
-            
+
             #main-container {
                 position: absolute;
                 top: 60px;
@@ -346,9 +377,7 @@
                 box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             }
 
-            #scoreboard h3 {
-                display: none !important;
-            }
+            #scoreboard h3 { display: none !important; }
 
             #players-list {
                 margin-top: 0;
@@ -370,36 +399,35 @@
                 border-radius: 4px;
                 display: inline-flex;
                 align-items: center;
+                gap: 6px;
             }
-            
-            #canvas-container { 
+
+            .player-score {
+                font-size: 10px;
+                padding: 1px 6px;
+            }
+
+            #canvas-container {
                 flex: none !important;
-                height: 55% !important; 
+                height: 55% !important;
                 width: 100%;
                 border-radius: 10px;
                 display: flex;
                 flex-direction: column;
             }
-            
+
             #tools {
                 height: 38px;
                 padding: 0 5px;
                 gap: 5px;
             }
 
-            .color-circle {
-                width: 22px;
-                height: 22px;
-            }
+            .color-circle { width: 22px; height: 22px; }
+            .btn { padding: 4px 10px; font-size: 11px; }
 
-            .btn {
-                padding: 4px 10px;
-                font-size: 11px;
-            }
-            
-            #chat-container { 
+            #chat-container {
                 flex: none !important;
-                height: calc(45% - 45px) !important; 
+                height: calc(45% - 45px) !important;
                 width: 100%;
                 border-radius: 10px;
                 display: flex;
@@ -411,25 +439,17 @@
 
             #chat-messages {
                 position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 48px;
+                top: 0; left: 0; right: 0; bottom: 48px;
                 padding: 6px;
                 gap: 4px;
                 overflow-y: auto;
             }
-            
-            .msg {
-                padding: 4px 6px;
-                font-size: 11px;
-            }
-            
+
+            .msg { padding: 4px 6px; font-size: 11px; }
+
             #chat-input-area {
                 position: absolute;
-                bottom: 0;
-                left: 0;
-                right: 0;
+                bottom: 0; left: 0; right: 0;
                 height: 48px;
                 padding: 6px;
                 background: #f8f9fa;
@@ -511,16 +531,61 @@
         let baseTopic = "";
         const listaJogadores = new Set();
 
-        // Variáveis do Estado do Jogo
+        // --- PONTUAÇÃO ---
+        const scores = {}; // { nome: pontos }
+        let roundStartTime = null; // para calcular pontuação por velocidade
+
+        function getScore(nome) {
+            return scores[nome] || 0;
+        }
+
+        function addScore(nome, pts) {
+            if (!scores[nome]) scores[nome] = 0;
+            scores[nome] += pts;
+            updatePlayerScoreDisplay(nome);
+        }
+
+        function updatePlayerScoreDisplay(nome) {
+            const id = "p-" + nome.replace(/\s+/g, '-');
+            const el = document.getElementById(id);
+            if (!el) return;
+            const scoreEl = el.querySelector('.player-score');
+            if (scoreEl) {
+                scoreEl.textContent = scores[nome] || 0;
+                scoreEl.classList.add('bump');
+                setTimeout(() => scoreEl.classList.remove('bump'), 350);
+            }
+        }
+
+        function showScorePopup(pts, nome) {
+            const playerEl = document.getElementById("p-" + nome.replace(/\s+/g, '-'));
+            if (!playerEl) return;
+            const rect = playerEl.getBoundingClientRect();
+            const popup = document.createElement('div');
+            popup.className = 'score-popup';
+            popup.textContent = '+' + pts + ' pts';
+            popup.style.left = (rect.left + rect.width / 2 - 30) + 'px';
+            popup.style.top  = (rect.top - 10) + 'px';
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 1500);
+        }
+
+        // Calcula pontos baseado no tempo restante
+        function calcPoints(timeLeft) {
+            // Entre 50 (acertou no último segundo) e 150 (acertou imediatamente)
+            return Math.max(50, Math.round(50 + (timeLeft / TEMPO_RODADA) * 100));
+        }
+        // --- FIM PONTUAÇÃO ---
+
         let isDrawer = false;
         let currentWord = "";
         let currentDrawerName = "";
         let roundActive = false;
         let currentDrawerIndex = -1;
-        
-        // Controle de Tempo Local
+
         let countdownInterval = null;
         let nextRoundTimeout = null;
+        let currentTimeLeft = 0;
         const TEMPO_RODADA = 60;
 
         const canvas = document.getElementById('canvas');
@@ -531,7 +596,7 @@
         const VIRTUAL_WIDTH = 800;
         const VIRTUAL_HEIGHT = 600;
 
-        const PALAVRAS = ["Cachorro", "Gato", "Carro", "Aviao", "Banana", "Maca", "Casa", "Arvore", "Bola", "Computador", "Celular", "Caneta", "Chave", "Livro", "Relogio", "Cadeira", "Garfo", "Sapato", "Oculos", "Sol", "Lua", "Flor", "Peixe", "Passaro"];
+        const PALAVRAS = ["Cachorro","Gato","Carro","Aviao","Banana","Maca","Casa","Arvore","Bola","Computador","Celular","Caneta","Chave","Livro","Relogio","Cadeira","Garfo","Sapato","Oculos","Sol","Lua","Flor","Peixe","Passaro"];
 
         function ajustarAlturaJanela() {
             document.body.style.height = window.innerHeight + "px";
@@ -544,54 +609,30 @@
             canvas.width = VIRTUAL_WIDTH;
             canvas.height = VIRTUAL_HEIGHT;
             ctx.lineCap = 'round';
-            ctx.lineWidth = 6; 
+            ctx.lineWidth = 6;
         }
         initCanvasResolution();
 
         function getCanvasCoordinates(clientX, clientY) {
             const rect = canvas.getBoundingClientRect();
-            const physicalX = clientX - rect.left;
-            const physicalY = clientY - rect.top;
-            
-            const virtualX = (physicalX / rect.width) * canvas.width;
-            const virtualY = (physicalY / rect.height) * canvas.height;
-            
-            return { x: virtualX, y: virtualY };
+            return {
+                x: ((clientX - rect.left) / rect.width)  * canvas.width,
+                y: ((clientY - rect.top)  / rect.height) * canvas.height
+            };
         }
 
-        // Eventos de Mouse
-        canvas.addEventListener('mousedown', (e) => {
-            const coords = getCanvasCoordinates(e.clientX, e.clientY);
-            startDrawing(coords.x, coords.y);
-        });
-        canvas.addEventListener('mousemove', (e) => {
-            const coords = getCanvasCoordinates(e.clientX, e.clientY);
-            draw(coords.x, coords.y);
-        });
+        canvas.addEventListener('mousedown', (e) => { const c = getCanvasCoordinates(e.clientX, e.clientY); startDrawing(c.x, c.y); });
+        canvas.addEventListener('mousemove', (e) => { const c = getCanvasCoordinates(e.clientX, e.clientY); draw(c.x, c.y); });
         canvas.addEventListener('mouseup', stopDrawing);
         canvas.addEventListener('mouseout', stopDrawing);
 
-        // Eventos de Toque Mobile salvaguardados estritamente dentro do elemento Canvas
-        canvas.addEventListener('touchstart', (e) => { 
-            if (e.touches.length === 1) {
-                e.preventDefault();
-                const coords = getCanvasCoordinates(e.touches[0].clientX, e.touches[0].clientY);
-                startDrawing(coords.x, coords.y);
-            }
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) { e.preventDefault(); const c = getCanvasCoordinates(e.touches[0].clientX, e.touches[0].clientY); startDrawing(c.x, c.y); }
         }, { passive: false });
-
-        canvas.addEventListener('touchmove', (e) => { 
-            if (e.touches.length === 1) {
-                e.preventDefault();
-                const coords = getCanvasCoordinates(e.touches[0].clientX, e.touches[0].clientY);
-                draw(coords.x, coords.y);
-            }
+        canvas.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1) { e.preventDefault(); const c = getCanvasCoordinates(e.touches[0].clientX, e.touches[0].clientY); draw(c.x, c.y); }
         }, { passive: false });
-
-        canvas.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            stopDrawing();
-        });
+        canvas.addEventListener('touchend', (e) => { e.preventDefault(); stopDrawing(); });
 
         function startDrawing(x, y) {
             if (!isDrawer || !roundActive) return;
@@ -624,15 +665,9 @@
         function connectToGame() {
             username = document.getElementById('input-username').value.trim();
             roomName = document.getElementById('input-room').value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
-
-            if (!username || !roomName) {
-                alert("Por favor, digite seu nome e o nome da sala!");
-                return;
-            }
-
+            if (!username || !roomName) { alert("Por favor, digite seu nome e o nome da sala!"); return; }
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('room-id').innerText = "Sala: " + roomName;
-            
             adicionarJogadorLista(username);
             initMqtt();
         }
@@ -647,14 +682,13 @@
                 mqttClient.subscribe(baseTopic + "/presence");
                 mqttClient.subscribe(baseTopic + "/presence/echo");
                 mqttClient.subscribe(baseTopic + "/gameflow");
+                mqttClient.subscribe(baseTopic + "/scores");  // novo canal de pontuação
 
                 const identityPayload = JSON.stringify({ sender: "Sistema", text: `${username} entrou na sala.`, name: username });
                 mqttClient.publish(baseTopic + "/chat", identityPayload);
                 mqttClient.publish(baseTopic + "/presence", identityPayload);
 
-                setTimeout(() => {
-                    checkAndAutoStart();
-                }, 2000);
+                setTimeout(() => { checkAndAutoStart(); }, 2000);
             });
 
             mqttClient.on('message', (topic, message) => {
@@ -663,12 +697,20 @@
                 if (topic === baseTopic + "/chat") {
                     if (data.sender === "Sistema") {
                         addSystemMessage(data.text);
-                        if (data.name) {
-                            adicionarJogadorLista(data.name);
-                            checkAndAutoStart();
-                        }
+                        if (data.name) { adicionarJogadorLista(data.name); checkAndAutoStart(); }
                     } else if (data.isCorrect) {
                         addSuccessMessage(data.sender, data.text);
+                        // conceder pontos ao guesser e ao desenhista
+                        const pts = data.pts || 50;
+                        const drawerPts = Math.round(pts * 0.5);
+                        addScore(data.sender, pts);
+                        showScorePopup(pts, data.sender);
+                        if (currentDrawerName) {
+                            addScore(currentDrawerName, drawerPts);
+                            showScorePopup(drawerPts, currentDrawerName);
+                        }
+                        // broadcast dos scores atualizados
+                        broadcastScores();
                         handleRoundEndAutomatically();
                     } else {
                         renderNormalMessage(data.sender, data.text);
@@ -682,22 +724,32 @@
                         checkAndAutoStart();
                     }
                 } else if (topic === baseTopic + "/presence/echo") {
-                    if (data.name && data.name !== username) {
-                        adicionarJogadorLista(data.name);
-                        checkAndAutoStart();
-                    }
+                    if (data.name && data.name !== username) { adicionarJogadorLista(data.name); checkAndAutoStart(); }
                 } else if (topic === baseTopic + "/gameflow") {
                     handleGameFlow(data);
+                } else if (topic === baseTopic + "/scores") {
+                    // sincronizar scores de outros jogadores
+                    if (data.scores) {
+                        for (const [nome, pts] of Object.entries(data.scores)) {
+                            if (nome !== username) {
+                                scores[nome] = pts;
+                                updatePlayerScoreDisplay(nome);
+                            }
+                        }
+                    }
                 }
             });
+        }
+
+        function broadcastScores() {
+            if (!mqttClient) return;
+            mqttClient.publish(baseTopic + "/scores", JSON.stringify({ scores }));
         }
 
         function checkAndAutoStart() {
             if (!roundActive && currentDrawerName === "" && listaJogadores.size > 0) {
                 const playersArr = Array.from(listaJogadores);
-                if (playersArr[0] === username) {
-                    drawNewRound();
-                }
+                if (playersArr[0] === username) { drawNewRound(); }
             }
         }
 
@@ -705,31 +757,23 @@
             if (!mqttClient) return;
             const playersArr = Array.from(listaJogadores);
             if (playersArr.length === 0) return;
-
             currentDrawerIndex = (currentDrawerIndex + 1) % playersArr.length;
             const nextDrawer = playersArr[currentDrawerIndex];
             const randomWord = PALAVRAS[Math.floor(Math.random() * PALAVRAS.length)];
-
-            const flowPayload = JSON.stringify({
-                drawer: nextDrawer,
-                word: randomWord,
-                currentIndex: currentDrawerIndex
-            });
-
-            mqttClient.publish(baseTopic + "/gameflow", flowPayload);
+            mqttClient.publish(baseTopic + "/gameflow", JSON.stringify({ drawer: nextDrawer, word: randomWord, currentIndex: currentDrawerIndex }));
         }
 
         function handleGameFlow(data) {
             clearInterval(countdownInterval);
             clearTimeout(nextRoundTimeout);
-
             currentDrawerName = data.drawer;
             currentWord = data.word;
             currentDrawerIndex = data.currentIndex;
             roundActive = true;
+            roundStartTime = Date.now();
+            currentTimeLeft = TEMPO_RODADA;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
             document.querySelectorAll('.player-item').forEach(el => el.classList.remove('drawing'));
             const drawerEl = document.getElementById("p-" + currentDrawerName.replace(/\s+/g, '-'));
             if (drawerEl) drawerEl.classList.add('drawing');
@@ -749,18 +793,17 @@
         }
 
         function startLocalTimer(seconds) {
-            let timeLeft = seconds;
-            document.getElementById('timer-display').innerText = "Tempo: " + timeLeft + "s";
-
+            currentTimeLeft = seconds;
+            document.getElementById('timer-display').innerText = "Tempo: " + currentTimeLeft + "s";
             countdownInterval = setInterval(() => {
-                timeLeft--;
-                if (timeLeft <= 0) {
+                currentTimeLeft--;
+                if (currentTimeLeft <= 0) {
                     clearInterval(countdownInterval);
                     document.getElementById('timer-display').innerText = "Tempo: 0s";
                     addSystemMessage(`O tempo acabou! A palavra era: ${currentWord.toUpperCase()}`);
                     handleRoundEndAutomatically();
                 } else {
-                    document.getElementById('timer-display').innerText = "Tempo: " + timeLeft + "s";
+                    document.getElementById('timer-display').innerText = "Tempo: " + currentTimeLeft + "s";
                 }
             }, 1000);
         }
@@ -768,44 +811,45 @@
         function handleRoundEndAutomatically() {
             roundActive = false;
             clearInterval(countdownInterval);
-
             if (currentDrawerName === username) {
-                nextRoundTimeout = setTimeout(() => {
-                    drawNewRound();
-                }, 4000);
+                nextRoundTimeout = setTimeout(() => { drawNewRound(); }, 4000);
             }
         }
 
         function adicionarJogadorLista(nome) {
             if (listaJogadores.has(nome)) return;
             listaJogadores.add(nome);
+            if (!scores[nome]) scores[nome] = 0;
 
             const container = document.getElementById('players-list');
             if (!container) return;
             const item = document.createElement('div');
             item.className = "player-item";
             item.id = "p-" + nome.replace(/\s+/g, '-');
-            item.innerText = nome;
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'player-name';
+            nameSpan.textContent = nome;
+
+            const scoreSpan = document.createElement('span');
+            scoreSpan.className = 'player-score';
+            scoreSpan.textContent = '0';
+
+            item.appendChild(nameSpan);
+            item.appendChild(scoreSpan);
             container.appendChild(item);
         }
 
         function sendDrawData(action, x, y, color) {
             if (!mqttClient) return;
-            const payload = JSON.stringify({ action, x, y, color });
-            mqttClient.publish(baseTopic + "/draw", payload);
+            mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action, x, y, color }));
         }
 
         function renderRemoteDraw(data) {
             ctx.strokeStyle = data.color;
-            if (data.action === 'start') {
-                ctx.beginPath();
-                ctx.moveTo(data.x, data.y);
-            } else if (data.action === 'draw') {
-                ctx.lineTo(data.x, data.y);
-                ctx.stroke();
-            } else if (data.action === 'clear') {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }
+            if (data.action === 'start') { ctx.beginPath(); ctx.moveTo(data.x, data.y); }
+            else if (data.action === 'draw') { ctx.lineTo(data.x, data.y); ctx.stroke(); }
+            else if (data.action === 'clear') { ctx.clearRect(0, 0, canvas.width, canvas.height); }
         }
 
         function sendClear() {
@@ -823,15 +867,16 @@
             const respostaLimpa = currentWord.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
             if (roundActive && !isDrawer && palpiteLimpo === respostaLimpa) {
-                const payload = JSON.stringify({ 
-                    sender: username, 
-                    text: `Acertou a palavra secreta: ${currentWord.toUpperCase()}! 🎯`, 
-                    isCorrect: true 
+                const pts = calcPoints(currentTimeLeft);
+                const payload = JSON.stringify({
+                    sender: username,
+                    text: `Acertou a palavra secreta: ${currentWord.toUpperCase()}! 🎯`,
+                    isCorrect: true,
+                    pts: pts
                 });
                 mqttClient.publish(baseTopic + "/chat", payload);
             } else {
-                const payload = JSON.stringify({ sender: username, text: msgText, isCorrect: false });
-                mqttClient.publish(baseTopic + "/chat", payload);
+                mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: msgText, isCorrect: false }));
             }
             input.value = "";
         }
@@ -863,11 +908,9 @@
             const chatMessages = document.getElementById('chat-messages');
             const m = document.createElement('div');
             m.className = "msg msg-normal";
-            
             const spanName = document.createElement('span');
             spanName.className = "username";
             spanName.innerText = sender + ": ";
-
             m.appendChild(spanName);
             m.appendChild(document.createTextNode(text));
             chatMessages.appendChild(m);
