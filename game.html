@@ -6,204 +6,119 @@
     <title>Gartic Clone Realtime</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 
         body {
             background-color: #ffd43b;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
-            height: -webkit-fill-available;
-            padding: 10px;
-            overscroll-behavior: none;
-            overflow: hidden;
+            display: flex; flex-direction: column; align-items: center;
+            height: 100vh; height: -webkit-fill-available;
+            padding: 10px; overscroll-behavior: none; overflow: hidden;
         }
 
         #login-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #ffd43b;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #ffd43b; display: flex; justify-content: center;
+            align-items: center; z-index: 1000;
         }
 
         .login-box {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
+            background: white; padding: 30px; border-radius: 15px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
+            width: 100%; max-width: 400px; text-align: center;
         }
 
-        .login-box h2 {
-            color: #118ab2;
-            margin-bottom: 20px;
-        }
+        .login-box h2 { color: #118ab2; margin-bottom: 20px; }
 
         .login-box input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 2px solid #ced4da;
-            border-radius: 8px;
-            outline: none;
-            font-size: 16px;
+            width: 100%; padding: 12px; margin-bottom: 15px;
+            border: 2px solid #ced4da; border-radius: 8px;
+            outline: none; font-size: 16px;
         }
 
-        .login-box input:focus {
-            border-color: #118ab2;
+        .login-box input:focus { border-color: #118ab2; }
+
+        .login-box textarea {
+            width: 100%; padding: 12px; margin-bottom: 15px;
+            border: 2px solid #ced4da; border-radius: 8px;
+            outline: none; font-size: 14px; resize: vertical;
+            min-height: 70px; color: #333;
+        }
+
+        .login-box textarea:focus { border-color: #118ab2; }
+
+        .login-box .hint {
+            font-size: 11px; color: #888; margin-top: -10px;
+            margin-bottom: 15px; text-align: left;
         }
 
         header {
-            text-align: center;
-            margin-bottom: 10px;
-            background: white;
-            padding: 10px 20px;
-            border-radius: 50px;
+            text-align: center; margin-bottom: 10px; background: white;
+            padding: 10px 20px; border-radius: 50px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 1200px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            flex-shrink: 0;
+            width: 100%; max-width: 1200px;
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 10px; flex-shrink: 0;
         }
 
-        h1 {
-            color: #118ab2;
-            font-size: 20px;
-            flex-shrink: 0;
-        }
+        h1 { color: #118ab2; font-size: 20px; flex-shrink: 0; }
 
         #word-display {
-            font-weight: bold;
-            font-size: 18px;
-            color: #ef476f;
-            background: #f8f9fa;
-            padding: 5px 15px;
-            border-radius: 20px;
-            border: 2px dashed #ef476f;
-            text-align: center;
-            word-break: break-word;
+            font-weight: bold; font-size: 18px; color: #ef476f;
+            background: #f8f9fa; padding: 5px 15px; border-radius: 20px;
+            border: 2px dashed #ef476f; text-align: center; word-break: break-word;
         }
 
         #room-display {
-            font-weight: bold;
-            color: #666;
-            font-size: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 2px;
-            flex-shrink: 0;
+            font-weight: bold; color: #666; font-size: 12px;
+            display: flex; flex-direction: column; align-items: flex-end;
+            gap: 2px; flex-shrink: 0;
         }
 
-        #timer-display {
-            font-weight: bold;
-            color: #ef476f;
-            font-size: 14px;
-        }
+        #timer-display { font-weight: bold; color: #ef476f; font-size: 14px; }
 
         #main-container {
-            display: flex;
-            width: 100%;
-            max-width: 1200px;
-            flex: 1;
-            gap: 10px;
-            overflow: hidden;
+            display: flex; width: 100%; max-width: 1200px;
+            flex: 1; gap: 10px; overflow: hidden;
         }
 
         #scoreboard {
-            flex: 1;
-            background: white;
-            border-radius: 15px;
-            padding: 12px;
+            flex: 1; background: white; border-radius: 15px; padding: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            display: flex; flex-direction: column; overflow: hidden;
         }
 
-        #scoreboard h3 {
-            color: #555;
-            padding-bottom: 5px;
-            border-bottom: 2px solid #f1f3f5;
-            font-size: 16px;
-        }
+        #scoreboard h3 { color: #555; padding-bottom: 5px; border-bottom: 2px solid #f1f3f5; font-size: 16px; }
 
         #players-list {
-            margin-top: 10px;
-            overflow-y: auto;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+            margin-top: 10px; overflow-y: auto; flex: 1;
+            display: flex; flex-direction: column; gap: 6px;
         }
 
         .player-item {
-            background: #f8f9fa;
-            padding: 8px;
-            border-radius: 6px;
-            font-weight: bold;
-            color: #333;
-            font-size: 13px;
+            background: #f8f9fa; padding: 8px; border-radius: 6px;
+            font-weight: bold; color: #333; font-size: 13px;
             border-left: 4px solid #118ab2;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
         }
 
-        .player-item.drawing {
-            border-left-color: #ef476f;
-            background: #ffe3e8;
-        }
+        .player-item.drawing { border-left-color: #ef476f; background: #ffe3e8; }
 
-        /* Pontuação no player item */
         .player-score {
-            background: #118ab2;
-            color: white;
-            border-radius: 12px;
-            padding: 2px 8px;
-            font-size: 12px;
-            font-weight: bold;
-            min-width: 36px;
-            text-align: center;
+            background: #118ab2; color: white; border-radius: 12px;
+            padding: 2px 8px; font-size: 12px; font-weight: bold;
+            min-width: 36px; text-align: center;
             transition: transform 0.2s, background 0.3s;
         }
 
-        .player-item.drawing .player-score {
-            background: #ef476f;
-        }
+        .player-item.drawing .player-score { background: #ef476f; }
 
-        .player-score.bump {
-            transform: scale(1.4);
-            background: #06d6a0 !important;
-        }
+        .player-score.bump { transform: scale(1.4); background: #06d6a0 !important; }
 
-        /* Notificação de pontos flutuantes */
         .score-popup {
-            position: fixed;
-            pointer-events: none;
-            font-size: 22px;
-            font-weight: bold;
-            color: #06d6a0;
+            position: fixed; pointer-events: none;
+            font-size: 22px; font-weight: bold; color: #06d6a0;
             text-shadow: 0 2px 6px rgba(0,0,0,0.25);
-            animation: floatUp 1.4s ease-out forwards;
-            z-index: 9999;
+            animation: floatUp 1.4s ease-out forwards; z-index: 9999;
         }
 
         @keyframes floatUp {
@@ -213,709 +128,741 @@
         }
 
         #canvas-container {
-            flex: 3;
-            background: white;
-            border-radius: 15px;
+            flex: 3; background: white; border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
+            display: flex; flex-direction: column; overflow: hidden; position: relative;
         }
 
         canvas {
-            flex: 1;
-            background: #ffffff;
-            cursor: crosshair;
-            touch-action: none;
-            width: 100%;
-            height: 100%;
+            flex: 1; background: #ffffff; cursor: crosshair;
+            touch-action: none; width: 100%; height: 100%;
         }
 
         #tools {
-            height: 60px;
-            background: #e9ecef;
-            display: flex;
-            align-items: center;
-            padding: 0 10px;
-            gap: 10px;
-            border-top: 2px solid #dee2e6;
-            overflow-x: auto;
-            flex-shrink: 0;
+            height: 60px; background: #e9ecef;
+            display: flex; align-items: center; padding: 0 10px;
+            gap: 10px; border-top: 2px solid #dee2e6;
+            overflow-x: auto; flex-shrink: 0;
         }
 
         .color-circle {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid transparent;
-            flex-shrink: 0;
+            width: 28px; height: 28px; border-radius: 50%;
+            cursor: pointer; border: 2px solid transparent; flex-shrink: 0;
         }
 
-        .color-circle.active {
-            border-color: #000;
-        }
+        .color-circle.active { border-color: #000; }
 
         .btn {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
-            flex-shrink: 0;
+            padding: 8px 12px; border: none; border-radius: 5px;
+            cursor: pointer; font-weight: bold; font-size: 13px; flex-shrink: 0;
         }
 
         .btn-clear { background: #ef476f; color: white; }
 
+        /* ===== BOTÃO OVO ===== */
+        #btn-egg {
+            background: #f4a261;
+            color: white;
+            font-size: 18px;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            flex-shrink: 0;
+            display: none;
+            transition: transform 0.1s, background 0.2s;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+
+        #btn-egg:active { transform: scale(0.92); background: #e76f51; }
+
+        #btn-egg.cooldown {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* ===== ANIMAÇÃO DO OVO ===== */
+        .egg-fly {
+            position: fixed;
+            font-size: 36px;
+            pointer-events: none;
+            z-index: 9999;
+            animation: eggFly var(--duration, 0.9s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            transform-origin: center;
+        }
+
+        @keyframes eggFly {
+            0%   { opacity: 1; transform: translate(0,0) rotate(0deg) scale(1); }
+            70%  { opacity: 1; transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.1); }
+            85%  { opacity: 1; transform: translate(var(--tx2), var(--ty2)) rotate(var(--rot)) scale(1.3); }
+            100% { opacity: 0; transform: translate(var(--tx2), var(--ty2)) rotate(var(--rot)) scale(0.5); }
+        }
+
+        /* Splash do ovo quebrando */
+        .egg-splash {
+            position: fixed;
+            font-size: 48px;
+            pointer-events: none;
+            z-index: 9999;
+            animation: eggSplash 0.8s ease-out forwards;
+        }
+
+        @keyframes eggSplash {
+            0%   { opacity: 1; transform: scale(0.5); }
+            40%  { opacity: 1; transform: scale(1.6); }
+            100% { opacity: 0; transform: scale(2.2); }
+        }
+
+        /* Shake na tela quando leva ovo */
+        @keyframes screenShake {
+            0%  { transform: translate(0,0); }
+            15% { transform: translate(-6px, 3px); }
+            30% { transform: translate(6px, -3px); }
+            45% { transform: translate(-4px, 4px); }
+            60% { transform: translate(4px, -2px); }
+            75% { transform: translate(-2px, 2px); }
+            100%{ transform: translate(0,0); }
+        }
+
+        .shake { animation: screenShake 0.45s ease; }
+
+        /* Cobertura amarela quando leva ovo */
+        #egg-overlay {
+            position: fixed; inset: 0; pointer-events: none;
+            background: rgba(255, 200, 0, 0.45);
+            opacity: 0; z-index: 9998;
+            transition: opacity 0.1s;
+        }
+
+        #egg-overlay.splat {
+            animation: splatFade 1.2s ease-out forwards;
+        }
+
+        @keyframes splatFade {
+            0%   { opacity: 0.7; }
+            100% { opacity: 0; }
+        }
+
         #chat-container {
-            flex: 1.5;
-            background: white;
-            border-radius: 15px;
+            flex: 1.5; background: white; border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            display: flex; flex-direction: column; overflow: hidden;
         }
 
         #chat-messages {
-            flex: 1;
-            padding: 12px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+            flex: 1; padding: 12px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 6px;
         }
 
-        .msg {
-            padding: 6px 10px;
-            border-radius: 5px;
-            font-size: 13px;
-            word-break: break-all;
-            line-height: 1.4;
-        }
-
+        .msg { padding: 6px 10px; border-radius: 5px; font-size: 13px; word-break: break-all; line-height: 1.4; }
         .msg-system  { background: #e2f0d9; color: #385723; font-weight: bold; }
         .msg-success { background: #d1e7dd; color: #0f5132; font-weight: bold; border: 1px solid #badbcc; }
         .msg-normal  { background: #f1f3f5; color: #333; }
         .msg-normal .username { font-weight: bold; color: #118ab2; }
+        .msg-egg     { background: #fff3cd; color: #856404; font-weight: bold; border: 1px solid #ffc107; }
 
         #chat-input-area {
-            display: flex;
-            padding: 8px;
-            border-top: 2px solid #dee2e6;
-            background: #f8f9fa;
-            flex-shrink: 0;
+            display: flex; padding: 8px; border-top: 2px solid #dee2e6;
+            background: #f8f9fa; flex-shrink: 0;
         }
 
         #chat-input {
-            flex: 1;
-            padding: 8px;
-            border: 2px solid #ced4da;
-            border-radius: 5px;
-            outline: none;
-            font-size: 14px;
+            flex: 1; padding: 8px; border: 2px solid #ced4da;
+            border-radius: 5px; outline: none; font-size: 14px;
         }
 
-        #btn-send {
-            background: #118ab2;
-            color: white;
-            margin-left: 6px;
-        }
+        #btn-send { background: #118ab2; color: white; margin-left: 6px; }
 
+        /* ===== MOBILE ===== */
         @media (max-width: 768px) {
-            body {
-                padding: 5px;
-                overflow: hidden;
-                position: relative;
-            }
+            body { padding: 5px; overflow: hidden; position: relative; }
 
             header {
-                padding: 6px 10px;
-                margin-bottom: 5px;
-                border-radius: 10px;
-                gap: 5px;
-                height: 45px;
-                width: 100%;
+                padding: 6px 10px; margin-bottom: 5px; border-radius: 10px;
+                gap: 5px; height: 45px; width: 100%;
             }
 
             h1 { font-size: 12px; }
 
-            #word-display {
-                font-size: 11px;
-                padding: 2px 6px;
-                border-radius: 6px;
-                flex: 1;
-            }
-
+            #word-display { font-size: 11px; padding: 2px 6px; border-radius: 6px; flex: 1; }
             #room-display { font-size: 9px; }
             #timer-display { font-size: 10px; }
 
             #main-container {
-                position: absolute;
-                top: 60px;
-                left: 5px;
-                right: 5px;
-                bottom: 5px;
-                flex-direction: column;
-                display: flex !important;
-                height: auto;
-                gap: 5px;
+                position: absolute; top: 60px; left: 5px; right: 5px; bottom: 5px;
+                flex-direction: column; display: flex !important; height: auto; gap: 5px;
             }
 
             #scoreboard {
-                display: flex !important;
-                flex: none !important;
-                height: 40px !important;
-                width: 100%;
-                padding: 4px 8px;
-                border-radius: 8px;
-                flex-direction: row;
-                align-items: center;
-                gap: 6px;
+                display: flex !important; flex: none !important; height: 40px !important;
+                width: 100%; padding: 4px 8px; border-radius: 8px;
+                flex-direction: row; align-items: center; gap: 6px;
                 box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             }
 
             #scoreboard h3 { display: none !important; }
 
             #players-list {
-                margin-top: 0;
-                flex-direction: row !important;
-                overflow-x: auto;
-                overflow-y: hidden;
-                width: 100%;
-                height: 100%;
-                gap: 6px;
-                align-items: center;
+                margin-top: 0; flex-direction: row !important;
+                overflow-x: auto; overflow-y: hidden;
+                width: 100%; height: 100%; gap: 6px; align-items: center;
             }
 
             .player-item {
-                padding: 4px 8px;
-                font-size: 11px;
-                height: 100%;
-                white-space: nowrap;
-                border-left: 3px solid #118ab2;
-                border-radius: 4px;
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
+                padding: 4px 8px; font-size: 11px; height: 100%;
+                white-space: nowrap; border-left: 3px solid #118ab2;
+                border-radius: 4px; display: inline-flex; align-items: center; gap: 6px;
             }
 
-            .player-score {
-                font-size: 10px;
-                padding: 1px 6px;
-            }
+            .player-score { font-size: 10px; padding: 1px 6px; }
 
             #canvas-container {
-                flex: none !important;
-                height: 55% !important;
-                width: 100%;
-                border-radius: 10px;
-                display: flex;
-                flex-direction: column;
+                flex: none !important; height: 55% !important;
+                width: 100%; border-radius: 10px;
+                display: flex; flex-direction: column;
             }
 
-            #tools {
-                height: 38px;
-                padding: 0 5px;
-                gap: 5px;
-            }
-
+            #tools { height: 38px; padding: 0 5px; gap: 5px; }
             .color-circle { width: 22px; height: 22px; }
             .btn { padding: 4px 10px; font-size: 11px; }
+            #btn-egg { font-size: 14px; padding: 4px 10px; }
 
             #chat-container {
-                flex: none !important;
-                height: calc(45% - 45px) !important;
-                width: 100%;
-                border-radius: 10px;
-                display: flex;
-                flex-direction: column;
-                overflow: hidden;
-                background: white;
-                position: relative;
+                flex: none !important; height: calc(45% - 45px) !important;
+                width: 100%; border-radius: 10px;
+                display: flex; flex-direction: column; overflow: hidden;
+                background: white; position: relative;
             }
 
             #chat-messages {
-                position: absolute;
-                top: 0; left: 0; right: 0; bottom: 48px;
-                padding: 6px;
-                gap: 4px;
-                overflow-y: auto;
+                position: absolute; top: 0; left: 0; right: 0; bottom: 48px;
+                padding: 6px; gap: 4px; overflow-y: auto;
             }
 
             .msg { padding: 4px 6px; font-size: 11px; }
 
             #chat-input-area {
-                position: absolute;
-                bottom: 0; left: 0; right: 0;
-                height: 48px;
-                padding: 6px;
-                background: #f8f9fa;
-                display: flex !important;
-                align-items: center;
-                border-top: 1px solid #dee2e6;
+                position: absolute; bottom: 0; left: 0; right: 0;
+                height: 48px; padding: 6px; background: #f8f9fa;
+                display: flex !important; align-items: center; border-top: 1px solid #dee2e6;
             }
 
-            #chat-input {
-                padding: 8px;
-                font-size: 16px;
-                height: 100%;
-                border: 1px solid #ced4da;
-            }
+            #chat-input { padding: 8px; font-size: 16px; height: 100%; border: 1px solid #ced4da; }
 
             #btn-send {
-                padding: 0 14px;
-                font-size: 13px;
-                height: 100%;
-                margin-left: 6px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
+                padding: 0 14px; font-size: 13px; height: 100%;
+                margin-left: 6px; display: flex; align-items: center; justify-content: center;
             }
         }
     </style>
 </head>
 <body>
 
-    <div id="login-screen">
-        <div class="login-box">
-            <h2>Gartic Clone Realtime</h2>
-            <input type="text" id="input-username" placeholder="Seu Nome / Apelido" required>
-            <input type="text" id="input-room" placeholder="Nome da Sala (ex: sala123)" required>
-            <button class="btn" style="width: 100%; padding: 12px; font-size: 16px; background: #118ab2; color: white;" onclick="connectToGame()">ENTRAR NO JOGO</button>
+<div id="egg-overlay"></div>
+
+<div id="login-screen">
+    <div class="login-box">
+        <h2>🎨 Gartic Clone</h2>
+        <input type="text" id="input-username" placeholder="Seu Nome / Apelido" required>
+        <input type="text" id="input-room" placeholder="Nome da Sala (ex: sala123)" required>
+        <textarea id="input-custom-words" placeholder="Palavras personalizadas (opcional)&#10;Ex: Geladeira, Fusca, Professor, Saudade..."></textarea>
+        <p class="hint">Separe as palavras por vírgula. Se deixar vazio, usa o banco padrão.</p>
+        <button class="btn" style="width:100%;padding:12px;font-size:16px;background:#118ab2;color:white;" onclick="connectToGame()">ENTRAR NO JOGO</button>
+    </div>
+</div>
+
+<header>
+    <h1>GARTIC</h1>
+    <div id="word-display">Aguardando jogadores...</div>
+    <div id="room-display">
+        <span id="room-id">Sala: Não conectado</span>
+        <span id="timer-display">Tempo: --</span>
+    </div>
+</header>
+
+<div id="main-container">
+    <div id="scoreboard">
+        <h3>Jogadores na Sala:</h3>
+        <div id="players-list"></div>
+    </div>
+
+    <div id="canvas-container">
+        <canvas id="canvas"></canvas>
+        <div id="tools">
+            <div class="color-circle active" style="background:#000000;" onclick="changeColor('#000000',this)"></div>
+            <div class="color-circle" style="background:#ef476f;" onclick="changeColor('#ef476f',this)"></div>
+            <div class="color-circle" style="background:#ffd166;" onclick="changeColor('#ffd166',this)"></div>
+            <div class="color-circle" style="background:#06d6a0;" onclick="changeColor('#06d6a0',this)"></div>
+            <div class="color-circle" style="background:#118ab2;" onclick="changeColor('#118ab2',this)"></div>
+            <button class="btn btn-clear" onclick="sendClear()">Limpar</button>
+            <button id="btn-egg" onclick="throwEgg()">🥚 Jogar Ovo!</button>
         </div>
     </div>
 
-    <header>
-        <h1>GARTIC</h1>
-        <div id="word-display">Aguardando jogadores...</div>
-        <div id="room-display">
-            <span id="room-id">Sala: Não conectado</span>
-            <span id="timer-display">Tempo: --</span>
-        </div>
-    </header>
-
-    <div id="main-container">
-        <div id="scoreboard">
-            <h3>Jogadores na Sala:</h3>
-            <div id="players-list"></div>
-        </div>
-
-        <div id="canvas-container">
-            <canvas id="canvas"></canvas>
-            <div id="tools">
-                <div class="color-circle active" style="background: #000000;" onclick="changeColor('#000000', this)"></div>
-                <div class="color-circle" style="background: #ef476f;" onclick="changeColor('#ef476f', this)"></div>
-                <div class="color-circle" style="background: #ffd166;" onclick="changeColor('#ffd166', this)"></div>
-                <div class="color-circle" style="background: #06d6a0;" onclick="changeColor('#06d6a0', this)"></div>
-                <div class="color-circle" style="background: #118ab2;" onclick="changeColor('#118ab2', this)"></div>
-                <button class="btn btn-clear" onclick="sendClear()">Limpar</button>
-            </div>
-        </div>
-
-        <div id="chat-container">
-            <div id="chat-messages"></div>
-            <div id="chat-input-area">
-                <input type="text" id="chat-input" placeholder="Digite seu palpite aqui..." autocomplete="off">
-                <button id="btn-send" class="btn" onclick="sendChatMessage()">Enviar</button>
-            </div>
+    <div id="chat-container">
+        <div id="chat-messages"></div>
+        <div id="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Digite seu palpite aqui..." autocomplete="off">
+            <button id="btn-send" class="btn" onclick="sendChatMessage()">Enviar</button>
         </div>
     </div>
+</div>
 
-    <script>
-        let username = "";
-        let roomName = "";
-        let mqttClient = null;
-        let baseTopic = "";
-        const listaJogadores = new Set();
+<script>
+    let username = "", roomName = "", mqttClient = null, baseTopic = "";
+    const listaJogadores = new Set();
+    const scores = {};
+    let isDrawer = false, currentWord = "", currentDrawerName = "";
+    let roundActive = false, currentDrawerIndex = -1;
+    let countdownInterval = null, nextRoundTimeout = null, currentTimeLeft = 0;
+    const TEMPO_RODADA = 60;
+    let eggCooldown = false;
 
-        // --- PONTUAÇÃO ---
-        const scores = {}; // { nome: pontos }
-        let roundStartTime = null; // para calcular pontuação por velocidade
+    // Palavras customizadas da sala (sincronizadas via MQTT)
+    let customWords = [];
+    const PALAVRAS_PADRAO = ["Cachorro","Gato","Carro","Aviao","Banana","Maca","Casa","Arvore","Bola","Computador","Celular","Caneta","Chave","Livro","Relogio","Cadeira","Garfo","Sapato","Oculos","Sol","Lua","Flor","Peixe","Passaro"];
 
-        function getScore(nome) {
-            return scores[nome] || 0;
+    function getPalavras() {
+        return customWords.length > 0 ? customWords : PALAVRAS_PADRAO;
+    }
+
+    // ===== CANVAS =====
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let drawing = false, currentColor = '#000000';
+    const VIRTUAL_WIDTH = 800, VIRTUAL_HEIGHT = 600;
+
+    function ajustarAlturaJanela() { document.body.style.height = window.innerHeight + "px"; }
+    window.addEventListener('resize', ajustarAlturaJanela);
+    window.addEventListener('load', ajustarAlturaJanela);
+    ajustarAlturaJanela();
+
+    function initCanvasResolution() {
+        canvas.width = VIRTUAL_WIDTH; canvas.height = VIRTUAL_HEIGHT;
+        ctx.lineCap = 'round'; ctx.lineWidth = 6;
+    }
+    initCanvasResolution();
+
+    function getCanvasCoordinates(clientX, clientY) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: ((clientX - rect.left) / rect.width) * canvas.width,
+            y: ((clientY - rect.top) / rect.height) * canvas.height
+        };
+    }
+
+    canvas.addEventListener('mousedown', (e) => { const c = getCanvasCoordinates(e.clientX, e.clientY); startDrawing(c.x, c.y); });
+    canvas.addEventListener('mousemove', (e) => { const c = getCanvasCoordinates(e.clientX, e.clientY); draw(c.x, c.y); });
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+
+    canvas.addEventListener('touchstart', (e) => { if (e.touches.length===1) { e.preventDefault(); const c = getCanvasCoordinates(e.touches[0].clientX, e.touches[0].clientY); startDrawing(c.x, c.y); } }, { passive: false });
+    canvas.addEventListener('touchmove', (e) => { if (e.touches.length===1) { e.preventDefault(); const c = getCanvasCoordinates(e.touches[0].clientX, e.touches[0].clientY); draw(c.x, c.y); } }, { passive: false });
+    canvas.addEventListener('touchend', (e) => { e.preventDefault(); stopDrawing(); });
+
+    function startDrawing(x, y) { if (!isDrawer || !roundActive) return; drawing = true; ctx.beginPath(); ctx.moveTo(x, y); sendDrawData('start', x, y, currentColor); }
+    function draw(x, y) { if (!drawing || !isDrawer || !roundActive) return; ctx.strokeStyle = currentColor; ctx.lineTo(x, y); ctx.stroke(); sendDrawData('draw', x, y, currentColor); }
+    function stopDrawing() { if (!isDrawer) return; drawing = false; sendDrawData('stop', 0, 0, currentColor); }
+    function changeColor(color, element) { currentColor = color; document.querySelectorAll('.color-circle').forEach(el => el.classList.remove('active')); element.classList.add('active'); }
+
+    // ===== PONTUAÇÃO =====
+    function getScore(nome) { return scores[nome] || 0; }
+    function addScore(nome, pts) {
+        if (!scores[nome]) scores[nome] = 0;
+        scores[nome] += pts;
+        updatePlayerScoreDisplay(nome);
+    }
+    function updatePlayerScoreDisplay(nome) {
+        const el = document.getElementById("p-" + nome.replace(/\s+/g,'-'));
+        if (!el) return;
+        const scoreEl = el.querySelector('.player-score');
+        if (scoreEl) {
+            scoreEl.textContent = scores[nome] || 0;
+            scoreEl.classList.add('bump');
+            setTimeout(() => scoreEl.classList.remove('bump'), 350);
+        }
+    }
+    function showScorePopup(pts, nome) {
+        const playerEl = document.getElementById("p-" + nome.replace(/\s+/g,'-'));
+        if (!playerEl) return;
+        const rect = playerEl.getBoundingClientRect();
+        const popup = document.createElement('div');
+        popup.className = 'score-popup';
+        popup.textContent = '+' + pts + ' pts';
+        popup.style.left = (rect.left + rect.width/2 - 30) + 'px';
+        popup.style.top  = (rect.top - 10) + 'px';
+        document.body.appendChild(popup);
+        setTimeout(() => popup.remove(), 1500);
+    }
+    function calcPoints(timeLeft) { return Math.max(50, Math.round(50 + (timeLeft / TEMPO_RODADA) * 100)); }
+
+    // ===== OVO =====
+    function throwEgg() {
+        if (!roundActive || isDrawer || eggCooldown || !mqttClient) return;
+        eggCooldown = true;
+        const btn = document.getElementById('btn-egg');
+        btn.classList.add('cooldown');
+        btn.textContent = '🥚 Recarregando...';
+
+        mqttClient.publish(baseTopic + "/egg", JSON.stringify({ thrower: username, target: currentDrawerName }));
+
+        setTimeout(() => {
+            eggCooldown = false;
+            btn.classList.remove('cooldown');
+            btn.textContent = '🥚 Jogar Ovo!';
+        }, 8000);
+    }
+
+    function animateEggThrow(thrower, target) {
+        // Posição de onde parte: nome do thrower no placar
+        const throwerEl = document.getElementById("p-" + thrower.replace(/\s+/g,'-'));
+        const canvasRect = canvas.getBoundingClientRect();
+
+        let startX = window.innerWidth / 2;
+        let startY = window.innerHeight - 100;
+        if (throwerEl) {
+            const r = throwerEl.getBoundingClientRect();
+            startX = r.left + r.width / 2;
+            startY = r.top + r.height / 2;
         }
 
-        function addScore(nome, pts) {
-            if (!scores[nome]) scores[nome] = 0;
-            scores[nome] += pts;
-            updatePlayerScoreDisplay(nome);
-        }
+        // Alvo: canvas (desenhista)
+        const targetX = canvasRect.left + canvasRect.width / 2 + (Math.random() - 0.5) * 80;
+        const targetY = canvasRect.top + canvasRect.height / 2 + (Math.random() - 0.5) * 60;
 
-        function updatePlayerScoreDisplay(nome) {
-            const id = "p-" + nome.replace(/\s+/g, '-');
-            const el = document.getElementById(id);
-            if (!el) return;
-            const scoreEl = el.querySelector('.player-score');
-            if (scoreEl) {
-                scoreEl.textContent = scores[nome] || 0;
-                scoreEl.classList.add('bump');
-                setTimeout(() => scoreEl.classList.remove('bump'), 350);
+        const egg = document.createElement('div');
+        egg.className = 'egg-fly';
+        egg.textContent = '🥚';
+
+        const dx = targetX - startX;
+        const dy = targetY - startY;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const duration = Math.max(0.5, Math.min(1.1, dist / 900));
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+
+        egg.style.setProperty('--tx', dx * 0.75 + 'px');
+        egg.style.setProperty('--ty', dy * 0.75 + 'px');
+        egg.style.setProperty('--tx2', dx + 'px');
+        egg.style.setProperty('--ty2', dy + 'px');
+        egg.style.setProperty('--rot', angle + 'deg');
+        egg.style.setProperty('--duration', duration + 's');
+        egg.style.left = startX + 'px';
+        egg.style.top  = startY + 'px';
+
+        document.body.appendChild(egg);
+
+        // Splash ao chegar
+        setTimeout(() => {
+            egg.remove();
+
+            // splat emoji
+            const splash = document.createElement('div');
+            splash.className = 'egg-splash';
+            splash.textContent = '💥';
+            splash.style.left = (targetX - 24) + 'px';
+            splash.style.top  = (targetY - 24) + 'px';
+            document.body.appendChild(splash);
+            setTimeout(() => splash.remove(), 900);
+
+            // overlay amarelo
+            const overlay = document.getElementById('egg-overlay');
+            overlay.classList.remove('splat');
+            void overlay.offsetWidth;
+            overlay.classList.add('splat');
+
+            // shake no canvas se o target for o desenhista local
+            if (target === username) {
+                document.getElementById('canvas-container').classList.add('shake');
+                setTimeout(() => document.getElementById('canvas-container').classList.remove('shake'), 500);
             }
+        }, duration * 1000);
+    }
+
+    // ===== LOGIN / MQTT =====
+    function connectToGame() {
+        username = document.getElementById('input-username').value.trim();
+        roomName = document.getElementById('input-room').value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+        const customInput = document.getElementById('input-custom-words').value.trim();
+
+        if (!username || !roomName) { alert("Por favor, digite seu nome e o nome da sala!"); return; }
+
+        if (customInput) {
+            customWords = customInput.split(',').map(w => w.trim()).filter(w => w.length > 0);
         }
 
-        function showScorePopup(pts, nome) {
-            const playerEl = document.getElementById("p-" + nome.replace(/\s+/g, '-'));
-            if (!playerEl) return;
-            const rect = playerEl.getBoundingClientRect();
-            const popup = document.createElement('div');
-            popup.className = 'score-popup';
-            popup.textContent = '+' + pts + ' pts';
-            popup.style.left = (rect.left + rect.width / 2 - 30) + 'px';
-            popup.style.top  = (rect.top - 10) + 'px';
-            document.body.appendChild(popup);
-            setTimeout(() => popup.remove(), 1500);
-        }
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('room-id').innerText = "Sala: " + roomName;
+        adicionarJogadorLista(username);
+        initMqtt();
+    }
 
-        // Calcula pontos baseado no tempo restante
-        function calcPoints(timeLeft) {
-            // Entre 50 (acertou no último segundo) e 150 (acertou imediatamente)
-            return Math.max(50, Math.round(50 + (timeLeft / TEMPO_RODADA) * 100));
-        }
-        // --- FIM PONTUAÇÃO ---
+    function initMqtt() {
+        baseTopic = "gartic_clone_free_2026/" + roomName;
+        mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
 
-        let isDrawer = false;
-        let currentWord = "";
-        let currentDrawerName = "";
-        let roundActive = false;
-        let currentDrawerIndex = -1;
+        mqttClient.on('connect', () => {
+            mqttClient.subscribe(baseTopic + "/chat");
+            mqttClient.subscribe(baseTopic + "/draw");
+            mqttClient.subscribe(baseTopic + "/presence");
+            mqttClient.subscribe(baseTopic + "/presence/echo");
+            mqttClient.subscribe(baseTopic + "/gameflow");
+            mqttClient.subscribe(baseTopic + "/scores");
+            mqttClient.subscribe(baseTopic + "/egg");
+            mqttClient.subscribe(baseTopic + "/customwords");
 
-        let countdownInterval = null;
-        let nextRoundTimeout = null;
-        let currentTimeLeft = 0;
-        const TEMPO_RODADA = 60;
+            const identityPayload = JSON.stringify({ sender: "Sistema", text: `${username} entrou na sala.`, name: username });
+            mqttClient.publish(baseTopic + "/chat", identityPayload);
+            mqttClient.publish(baseTopic + "/presence", identityPayload);
 
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        let drawing = false;
-        let currentColor = '#000000';
-
-        const VIRTUAL_WIDTH = 800;
-        const VIRTUAL_HEIGHT = 600;
-
-        const PALAVRAS = ["Cachorro","Gato","Carro","Aviao","Banana","Maca","Casa","Arvore","Bola","Computador","Celular","Caneta","Chave","Livro","Relogio","Cadeira","Garfo","Sapato","Oculos","Sol","Lua","Flor","Peixe","Passaro"];
-
-        function ajustarAlturaJanela() {
-            document.body.style.height = window.innerHeight + "px";
-        }
-        window.addEventListener('resize', ajustarAlturaJanela);
-        window.addEventListener('load', ajustarAlturaJanela);
-        ajustarAlturaJanela();
-
-        function initCanvasResolution() {
-            canvas.width = VIRTUAL_WIDTH;
-            canvas.height = VIRTUAL_HEIGHT;
-            ctx.lineCap = 'round';
-            ctx.lineWidth = 6;
-        }
-        initCanvasResolution();
-
-        function getCanvasCoordinates(clientX, clientY) {
-            const rect = canvas.getBoundingClientRect();
-            return {
-                x: ((clientX - rect.left) / rect.width)  * canvas.width,
-                y: ((clientY - rect.top)  / rect.height) * canvas.height
-            };
-        }
-
-        canvas.addEventListener('mousedown', (e) => { const c = getCanvasCoordinates(e.clientX, e.clientY); startDrawing(c.x, c.y); });
-        canvas.addEventListener('mousemove', (e) => { const c = getCanvasCoordinates(e.clientX, e.clientY); draw(c.x, c.y); });
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseout', stopDrawing);
-
-        canvas.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 1) { e.preventDefault(); const c = getCanvasCoordinates(e.touches[0].clientX, e.touches[0].clientY); startDrawing(c.x, c.y); }
-        }, { passive: false });
-        canvas.addEventListener('touchmove', (e) => {
-            if (e.touches.length === 1) { e.preventDefault(); const c = getCanvasCoordinates(e.touches[0].clientX, e.touches[0].clientY); draw(c.x, c.y); }
-        }, { passive: false });
-        canvas.addEventListener('touchend', (e) => { e.preventDefault(); stopDrawing(); });
-
-        function startDrawing(x, y) {
-            if (!isDrawer || !roundActive) return;
-            drawing = true;
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            sendDrawData('start', x, y, currentColor);
-        }
-
-        function draw(x, y) {
-            if (!drawing || !isDrawer || !roundActive) return;
-            ctx.strokeStyle = currentColor;
-            ctx.lineTo(x, y);
-            ctx.stroke();
-            sendDrawData('draw', x, y, currentColor);
-        }
-
-        function stopDrawing() {
-            if (!isDrawer) return;
-            drawing = false;
-            sendDrawData('stop', 0, 0, currentColor);
-        }
-
-        function changeColor(color, element) {
-            currentColor = color;
-            document.querySelectorAll('.color-circle').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
-        }
-
-        function connectToGame() {
-            username = document.getElementById('input-username').value.trim();
-            roomName = document.getElementById('input-room').value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
-            if (!username || !roomName) { alert("Por favor, digite seu nome e o nome da sala!"); return; }
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('room-id').innerText = "Sala: " + roomName;
-            adicionarJogadorLista(username);
-            initMqtt();
-        }
-
-        function initMqtt() {
-            baseTopic = "gartic_clone_free_2026/" + roomName;
-            mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
-
-            mqttClient.on('connect', () => {
-                mqttClient.subscribe(baseTopic + "/chat");
-                mqttClient.subscribe(baseTopic + "/draw");
-                mqttClient.subscribe(baseTopic + "/presence");
-                mqttClient.subscribe(baseTopic + "/presence/echo");
-                mqttClient.subscribe(baseTopic + "/gameflow");
-                mqttClient.subscribe(baseTopic + "/scores");  // novo canal de pontuação
-
-                const identityPayload = JSON.stringify({ sender: "Sistema", text: `${username} entrou na sala.`, name: username });
-                mqttClient.publish(baseTopic + "/chat", identityPayload);
-                mqttClient.publish(baseTopic + "/presence", identityPayload);
-
-                setTimeout(() => { checkAndAutoStart(); }, 2000);
-            });
-
-            mqttClient.on('message', (topic, message) => {
-                const data = JSON.parse(message.toString());
-
-                if (topic === baseTopic + "/chat") {
-                    if (data.sender === "Sistema") {
-                        addSystemMessage(data.text);
-                        if (data.name) { adicionarJogadorLista(data.name); checkAndAutoStart(); }
-                    } else if (data.isCorrect) {
-                        addSuccessMessage(data.sender, data.text);
-                        // conceder pontos ao guesser e ao desenhista
-                        const pts = data.pts || 50;
-                        const drawerPts = Math.round(pts * 0.5);
-                        addScore(data.sender, pts);
-                        showScorePopup(pts, data.sender);
-                        if (currentDrawerName) {
-                            addScore(currentDrawerName, drawerPts);
-                            showScorePopup(drawerPts, currentDrawerName);
-                        }
-                        // broadcast dos scores atualizados
-                        broadcastScores();
-                        handleRoundEndAutomatically();
-                    } else {
-                        renderNormalMessage(data.sender, data.text);
-                    }
-                } else if (topic === baseTopic + "/draw" && !isDrawer) {
-                    renderRemoteDraw(data);
-                } else if (topic === baseTopic + "/presence") {
-                    if (data.name && data.name !== username) {
-                        adicionarJogadorLista(data.name);
-                        mqttClient.publish(baseTopic + "/presence/echo", JSON.stringify({ name: username }));
-                        checkAndAutoStart();
-                    }
-                } else if (topic === baseTopic + "/presence/echo") {
-                    if (data.name && data.name !== username) { adicionarJogadorLista(data.name); checkAndAutoStart(); }
-                } else if (topic === baseTopic + "/gameflow") {
-                    handleGameFlow(data);
-                } else if (topic === baseTopic + "/scores") {
-                    // sincronizar scores de outros jogadores
-                    if (data.scores) {
-                        for (const [nome, pts] of Object.entries(data.scores)) {
-                            if (nome !== username) {
-                                scores[nome] = pts;
-                                updatePlayerScoreDisplay(nome);
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function broadcastScores() {
-            if (!mqttClient) return;
-            mqttClient.publish(baseTopic + "/scores", JSON.stringify({ scores }));
-        }
-
-        function checkAndAutoStart() {
-            if (!roundActive && currentDrawerName === "" && listaJogadores.size > 0) {
-                const playersArr = Array.from(listaJogadores);
-                if (playersArr[0] === username) { drawNewRound(); }
-            }
-        }
-
-        function drawNewRound() {
-            if (!mqttClient) return;
-            const playersArr = Array.from(listaJogadores);
-            if (playersArr.length === 0) return;
-            currentDrawerIndex = (currentDrawerIndex + 1) % playersArr.length;
-            const nextDrawer = playersArr[currentDrawerIndex];
-            const randomWord = PALAVRAS[Math.floor(Math.random() * PALAVRAS.length)];
-            mqttClient.publish(baseTopic + "/gameflow", JSON.stringify({ drawer: nextDrawer, word: randomWord, currentIndex: currentDrawerIndex }));
-        }
-
-        function handleGameFlow(data) {
-            clearInterval(countdownInterval);
-            clearTimeout(nextRoundTimeout);
-            currentDrawerName = data.drawer;
-            currentWord = data.word;
-            currentDrawerIndex = data.currentIndex;
-            roundActive = true;
-            roundStartTime = Date.now();
-            currentTimeLeft = TEMPO_RODADA;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            document.querySelectorAll('.player-item').forEach(el => el.classList.remove('drawing'));
-            const drawerEl = document.getElementById("p-" + currentDrawerName.replace(/\s+/g, '-'));
-            if (drawerEl) drawerEl.classList.add('drawing');
-
-            if (currentDrawerName === username) {
-                isDrawer = true;
-                document.getElementById('word-display').innerText = "Sua Palavra: " + currentWord.toUpperCase();
-                addSystemMessage(`Sua vez de desenhar! Palavra: ${currentWord.toUpperCase()}`);
-            } else {
-                isDrawer = false;
-                let underscores = "_ ".repeat(currentWord.length).trim();
-                document.getElementById('word-display').innerText = "Desenho de " + currentDrawerName + " (" + underscores + ")";
-                addSystemMessage(`${currentDrawerName} está desenhando... tente adivinhar!`);
+            // Se trouxe palavras customizadas, compartilha com a sala
+            if (customWords.length > 0) {
+                mqttClient.publish(baseTopic + "/customwords", JSON.stringify({ words: customWords, sender: username }));
             }
 
-            startLocalTimer(TEMPO_RODADA);
-        }
-
-        function startLocalTimer(seconds) {
-            currentTimeLeft = seconds;
-            document.getElementById('timer-display').innerText = "Tempo: " + currentTimeLeft + "s";
-            countdownInterval = setInterval(() => {
-                currentTimeLeft--;
-                if (currentTimeLeft <= 0) {
-                    clearInterval(countdownInterval);
-                    document.getElementById('timer-display').innerText = "Tempo: 0s";
-                    addSystemMessage(`O tempo acabou! A palavra era: ${currentWord.toUpperCase()}`);
-                    handleRoundEndAutomatically();
-                } else {
-                    document.getElementById('timer-display').innerText = "Tempo: " + currentTimeLeft + "s";
-                }
-            }, 1000);
-        }
-
-        function handleRoundEndAutomatically() {
-            roundActive = false;
-            clearInterval(countdownInterval);
-            if (currentDrawerName === username) {
-                nextRoundTimeout = setTimeout(() => { drawNewRound(); }, 4000);
-            }
-        }
-
-        function adicionarJogadorLista(nome) {
-            if (listaJogadores.has(nome)) return;
-            listaJogadores.add(nome);
-            if (!scores[nome]) scores[nome] = 0;
-
-            const container = document.getElementById('players-list');
-            if (!container) return;
-            const item = document.createElement('div');
-            item.className = "player-item";
-            item.id = "p-" + nome.replace(/\s+/g, '-');
-
-            const nameSpan = document.createElement('span');
-            nameSpan.className = 'player-name';
-            nameSpan.textContent = nome;
-
-            const scoreSpan = document.createElement('span');
-            scoreSpan.className = 'player-score';
-            scoreSpan.textContent = '0';
-
-            item.appendChild(nameSpan);
-            item.appendChild(scoreSpan);
-            container.appendChild(item);
-        }
-
-        function sendDrawData(action, x, y, color) {
-            if (!mqttClient) return;
-            mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action, x, y, color }));
-        }
-
-        function renderRemoteDraw(data) {
-            ctx.strokeStyle = data.color;
-            if (data.action === 'start') { ctx.beginPath(); ctx.moveTo(data.x, data.y); }
-            else if (data.action === 'draw') { ctx.lineTo(data.x, data.y); ctx.stroke(); }
-            else if (data.action === 'clear') { ctx.clearRect(0, 0, canvas.width, canvas.height); }
-        }
-
-        function sendClear() {
-            if (!isDrawer) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (mqttClient) mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action: 'clear' }));
-        }
-
-        function sendChatMessage() {
-            const input = document.getElementById('chat-input');
-            const msgText = input.value.trim();
-            if (!msgText || !mqttClient) return;
-
-            const palpiteLimpo = msgText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            const respostaLimpa = currentWord.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-            if (roundActive && !isDrawer && palpiteLimpo === respostaLimpa) {
-                const pts = calcPoints(currentTimeLeft);
-                const payload = JSON.stringify({
-                    sender: username,
-                    text: `Acertou a palavra secreta: ${currentWord.toUpperCase()}! 🎯`,
-                    isCorrect: true,
-                    pts: pts
-                });
-                mqttClient.publish(baseTopic + "/chat", payload);
-            } else {
-                mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: msgText, isCorrect: false }));
-            }
-            input.value = "";
-        }
-
-        document.getElementById('chat-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') sendChatMessage();
+            setTimeout(() => { checkAndAutoStart(); }, 2000);
         });
 
-        function addSystemMessage(text) {
-            const chatMessages = document.getElementById('chat-messages');
-            const m = document.createElement('div');
-            m.className = "msg msg-system";
-            m.innerText = text;
-            chatMessages.appendChild(m);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+        mqttClient.on('message', (topic, message) => {
+            const data = JSON.parse(message.toString());
+
+            if (topic === baseTopic + "/chat") {
+                if (data.sender === "Sistema") {
+                    addSystemMessage(data.text);
+                    if (data.name) { adicionarJogadorLista(data.name); checkAndAutoStart(); }
+                } else if (data.isCorrect) {
+                    addSuccessMessage(data.sender, data.text);
+                    const pts = data.pts || 50;
+                    addScore(data.sender, pts);
+                    showScorePopup(pts, data.sender);
+                    if (currentDrawerName) {
+                        const drawerPts = Math.round(pts * 0.5);
+                        addScore(currentDrawerName, drawerPts);
+                        showScorePopup(drawerPts, currentDrawerName);
+                    }
+                    broadcastScores();
+                    handleRoundEndAutomatically();
+                } else {
+                    renderNormalMessage(data.sender, data.text);
+                }
+            } else if (topic === baseTopic + "/draw" && !isDrawer) {
+                renderRemoteDraw(data);
+            } else if (topic === baseTopic + "/presence") {
+                if (data.name && data.name !== username) {
+                    adicionarJogadorLista(data.name);
+                    mqttClient.publish(baseTopic + "/presence/echo", JSON.stringify({ name: username }));
+                    // Re-compartilha palavras custom pra quem chegou
+                    if (customWords.length > 0) {
+                        mqttClient.publish(baseTopic + "/customwords", JSON.stringify({ words: customWords, sender: username }));
+                    }
+                    checkAndAutoStart();
+                }
+            } else if (topic === baseTopic + "/presence/echo") {
+                if (data.name && data.name !== username) { adicionarJogadorLista(data.name); checkAndAutoStart(); }
+            } else if (topic === baseTopic + "/gameflow") {
+                handleGameFlow(data);
+            } else if (topic === baseTopic + "/scores") {
+                if (data.scores) {
+                    for (const [nome, pts] of Object.entries(data.scores)) {
+                        if (nome !== username) { scores[nome] = pts; updatePlayerScoreDisplay(nome); }
+                    }
+                }
+            } else if (topic === baseTopic + "/egg") {
+                // Animação do ovo pra todo mundo
+                animateEggThrow(data.thrower, data.target);
+                addEggMessage(data.thrower, data.target);
+            } else if (topic === baseTopic + "/customwords") {
+                // Sincroniza palavras customizadas de quem criou a sala
+                if (data.words && data.words.length > 0 && customWords.length === 0) {
+                    customWords = data.words;
+                    addSystemMessage(`📝 Palavras personalizadas carregadas de ${data.sender}! (${data.words.length} palavras)`);
+                }
+            }
+        });
+    }
+
+    function broadcastScores() {
+        if (!mqttClient) return;
+        mqttClient.publish(baseTopic + "/scores", JSON.stringify({ scores }));
+    }
+
+    function checkAndAutoStart() {
+        if (!roundActive && currentDrawerName === "" && listaJogadores.size > 0) {
+            const playersArr = Array.from(listaJogadores);
+            if (playersArr[0] === username) { drawNewRound(); }
+        }
+    }
+
+    function drawNewRound() {
+        if (!mqttClient) return;
+        const playersArr = Array.from(listaJogadores);
+        if (playersArr.length === 0) return;
+        currentDrawerIndex = (currentDrawerIndex + 1) % playersArr.length;
+        const nextDrawer = playersArr[currentDrawerIndex];
+        const lista = getPalavras();
+        const randomWord = lista[Math.floor(Math.random() * lista.length)];
+        mqttClient.publish(baseTopic + "/gameflow", JSON.stringify({ drawer: nextDrawer, word: randomWord, currentIndex: currentDrawerIndex }));
+    }
+
+    function handleGameFlow(data) {
+        clearInterval(countdownInterval);
+        clearTimeout(nextRoundTimeout);
+        currentDrawerName = data.drawer;
+        currentWord = data.word;
+        currentDrawerIndex = data.currentIndex;
+        roundActive = true;
+        currentTimeLeft = TEMPO_RODADA;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        document.querySelectorAll('.player-item').forEach(el => el.classList.remove('drawing'));
+        const drawerEl = document.getElementById("p-" + currentDrawerName.replace(/\s+/g,'-'));
+        if (drawerEl) drawerEl.classList.add('drawing');
+
+        const eggBtn = document.getElementById('btn-egg');
+
+        if (currentDrawerName === username) {
+            isDrawer = true;
+            eggBtn.style.display = 'none';
+            document.getElementById('word-display').innerText = "Sua Palavra: " + currentWord.toUpperCase();
+            addSystemMessage(`Sua vez de desenhar! Palavra: ${currentWord.toUpperCase()}`);
+        } else {
+            isDrawer = false;
+            eggBtn.style.display = 'inline-flex';
+            eggBtn.classList.remove('cooldown');
+            eggBtn.textContent = '🥚 Jogar Ovo!';
+            eggCooldown = false;
+            let underscores = "_ ".repeat(currentWord.length).trim();
+            document.getElementById('word-display').innerText = "Desenho de " + currentDrawerName + " (" + underscores + ")";
+            addSystemMessage(`${currentDrawerName} está desenhando... tente adivinhar!`);
         }
 
-        function addSuccessMessage(sender, text) {
-            const chatMessages = document.getElementById('chat-messages');
-            const m = document.createElement('div');
-            m.className = "msg msg-success";
-            m.innerText = `${sender} ${text}`;
-            chatMessages.appendChild(m);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            document.getElementById('word-display').innerText = "Adivinhado! Próxima rodada em instantes...";
-        }
+        startLocalTimer(TEMPO_RODADA);
+    }
 
-        function renderNormalMessage(sender, text) {
-            const chatMessages = document.getElementById('chat-messages');
-            const m = document.createElement('div');
-            m.className = "msg msg-normal";
-            const spanName = document.createElement('span');
-            spanName.className = "username";
-            spanName.innerText = sender + ": ";
-            m.appendChild(spanName);
-            m.appendChild(document.createTextNode(text));
-            chatMessages.appendChild(m);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+    function startLocalTimer(seconds) {
+        currentTimeLeft = seconds;
+        document.getElementById('timer-display').innerText = "Tempo: " + currentTimeLeft + "s";
+        countdownInterval = setInterval(() => {
+            currentTimeLeft--;
+            if (currentTimeLeft <= 0) {
+                clearInterval(countdownInterval);
+                document.getElementById('timer-display').innerText = "Tempo: 0s";
+                addSystemMessage(`O tempo acabou! A palavra era: ${currentWord.toUpperCase()}`);
+                document.getElementById('btn-egg').style.display = 'none';
+                handleRoundEndAutomatically();
+            } else {
+                document.getElementById('timer-display').innerText = "Tempo: " + currentTimeLeft + "s";
+            }
+        }, 1000);
+    }
+
+    function handleRoundEndAutomatically() {
+        roundActive = false;
+        clearInterval(countdownInterval);
+        document.getElementById('btn-egg').style.display = 'none';
+        if (currentDrawerName === username) {
+            nextRoundTimeout = setTimeout(() => { drawNewRound(); }, 4000);
         }
-    </script>
+    }
+
+    function adicionarJogadorLista(nome) {
+        if (listaJogadores.has(nome)) return;
+        listaJogadores.add(nome);
+        if (!scores[nome]) scores[nome] = 0;
+        const container = document.getElementById('players-list');
+        if (!container) return;
+        const item = document.createElement('div');
+        item.className = "player-item";
+        item.id = "p-" + nome.replace(/\s+/g,'-');
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'player-name';
+        nameSpan.textContent = nome;
+        const scoreSpan = document.createElement('span');
+        scoreSpan.className = 'player-score';
+        scoreSpan.textContent = '0';
+        item.appendChild(nameSpan);
+        item.appendChild(scoreSpan);
+        container.appendChild(item);
+    }
+
+    function sendDrawData(action, x, y, color) {
+        if (!mqttClient) return;
+        mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action, x, y, color }));
+    }
+
+    function renderRemoteDraw(data) {
+        ctx.strokeStyle = data.color;
+        if (data.action === 'start') { ctx.beginPath(); ctx.moveTo(data.x, data.y); }
+        else if (data.action === 'draw') { ctx.lineTo(data.x, data.y); ctx.stroke(); }
+        else if (data.action === 'clear') { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+    }
+
+    function sendClear() {
+        if (!isDrawer) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (mqttClient) mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action: 'clear' }));
+    }
+
+    function sendChatMessage() {
+        const input = document.getElementById('chat-input');
+        const msgText = input.value.trim();
+        if (!msgText || !mqttClient) return;
+        const palpiteLimpo = msgText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const respostaLimpa = currentWord.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        if (roundActive && !isDrawer && palpiteLimpo === respostaLimpa) {
+            const pts = calcPoints(currentTimeLeft);
+            mqttClient.publish(baseTopic + "/chat", JSON.stringify({
+                sender: username,
+                text: `Acertou a palavra secreta: ${currentWord.toUpperCase()}! 🎯`,
+                isCorrect: true, pts
+            }));
+        } else {
+            mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: msgText, isCorrect: false }));
+        }
+        input.value = "";
+    }
+
+    document.getElementById('chat-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendChatMessage();
+    });
+
+    function addSystemMessage(text) {
+        const c = document.getElementById('chat-messages');
+        const m = document.createElement('div');
+        m.className = "msg msg-system";
+        m.innerText = text;
+        c.appendChild(m); c.scrollTop = c.scrollHeight;
+    }
+
+    function addSuccessMessage(sender, text) {
+        const c = document.getElementById('chat-messages');
+        const m = document.createElement('div');
+        m.className = "msg msg-success";
+        m.innerText = `${sender} ${text}`;
+        c.appendChild(m); c.scrollTop = c.scrollHeight;
+        document.getElementById('word-display').innerText = "Adivinhado! Próxima rodada em instantes...";
+    }
+
+    function renderNormalMessage(sender, text) {
+        const c = document.getElementById('chat-messages');
+        const m = document.createElement('div');
+        m.className = "msg msg-normal";
+        const spanName = document.createElement('span');
+        spanName.className = "username";
+        spanName.innerText = sender + ": ";
+        m.appendChild(spanName);
+        m.appendChild(document.createTextNode(text));
+        c.appendChild(m); c.scrollTop = c.scrollHeight;
+    }
+
+    function addEggMessage(thrower, target) {
+        const c = document.getElementById('chat-messages');
+        const m = document.createElement('div');
+        m.className = "msg msg-egg";
+        m.innerText = `🥚 ${thrower} jogou um ovo em ${target}!`;
+        c.appendChild(m); c.scrollTop = c.scrollHeight;
+    }
+</script>
 </body>
-</html>
+</html>s
