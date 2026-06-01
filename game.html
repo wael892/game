@@ -600,6 +600,26 @@
     const PALAVRAS_PADRAO = ["Cachorro","Gato","Carro","Aviao","Banana","Maca","Casa","Arvore","Bola","Computador","Celular","Caneta","Chave","Livro","Relogio","Cadeira","Garfo","Sapato","Oculos","Sol","Lua","Flor","Peixe","Passaro"];
     function getPalavras() { return customWords.length > 0 ? customWords : PALAVRAS_PADRAO; }
 
+    // ===== STORAGE PERSISTENTE =====
+    async function salvarPalavras() {
+        try {
+            await window.storage.set("words:" + roomName, JSON.stringify(customWords), true);
+        } catch(e) { console.warn("Storage save error:", e); }
+    }
+
+    async function carregarPalavrasSalvas() {
+        try {
+            const result = await window.storage.get("words:" + roomName, true);
+            if (result && result.value) {
+                const salvas = JSON.parse(result.value);
+                if (Array.isArray(salvas) && salvas.length > 0) {
+                    salvas.forEach(w => { if (!customWords.includes(w)) customWords.push(w); });
+                    addSystemMessage("💾 " + customWords.length + " palavras carregadas da memória da sala!");
+                }
+            }
+        } catch(e) { /* sala nova */ }
+    }
+
     let currentTool = 'brush';
     let currentShape = 'free';
     let currentColor = '#000000';
@@ -1049,7 +1069,7 @@
     function initMqtt() {
         baseTopic = "gartic_clone_free_2026/" + roomName;
         mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
-        mqttClient.on('connect', () => {
+        mqttClient.on('connect', async () => {
             mqttClient.subscribe(baseTopic + "/chat");
             mqttClient.subscribe(baseTopic + "/draw");
             mqttClient.subscribe(baseTopic + "/presence");
@@ -1063,6 +1083,8 @@
             const identityPayload = JSON.stringify({ sender: "Sistema", text: `📢 ${username} entrou na sala.`, name: username, type: "system" });
             mqttClient.publish(baseTopic + "/chat", identityPayload);
             mqttClient.publish(baseTopic + "/presence", identityPayload);
+            // Carrega palavras salvas do storage antes de publicar
+            await carregarPalavrasSalvas();
             if (customWords.length > 0) { mqttClient.publish(baseTopic + "/customwords", JSON.stringify({ words: customWords, sender: username })); }
             setTimeout(() => { checkAndAutoStart(); }, 2000);
         });
@@ -1111,11 +1133,13 @@
                 if (data.words && data.words.length > 0 && customWords.length === 0) {
                     customWords = data.words;
                     addSystemMessage(`📝 Palavras de ${data.sender} carregadas! (${data.words.length})`);
+                    salvarPalavras();
                 }
             } else if (topic === baseTopic + "/customwords/add") {
                 if (data.words && data.words.length > 0) {
                     data.words.forEach(w => { if(!customWords.includes(w)) customWords.push(w); });
                     addSystemMessage(`📝 ${data.sender} adicionou +${data.words.length} novas palavras à lista da sala!`);
+                    salvarPalavras();
                 }
             }
         });
