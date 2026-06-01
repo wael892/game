@@ -69,7 +69,7 @@
 
         /* ===== SCOREBOARD ===== */
         #scoreboard {
-            flex: 0 0 130px; background: white; border-radius: 12px; padding: 10px;
+            flex: 0 0 150px; background: white; border-radius: 12px; padding: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex; flex-direction: column; overflow: hidden;
         }
@@ -80,16 +80,26 @@
         }
         .player-item {
             background: #f8f9fa; padding: 7px 8px; border-radius: 6px;
-            font-weight: bold; color: #333; font-size: 12px;
+            font-weight: bold; color: #333; font-size: 11px;
             border-left: 4px solid #118ab2;
             display: flex; justify-content: space-between; align-items: center;
         }
         .player-item.drawing { border-left-color: #ef476f; background: #ffe3e8; }
+        .player-info {
+            display: flex; flex-direction: column; gap: 1px; overflow: hidden;
+        }
+        .player-rank {
+            font-size: 9px; color: #777; font-weight: normal;
+        }
+        .player-name {
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
         .player-score {
             background: #118ab2; color: white; border-radius: 10px;
             padding: 1px 7px; font-size: 11px; font-weight: bold;
             min-width: 32px; text-align: center;
             transition: transform 0.2s, background 0.3s;
+            flex-shrink: 0;
         }
         .player-item.drawing .player-score { background: #ef476f; }
         .player-score.bump { transform: scale(1.4); background: #06d6a0 !important; }
@@ -307,7 +317,7 @@
             }
 
             #scoreboard {
-                flex: none !important; height: 36px !important;
+                flex: none !important; height: 40px !important;
                 width: 100%; padding: 3px 6px; border-radius: 6px;
                 flex-direction: row; align-items: center;
             }
@@ -365,12 +375,15 @@
 </header>
 
 <div id="main-container">
+    <!-- PLACAR -->
     <div id="scoreboard">
-        <h3>👥 Jogadores</h3>
+        <h3>🏆 Pódio</h3>
         <div id="players-list"></div>
     </div>
 
+    <!-- CANVAS + FERRAMENTAS -->
     <div id="canvas-wrapper">
+        <!-- Ferramentas laterais -->
         <div id="tools">
             <span class="tool-section-label">Modo</span>
             <div class="tool-btn active" id="tool-brush" title="Pincel" onclick="setTool('brush')">✏️</div>
@@ -397,6 +410,7 @@
             <div id="current-color-display" style="background:#000000;" title="Cor atual"></div>
         </div>
 
+        <!-- Canvas -->
         <div id="canvas-container">
             <canvas id="canvas"></canvas>
             <div id="fill-status">🪣 Modo Preenchimento</div>
@@ -407,6 +421,7 @@
         </div>
     </div>
 
+    <!-- PALETA DE CORES REDUZIDA -->
     <div id="palette-container">
         <span id="palette-label">🎨 Cores</span>
         <div id="palette-grid"></div>
@@ -414,6 +429,7 @@
         <div id="current-color-display-palette" style="width:30px;height:30px;border-radius:6px;border:2px solid white;flex-shrink:0;background:#000000;"></div>
     </div>
 
+    <!-- CHAT -->
     <div id="chat-container">
         <div id="chat-messages"></div>
         <div id="chat-input-area">
@@ -424,15 +440,11 @@
 </div>
 
 <script>
-    // ===== PALETA REDUZIDA APENAS COM AS CORES PRINCIPAIS =====
     const FULL_PALETTE = [
-        "#000000", "#ffffff", // Preto e Branco
-        "#808080", "#ff0000", // Cinza e Vermelho
-        "#ff6600", "#ffff00", // Laranja e Amarelo
-        "#00ff00", "#009900", // Verde Claro e Escuro
-        "#00ffff", "#0000ff", // Ciano e Azul
-        "#aa33ff", "#ff00ff", // Roxo e Magenta
-        "#ff99cc", "#663300"  // Rosa e Marrom
+        "#000000", "#ffffff", "#808080", "#ff0000",
+        "#ff6600", "#ffff00", "#00ff00", "#009900",
+        "#00ffff", "#0000ff", "#aa33ff", "#ff00ff",
+        "#ff99cc", "#663300"
     ];
 
     // ===== STATE =====
@@ -449,8 +461,8 @@
     function getPalavras() { return customWords.length > 0 ? customWords : PALAVRAS_PADRAO; }
 
     // ===== FERRAMENTAS =====
-    let currentTool = 'brush'; // 'brush' | 'eraser' | 'fill'
-    let currentShape = 'round'; // 'round' | 'square' | 'spray'
+    let currentTool = 'brush';
+    let currentShape = 'round';
     let currentColor = '#000000';
     let currentBrushSize = 2;
 
@@ -494,7 +506,6 @@
         if (currentTool === 'eraser') setTool('brush');
     }
 
-    // ===== BUILD PALETTE =====
     function buildPalette() {
         const grid = document.getElementById('palette-grid');
         grid.innerHTML = "";
@@ -524,6 +535,12 @@
     window.addEventListener('resize', ajustarAlturaJanela);
     window.addEventListener('load', ajustarAlturaJanela);
     ajustarAlturaJanela();
+
+    // ===== PONTUAÇÃO (ESCALA DE 1 A 10 POR VELOCIDADE) =====
+    function calcPoints(timeLeft) {
+        let pts = Math.ceil((timeLeft / TEMPO_RODADA) * 10);
+        return Math.max(1, Math.min(10, pts));
+    }
 
     function initCanvasResolution() {
         canvas.width = VIRTUAL_WIDTH; canvas.height = VIRTUAL_HEIGHT;
@@ -556,10 +573,8 @@
     function startDrawing(x, y) {
         if (!isDrawer || !roundActive) return;
         drawing = true;
-        
         const col = currentTool === 'eraser' ? '#ffffff' : currentColor;
-        ctx.fillStyle = col;
-        ctx.strokeStyle = col;
+        ctx.fillStyle = col; ctx.strokeStyle = col;
 
         if (currentTool !== 'eraser' && currentShape === 'spray') {
             generateSpray(x, y, col, currentBrushSize);
@@ -576,9 +591,7 @@
     function draw(x, y) {
         if (!drawing || !isDrawer || !roundActive) return;
         const col = currentTool === 'eraser' ? '#ffffff' : currentColor;
-        ctx.strokeStyle = col;
-        ctx.fillStyle = col;
-        ctx.lineWidth = currentBrushSize;
+        ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = currentBrushSize;
 
         if (currentTool !== 'eraser' && currentShape === 'spray') {
             generateSpray(x, y, col, currentBrushSize);
@@ -606,7 +619,6 @@
         }
     }
 
-    // ===== FLOOD FILL =====
     function doFill(startX, startY) {
         if (!isDrawer || !roundActive) return;
         const fillColor = currentColor;
@@ -614,20 +626,11 @@
         const data = imageData.data;
         const idx = (startY * canvas.width + startX) * 4;
         const targetR = data[idx], targetG = data[idx+1], targetB = data[idx+2], targetA = data[idx+3];
-
-        const fillR = parseInt(fillColor.slice(1,3),16);
-        const fillG = parseInt(fillColor.slice(3,5),16);
-        const fillB = parseInt(fillColor.slice(5,7),16);
-
+        const fillR = parseInt(fillColor.slice(1,3),16), fillG = parseInt(fillColor.slice(3,5),16), fillB = parseInt(fillColor.slice(5,7),16);
         if (targetR === fillR && targetG === fillG && targetB === fillB) return;
-
         const stack = [[startX, startY]];
         const visited = new Uint8Array(canvas.width * canvas.height);
-
-        function match(i) {
-            return Math.abs(data[i]-targetR)<32 && Math.abs(data[i+1]-targetG)<32 && Math.abs(data[i+2]-targetB)<32 && Math.abs(data[i+3]-targetA)<32;
-        }
-
+        function match(i) { return Math.abs(data[i]-targetR)<32 && Math.abs(data[i+1]-targetG)<32 && Math.abs(data[i+2]-targetB)<32 && Math.abs(data[i+3]-targetA)<32; }
         while (stack.length) {
             const [x, y] = stack.pop();
             if (x < 0 || x >= canvas.width || y < 0 || y >= canvas.height) continue;
@@ -639,28 +642,18 @@
             data[pi] = fillR; data[pi+1] = fillG; data[pi+2] = fillB; data[pi+3] = 255;
             stack.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
         }
-
         ctx.putImageData(imageData, 0, 0);
         sendDrawData('fill', startX, startY, fillColor, 0);
     }
 
-    // ===== REMOTE DRAW =====
     function renderRemoteDraw(data) {
-        ctx.strokeStyle = data.color;
-        ctx.fillStyle = data.color;
-        ctx.lineWidth = data.size || 2;
-        ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-        
+        ctx.strokeStyle = data.color; ctx.fillStyle = data.color; ctx.lineWidth = data.size || 2;
         if (data.action === 'start') { ctx.beginPath(); ctx.moveTo(data.x, data.y); }
         else if (data.action === 'draw') { ctx.lineTo(data.x, data.y); ctx.stroke(); }
-        else if (data.action === 'square_start' || data.action === 'square_draw') {
-            ctx.fillRect(data.x - data.size/2, data.y - data.size/2, data.size, data.size);
-        } else if (data.action === 'spray') {
-            generateSpray(data.x, data.y, data.color, data.size);
-        } else if (data.action === 'clear') { ctx.clearRect(0, 0, canvas.width, canvas.height); }
-        else if (data.action === 'fill') {
-            doRemoteFill(Math.round(data.x), Math.round(data.y), data.color);
-        }
+        else if (data.action === 'square_start' || data.action === 'square_draw') { ctx.fillRect(data.x - data.size/2, data.y - data.size/2, data.size, data.size); }
+        else if (data.action === 'spray') { generateSpray(data.x, data.y, data.color, data.size); }
+        else if (data.action === 'clear') { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+        else if (data.action === 'fill') { doRemoteFill(Math.round(data.x), Math.round(data.y), data.color); }
     }
 
     function doRemoteFill(startX, startY, fillColor) {
@@ -668,15 +661,11 @@
         const data = imageData.data;
         const idx = (startY * canvas.width + startX) * 4;
         const targetR = data[idx], targetG = data[idx+1], targetB = data[idx+2], targetA = data[idx+3];
-        const fillR = parseInt(fillColor.slice(1,3),16);
-        const fillG = parseInt(fillColor.slice(3,5),16);
-        const fillB = parseInt(fillColor.slice(5,7),16);
+        const fillR = parseInt(fillColor.slice(1,3),16), fillG = parseInt(fillColor.slice(3,5),16), fillB = parseInt(fillColor.slice(5,7),16);
         if (targetR === fillR && targetG === fillG && targetB === fillB) return;
         const stack = [[startX, startY]];
         const visited = new Uint8Array(canvas.width * canvas.height);
-        function match(i) {
-            return Math.abs(data[i]-targetR)<32 && Math.abs(data[i+1]-targetG)<32 && Math.abs(data[i+2]-targetB)<32 && Math.abs(data[i+3]-targetA)<32;
-        }
+        function match(i) { return Math.abs(data[i]-targetR)<32 && Math.abs(data[i+1]-targetG)<32 && Math.abs(data[i+2]-targetB)<32 && Math.abs(data[i+3]-targetA)<32; }
         while (stack.length) {
             const [x, y] = stack.pop();
             if (x < 0 || x >= canvas.width || y < 0 || y >= canvas.height) continue;
@@ -691,23 +680,64 @@
         ctx.putImageData(imageData, 0, 0);
     }
 
-    // ===== PONTUAÇÃO =====
-    function getScore(nome) { return scores[nome] || 0; }
+    // ===== ATUALIZAÇÃO DO PLACAR COM RATING DE POSIÇÃO (1º, 2º...) =====
+    function renderScoreboard() {
+        const container = document.getElementById('players-list');
+        if (!container) return;
+        container.innerHTML = "";
+
+        const sortedPlayers = Array.from(listaJogadores).sort((a, b) => (scores[b] || 0) - (scores[a] || 0));
+
+        sortedPlayers.forEach((nome, index) => {
+            const rank = index + 1;
+            let rankLabel = rank + "º";
+            if (rank === 1) rankLabel = "🥇 1º";
+            else if (rank === 2) rankLabel = "🥈 2º";
+            else if (rank === 3) rankLabel = "🥉 3º";
+
+            const item = document.createElement('div');
+            item.className = "player-item";
+            item.id = "p-" + nome.replace(/\s+/g,'-');
+            if (nome === currentDrawerName) item.classList.add('drawing');
+
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'player-info';
+
+            const rankSpan = document.createElement('span');
+            rankSpan.className = 'player-rank';
+            rankSpan.textContent = rankLabel;
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'player-name';
+            nameSpan.textContent = nome;
+
+            infoDiv.appendChild(rankSpan);
+            infoDiv.appendChild(nameSpan);
+
+            const scoreSpan = document.createElement('span');
+            scoreSpan.className = 'player-score';
+            scoreSpan.textContent = scores[nome] || 0;
+
+            item.appendChild(infoDiv);
+            item.appendChild(scoreSpan);
+            container.appendChild(item);
+        });
+    }
+
     function addScore(nome, pts) {
         if (!scores[nome]) scores[nome] = 0;
         scores[nome] += pts;
-        updatePlayerScoreDisplay(nome);
-    }
-    function updatePlayerScoreDisplay(nome) {
+        renderScoreboard();
         const el = document.getElementById("p-" + nome.replace(/\s+/g,'-'));
-        if (!el) return;
-        const scoreEl = el.querySelector('.player-score');
-        if (scoreEl) {
-            scoreEl.textContent = scores[nome] || 0;
-            scoreEl.classList.add('bump');
-            setTimeout(() => scoreEl.classList.remove('bump'), 350);
+        if (el) {
+            const scoreEl = el.querySelector('.player-score');
+            if (scoreEl) {
+                scoreEl.classList.add('bump');
+                setTimeout(() => scoreEl.classList.remove('bump'), 350);
+            }
         }
     }
+
     function showScorePopup(pts, nome) {
         const playerEl = document.getElementById("p-" + nome.replace(/\s+/g,'-'));
         if (!playerEl) return;
@@ -720,7 +750,6 @@
         document.body.appendChild(popup);
         setTimeout(() => popup.remove(), 1500);
     }
-    function calcPoints(timeLeft) { return Math.max(50, Math.round(50 + (timeLeft / TEMPO_RODADA) * 100)); }
 
     // ===== OVO =====
     function throwEgg() {
@@ -809,9 +838,9 @@
                     if (data.name) { adicionarJogadorLista(data.name); checkAndAutoStart(); }
                 } else if (data.isCorrect) {
                     addSuccessMessage(data.sender, data.text);
-                    const pts = data.pts || 50;
+                    const pts = data.pts || 5;
                     addScore(data.sender, pts); showScorePopup(pts, data.sender);
-                    if (currentDrawerName) { const dp = Math.round(pts*0.5); addScore(currentDrawerName, dp); showScorePopup(dp, currentDrawerName); }
+                    if (currentDrawerName) { const dp = Math.max(1, Math.round(pts * 0.5)); addScore(currentDrawerName, dp); showScorePopup(dp, currentDrawerName); }
                     broadcastScores();
                     handleRoundEndAutomatically();
                 } else { renderNormalMessage(data.sender, data.text); }
@@ -829,7 +858,7 @@
             } else if (topic === baseTopic + "/gameflow") {
                 handleGameFlow(data);
             } else if (topic === baseTopic + "/scores") {
-                if (data.scores) { for (const [n,p] of Object.entries(data.scores)) { if (n !== username) { scores[n]=p; updatePlayerScoreDisplay(n); } } }
+                if (data.scores) { for (const [n,p] of Object.entries(data.scores)) { if (n !== username) { scores[n]=p; } } renderScoreboard(); }
             } else if (topic === baseTopic + "/egg") {
                 animateEggThrow(data.thrower, data.target);
                 addEggMessage(data.thrower, data.target);
@@ -871,9 +900,9 @@
         currentDrawerIndex = data.currentIndex;
         roundActive = true; currentTimeLeft = TEMPO_RODADA;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        document.querySelectorAll('.player-item').forEach(el => el.classList.remove('drawing'));
-        const drawerEl = document.getElementById("p-" + currentDrawerName.replace(/\s+/g,'-'));
-        if (drawerEl) drawerEl.classList.add('drawing');
+        
+        renderScoreboard();
+        
         const eggBtn = document.getElementById('btn-egg');
         if (currentDrawerName === username) {
             isDrawer = true; eggBtn.style.display = 'none';
@@ -917,15 +946,7 @@
         if (listaJogadores.has(nome)) return;
         listaJogadores.add(nome);
         if (!scores[nome]) scores[nome] = 0;
-        const container = document.getElementById('players-list');
-        if (!container) return;
-        const item = document.createElement('div');
-        item.className = "player-item";
-        item.id = "p-" + nome.replace(/\s+/g,'-');
-        const nameSpan = document.createElement('span'); nameSpan.className = 'player-name'; nameSpan.textContent = "👤 " + nome;
-        const scoreSpan = document.createElement('span'); scoreSpan.className = 'player-score'; scoreSpan.textContent = '0';
-        item.appendChild(nameSpan); item.appendChild(scoreSpan);
-        container.appendChild(item);
+        renderScoreboard();
     }
 
     function sendDrawData(action, x, y, color, size) {
