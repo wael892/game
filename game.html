@@ -62,7 +62,6 @@
         }
         #timer-display { font-weight: bold; color: #ef476f; font-size: 14px; }
 
-        /* ===== PAINEL DE PALAVRAS IN-GAME ===== */
         .btn-words-toggle {
             background: #118ab2; color: white; border: none; padding: 6px 12px;
             border-radius: 20px; font-weight: bold; font-size: 12px; cursor: pointer;
@@ -88,7 +87,6 @@
             flex: 1; gap: 8px; overflow: hidden; min-height: 0;
         }
 
-        /* ===== SCOREBOARD ===== */
         #scoreboard {
             flex: 0 0 150px; background: white; border-radius: 12px; padding: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -106,15 +104,9 @@
             display: flex; justify-content: space-between; align-items: center;
         }
         .player-item.drawing { border-left-color: #ef476f; background: #ffe3e8; }
-        .player-info {
-            display: flex; flex-direction: column; gap: 1px; overflow: hidden;
-        }
-        .player-rank {
-            font-size: 9px; color: #777; font-weight: normal;
-        }
-        .player-name {
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
+        .player-info { display: flex; flex-direction: column; gap: 1px; overflow: hidden; }
+        .player-rank { font-size: 9px; color: #777; font-weight: normal; }
+        .player-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .player-score {
             background: #118ab2; color: white; border-radius: 10px;
             padding: 1px 7px; font-size: 11px; font-weight: bold;
@@ -137,7 +129,6 @@
             100% { opacity: 0; transform: translateY(-70px) scale(0.9); }
         }
 
-        /* ===== CANVAS ===== */
         #canvas-container {
             flex: 1; background: white; border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -146,12 +137,15 @@
         }
         canvas {
             flex: 1; background: #ffffff; cursor: crosshair;
-            touch-action: none; width: 100%; height: 100%; display: block;
+            /* CRÍTICO: touch-action none para permitir desenho via toque */
+            touch-action: none;
+            width: 100%; height: 100%; display: block;
+            /* Evita seleção de texto ao arrastar */
+            -webkit-user-select: none; user-select: none;
         }
         canvas.cursor-eraser { cursor: cell; }
         canvas.cursor-fill   { cursor: copy; }
 
-        /* ===== ANÚNCIO DE TELA CENTRAL ===== */
         #round-announcement {
             position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%) scale(0.5);
             background: rgba(26, 26, 46, 0.95); color: white;
@@ -165,7 +159,6 @@
         #round-announcement h2 { font-size: 22px; color: #ffd43b; margin-bottom: 4px; }
         #round-announcement p { font-size: 14px; color: #e6e6e6; font-weight: normal; }
 
-        /* ===== TOOLBAR ===== */
         #tools {
             background: #1a1a2e;
             display: flex; flex-direction: column;
@@ -187,6 +180,8 @@
             font-size: 16px; background: #2a2a3e;
             color: white; transition: all 0.15s;
             flex-shrink: 0;
+            /* Evita duplo-toque zoom em mobile */
+            -webkit-tap-highlight-color: transparent;
         }
         .tool-btn:hover { background: #3a3a5e; border-color: #ffd43b; }
         .tool-btn.active { background: #ffd43b; color: #1a1a2e; border-color: #ffa500; }
@@ -198,25 +193,20 @@
             cursor: pointer; border-radius: 50%; background: white;
             border: 2px solid #555; transition: border-color 0.15s, transform 0.1s;
             flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
         }
         .size-btn:hover { border-color: #ffd43b; transform: scale(1.15); }
         .size-btn.active { border-color: #ffd43b; box-shadow: 0 0 0 2px rgba(255,212,59,0.5); }
 
-        .tool-separator {
-            height: 1px; background: #333; margin: 3px 0;
-        }
+        .tool-separator { height: 1px; background: #333; margin: 3px 0; }
 
-        /* ===== COLOR PALETTE ===== */
         #palette-container {
             flex: 0 0 46px; background: #1a1a2e; border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex; flex-direction: column; overflow: hidden;
             padding: 6px 4px; gap: 4px;
         }
-        #palette-label {
-            font-size: 8px; color: #888; text-transform: uppercase;
-            letter-spacing: 0.5px; text-align: center;
-        }
+        #palette-label { font-size: 8px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
         #palette-grid {
             display: grid; grid-template-columns: repeat(2, 1fr);
             gap: 4px; overflow-y: auto; flex: 1;
@@ -230,43 +220,37 @@
             cursor: pointer; border: 2px solid transparent;
             transition: transform 0.1s, border-color 0.1s;
             flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
         }
         .color-swatch:hover { transform: scale(1.2); border-color: white; }
         .color-swatch.active { border-color: white; transform: scale(1.15); box-shadow: 0 0 0 1px #ffd43b; }
 
-        #color-custom {
-            width: 100%; height: 22px; border: none; border-radius: 4px;
-            cursor: pointer; padding: 0; flex-shrink: 0;
-        }
-
+        #color-custom { width: 100%; height: 22px; border: none; border-radius: 4px; cursor: pointer; padding: 0; flex-shrink: 0; }
         #current-color-display {
             width: 36px; height: 36px; border-radius: 8px;
             border: 3px solid white; flex-shrink: 0;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-            align-self: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3); align-self: center;
         }
 
-        /* ===== CLEAR BTN + ACTIONS ===== */
         #bottom-actions {
             display: flex; gap: 6px; padding: 4px 8px;
             background: #1a1a2e; border-top: 2px solid #2a2a3e;
             align-items: center; flex-shrink: 0;
         }
-        .btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; flex-shrink: 0; }
+        .btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
         .btn-clear { background: #ef476f; color: white; }
         .btn-skip { background: #f4a261; color: white; display: none; }
         
         .action-interact-btn {
             color: white; font-size: 13px; padding: 5px 10px; border-radius: 7px; border: none; cursor: pointer; font-weight: bold; flex-shrink: 0; display: none; transition: transform 0.1s, background 0.2s; box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            -webkit-tap-highlight-color: transparent;
         }
         #btn-egg { background: #f4a261; }
         #btn-egg:active { transform: scale(0.92); background: #e76f51; }
         #btn-flower { background: #2a9d8f; }
         #btn-flower:active { transform: scale(0.92); background: #1e7167; }
-        
         .action-interact-btn.cooldown { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
-        /* ===== INTERACTION ANIMATIONS ===== */
         .egg-fly, .flower-fly {
             position: fixed; font-size: 36px; pointer-events: none; z-index: 9999;
             animation: itemFly var(--duration, 0.9s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
@@ -277,16 +261,12 @@
             85%  { opacity: 1; transform: translate(var(--tx2), var(--ty2)) rotate(var(--rot)) scale(1.3); }
             100% { opacity: 0; transform: translate(var(--tx2), var(--ty2)) rotate(var(--rot)) scale(0.5); }
         }
-        
-        .egg-splash, .flower-splash {
-            position: fixed; font-size: 48px; pointer-events: none; z-index: 9999; animation: itemSplash 0.8s ease-out forwards;
-        }
+        .egg-splash, .flower-splash { position: fixed; font-size: 48px; pointer-events: none; z-index: 9999; animation: itemSplash 0.8s ease-out forwards; }
         @keyframes itemSplash {
             0%   { opacity: 1; transform: scale(0.5); }
             40%  { opacity: 1; transform: scale(1.6); }
             100% { opacity: 0; transform: scale(2.2); }
         }
-        
         @keyframes screenShake {
             0%  { transform: translate(0,0); }
             15% { transform: translate(-6px, 3px); }
@@ -297,23 +277,15 @@
             100%{ transform: translate(0,0); }
         }
         .shake { animation: screenShake 0.45s ease; }
-        
-        #egg-overlay {
-            position: fixed; inset: 0; pointer-events: none; background: rgba(255, 200, 0, 0.45); opacity: 0; z-index: 9998; transition: opacity 0.1s;
-        }
+        #egg-overlay { position: fixed; inset: 0; pointer-events: none; background: rgba(255, 200, 0, 0.45); opacity: 0; z-index: 9998; transition: opacity 0.1s; }
         #egg-overlay.splat { animation: splatFade 1.2s ease-out forwards; }
         @keyframes splatFade { 0% { opacity: 0.7; } 100% { opacity: 0; } }
-
-        .petal-particle {
-            position: fixed; pointer-events: none; font-size: 18px; z-index: 9997;
-            animation: petalFall var(--fall-duration, 2s) linear forwards;
-        }
+        .petal-particle { position: fixed; pointer-events: none; font-size: 18px; z-index: 9997; animation: petalFall var(--fall-duration, 2s) linear forwards; }
         @keyframes petalFall {
             0% { transform: translateY(-20px) translateX(0) rotate(0deg); opacity: 1; }
             100% { transform: translateY(105vh) translateX(var(--drift, 50px)) rotate(360deg); opacity: 0; }
         }
 
-        /* ===== DOIS CHATS INDEPENDENTES ===== */
         #right-chats-wrapper {
             flex: 0 0 240px; display: flex; flex-direction: column; gap: 8px; overflow: hidden;
         }
@@ -322,15 +294,8 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex; flex-direction: column; overflow: hidden;
         }
-        .chat-title-bar {
-            background: #1a1a2e; color: white; padding: 4px 8px;
-            font-size: 11px; font-weight: bold; text-transform: uppercase;
-            display: flex; align-items: center; gap: 4px; flex-shrink: 0;
-        }
-        .chat-messages-area {
-            flex: 1; padding: 8px; overflow-y: auto;
-            display: flex; flex-direction: column; gap: 4px;
-        }
+        .chat-title-bar { background: #1a1a2e; color: white; padding: 4px 8px; font-size: 11px; font-weight: bold; text-transform: uppercase; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        .chat-messages-area { flex: 1; padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
         .msg { padding: 4px 6px; border-radius: 5px; font-size: 11px; word-break: break-all; line-height: 1.3; }
         .msg-system  { background: #e2f0d9; color: #385723; font-weight: bold; }
         .msg-success { background: #d1e7dd; color: #0f5132; font-weight: bold; border: 1px solid #badbcc; }
@@ -339,64 +304,138 @@
         .msg-normal .username { font-weight: bold; color: #118ab2; }
         .msg-egg     { background: #fff3cd; color: #856404; font-weight: bold; border: 1px solid #ffc107; }
         .msg-flower  { background: #e3fafc; color: #0b7285; font-weight: bold; border: 1px solid #99e9f2; }
-        
-        .chat-input-row {
-            display: flex; padding: 5px; border-top: 1px solid #dee2e6;
-            background: #f8f9fa; flex-shrink: 0;
-        }
-        .chat-input-field {
-            flex: 1; padding: 6px; border: 2px solid #ced4da;
-            border-radius: 5px; outline: none; font-size: 12px;
-        }
+        .chat-input-row { display: flex; padding: 5px; border-top: 1px solid #dee2e6; background: #f8f9fa; flex-shrink: 0; }
+        .chat-input-field { flex: 1; padding: 6px; border: 2px solid #ced4da; border-radius: 5px; outline: none; font-size: 12px; }
         .chat-send-btn { background: #118ab2; color: white; margin-left: 4px; font-size: 11px; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
-        /* ===== MOBILE ===== */
+        /* ===== MOBILE - Layout completamente repensado ===== */
         @media (max-width: 768px) {
             body { padding: 4px; }
-            header { padding: 5px 8px; margin-bottom: 4px; height: 40px; border-radius: 8px; }
+
+            header {
+                padding: 5px 8px; margin-bottom: 4px;
+                height: 40px; border-radius: 8px; flex-shrink: 0;
+            }
             h1 { font-size: 11px; }
             #word-display { font-size: 10px; padding: 2px 6px; }
             #room-display { font-size: 9px; }
             #timer-display { font-size: 10px; }
             #words-management-panel { top: 45px; left: 4px; width: 260px; }
 
+            /* Container principal: coluna */
             #main-container {
-                position: absolute; top: 52px; left: 4px; right: 4px; bottom: 4px;
-                flex-direction: column; height: auto; gap: 4px;
+                flex-direction: column;
+                gap: 4px;
             }
 
+            /* Placar horizontal compacto */
             #scoreboard {
-                flex: none !important; height: 40px !important;
-                width: 100%; padding: 3px 6px; border-radius: 6px;
-                flex-direction: row; align-items: center;
+                flex: 0 0 38px !important;
+                width: 100%;
+                padding: 3px 6px;
+                border-radius: 6px;
+                flex-direction: row;
+                align-items: center;
             }
             #scoreboard h3 { display: none; }
-            #players-list { margin-top: 0; flex-direction: row !important; overflow-x: auto; overflow-y: hidden; height: 100%; align-items: center; gap: 5px; }
-            .player-item { padding: 3px 6px; font-size: 10px; height: 100%; white-space: nowrap; display: inline-flex; }
+            #players-list {
+                margin-top: 0;
+                flex-direction: row !important;
+                overflow-x: auto; overflow-y: hidden;
+                height: 100%;
+                align-items: center;
+                gap: 5px;
+            }
+            .player-item {
+                padding: 3px 6px; font-size: 10px;
+                height: 100%; white-space: nowrap;
+                display: inline-flex; flex-shrink: 0;
+            }
 
-            #canvas-wrapper { flex: none !important; height: 50% !important; width: 100%; display: flex; flex-direction: column; }
-            #canvas-container { flex: 1; }
-            #tools { width: 100%; flex-direction: row; overflow-x: auto; overflow-y: hidden; border-right: none; border-top: 2px solid #ffd43b; height: 48px; padding: 5px 8px; align-items: center; }
+            /* Wrapper do canvas ocupa o máximo de espaço disponível */
+            #canvas-wrapper {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                min-height: 0;
+                overflow: hidden;
+            }
+
+            /* Canvas container cresce para preencher */
+            #canvas-container {
+                flex: 1;
+                min-height: 0;
+            }
+
+            /* Toolbar HORIZONTAL abaixo do canvas */
+            #tools {
+                width: 100%;
+                flex-direction: row;
+                overflow-x: auto; overflow-y: hidden;
+                border-right: none;
+                border-top: 2px solid #ffd43b;
+                height: 52px;
+                padding: 6px 10px;
+                align-items: center;
+                gap: 8px;
+                flex-shrink: 0;
+            }
             .tool-section-label { display: none; }
-            .tool-separator { width: 1px; height: 100%; margin: 0 4px; }
-            .brush-sizes { flex-direction: row; gap: 5px; }
+            .tool-separator { width: 1px; height: 32px; background: #444; margin: 0 2px; flex-shrink: 0; }
+            .brush-sizes { flex-direction: row; gap: 6px; align-items: center; }
+            /* Botões de ferramentas maiores no mobile para toque fácil */
+            .tool-btn { width: 40px; height: 40px; font-size: 18px; flex-shrink: 0; }
+            .size-btn { flex-shrink: 0; }
 
-            #palette-container { flex: none !important; width: 100% !important; height: 36px; flex-direction: row; padding: 4px 8px; gap: 6px; border-radius: 8px; align-items: center; }
+            /* Paleta HORIZONTAL compacta */
+            #palette-container {
+                flex: 0 0 44px !important;
+                width: 100% !important;
+                height: 44px;
+                flex-direction: row;
+                padding: 5px 10px;
+                gap: 8px;
+                border-radius: 8px;
+                align-items: center;
+                flex-shrink: 0;
+            }
             #palette-label { display: none; }
-            #palette-grid { grid-template-columns: repeat(12, 1fr); overflow-x: auto; overflow-y: hidden; height: 100%; gap: 3px; }
-            .color-swatch { width: 20px; height: 20px; }
-            #current-color-display { width: 26px; height: 26px; }
-            #color-custom { width: 24px; height: 24px; }
+            #palette-grid {
+                grid-template-columns: repeat(14, 1fr);
+                overflow-x: auto; overflow-y: hidden;
+                height: 100%;
+                gap: 3px;
+                flex: 1;
+            }
+            .color-swatch { width: 24px; height: 24px; border-radius: 4px; }
+            #current-color-display { width: 30px; height: 30px; flex-shrink: 0; }
+            #color-custom { width: 28px; height: 28px; border-radius: 4px; flex-shrink: 0; }
 
-            #bottom-actions { padding: 3px 6px; }
+            #bottom-actions { padding: 3px 6px; flex-wrap: wrap; }
 
-            #right-chats-wrapper { flex: none !important; flex: 1 !important; width: 100%; border-radius: 8px; gap: 4px; }
+            /* Chats: altura fixa pequena no mobile */
+            #right-chats-wrapper {
+                flex: 0 0 160px !important;
+                width: 100%;
+                flex-direction: row;
+                gap: 4px;
+            }
+            .chat-box-container { flex: 1; min-width: 0; }
+            .chat-messages-area { font-size: 10px; }
         }
 
         #canvas-wrapper {
             flex: 1; display: flex; flex-direction: row; overflow: hidden; min-width: 0;
         }
         #canvas-container { flex: 1; }
+
+        #fill-status {
+            display: none;
+            position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.7); color: white;
+            padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;
+            pointer-events: none; z-index: 10;
+        }
     </style>
 </head>
 <body>
@@ -417,8 +456,6 @@
 <header>
     <h1>🎨 GARTIC</h1>
     <button class="btn-words-toggle" onclick="toggleWordsPanel()">📝 Palavras</button>
-    
-    <!-- PAINEL EM TEMPO REAL PARA ADICIONAR NOVAS PALAVRAS -->
     <div id="words-management-panel">
         <label>➕ Adicionar Palavras na Sala:</label>
         <textarea id="runtime-new-words" placeholder="Ex: Avô, Pastel, Tubarão... (separe por vírgula)"></textarea>
@@ -427,7 +464,6 @@
             <button class="btn" style="background:#06d6a0; color:white; padding:4px 8px; font-size:11px;" onclick="submitRuntimeWords()">Adicionar</button>
         </div>
     </div>
-
     <div id="word-display">⏳ Aguardando jogadores...</div>
     <div id="room-display">
         <span id="room-id">Sala: —</span>
@@ -436,15 +472,12 @@
 </header>
 
 <div id="main-container">
-    <!-- PLACAR -->
     <div id="scoreboard">
         <h3>🏆 Pódio</h3>
         <div id="players-list"></div>
     </div>
 
-    <!-- CANVAS + FERRAMENTAS -->
     <div id="canvas-wrapper">
-        <!-- Ferramentas laterais -->
         <div id="tools">
             <span class="tool-section-label">Modo</span>
             <div class="tool-btn active" id="tool-brush" title="Pincel Livre" onclick="setTool('brush')">✏️</div>
@@ -473,13 +506,11 @@
             <div id="current-color-display" style="background:#000000;" title="Cor atual"></div>
         </div>
 
-        <!-- Canvas -->
         <div id="canvas-container">
             <div id="round-announcement">
                 <h2 id="announcement-title">FIM DE RODADA</h2>
                 <p id="announcement-desc">Descrição do que rolou</p>
             </div>
-
             <canvas id="canvas"></canvas>
             <div id="fill-status">🪣 Modo Preenchimento</div>
             <div id="bottom-actions">
@@ -491,7 +522,6 @@
         </div>
     </div>
 
-    <!-- PALETA DE CORES REDUZIDA -->
     <div id="palette-container">
         <span id="palette-label">🎨 Cores</span>
         <div id="palette-grid"></div>
@@ -499,7 +529,6 @@
         <div id="current-color-display-palette" style="width:30px;height:30px;border-radius:6px;border:2px solid white;flex-shrink:0;background:#000000;"></div>
     </div>
 
-    <!-- WRAPPER DOS DOIS CHATS -->
     <div id="right-chats-wrapper">
         <div class="chat-box-container">
             <div class="chat-title-bar">🎯 Palpites</div>
@@ -509,7 +538,6 @@
                 <button class="chat-send-btn" onclick="sendGuessMessage()">➤</button>
             </div>
         </div>
-
         <div class="chat-box-container">
             <div class="chat-title-bar">💬 Conversa</div>
             <div id="chat-messages" class="chat-messages-area"></div>
@@ -523,13 +551,12 @@
 
 <script>
     const FULL_PALETTE = [
-        "#000000", "#ffffff", "#808080", "#ff0000",
-        "#ff6600", "#ffff00", "#00ff00", "#009900",
-        "#00ffff", "#0000ff", "#aa33ff", "#ff00ff",
-        "#ff99cc", "#663300"
+        "#000000","#ffffff","#808080","#ff0000",
+        "#ff6600","#ffff00","#00ff00","#009900",
+        "#00ffff","#0000ff","#aa33ff","#ff00ff",
+        "#ff99cc","#663300"
     ];
 
-    // ===== STATE =====
     let username = "", roomName = "", mqttClient = null, baseTopic = "";
     const listaJogadores = new Set();
     const scores = {};
@@ -542,12 +569,10 @@
     const PALAVRAS_PADRAO = ["Cachorro","Gato","Carro","Aviao","Banana","Maca","Casa","Arvore","Bola","Computador","Celular","Caneta","Chave","Livro","Relogio","Cadeira","Garfo","Sapato","Oculos","Sol","Lua","Flor","Peixe","Passaro"];
     function getPalavras() { return customWords.length > 0 ? customWords : PALAVRAS_PADRAO; }
 
-    // ===== FERRAMENTAS =====
     let currentTool = 'brush';
     let currentShape = 'free';
     let currentColor = '#000000';
     let currentBrushSize = 2;
-
     let startX = 0, startY = 0;
     let snapshot = null;
     let lastFormCoordinates = null;
@@ -561,7 +586,6 @@
         const textarea = document.getElementById('runtime-new-words');
         const content = textarea.value.trim();
         if (!content || !mqttClient) return;
-
         const newWordsArr = content.split(',').map(w => w.trim()).filter(w => w.length > 0);
         if (newWordsArr.length > 0) {
             mqttClient.publish(baseTopic + "/customwords/add", JSON.stringify({ words: newWordsArr, sender: username }));
@@ -576,14 +600,9 @@
         document.getElementById('tool-' + tool).classList.add('active');
         const c = document.getElementById('canvas');
         c.className = '';
-        if (tool === 'eraser') {
-            c.classList.add('cursor-eraser');
-            setShape('free');
-        } else if (tool === 'fill') {
-            c.classList.add('cursor-fill');
-        } else {
-            document.getElementById('shape-' + currentShape).classList.add('active');
-        }
+        if (tool === 'eraser') { c.classList.add('cursor-eraser'); setShape('free'); }
+        else if (tool === 'fill') { c.classList.add('cursor-fill'); }
+        else { document.getElementById('shape-' + currentShape).classList.add('active'); }
         document.getElementById('fill-status').style.display = tool === 'fill' ? 'block' : 'none';
     }
 
@@ -665,45 +684,58 @@
         };
     }
 
+    // ===== EVENTOS DE MOUSE =====
     canvas.addEventListener('mousedown', (e) => {
         if (!isDrawer || !roundActive) return;
+        e.preventDefault();
         const c = getCanvasCoordinates(e.clientX, e.clientY);
         if (currentTool === 'fill') { doFill(Math.round(c.x), Math.round(c.y)); return; }
         onStartDrag(c.x, c.y);
     });
-    canvas.addEventListener('mousemove', (e) => { 
+    canvas.addEventListener('mousemove', (e) => {
         if (!drawing) return;
-        const c = getCanvasCoordinates(e.clientX, e.clientY); 
-        onMoveDrag(c.x, c.y); 
+        e.preventDefault();
+        const c = getCanvasCoordinates(e.clientX, e.clientY);
+        onMoveDrag(c.x, c.y);
     });
-    canvas.addEventListener('mouseup', onStopDrag);
-    canvas.addEventListener('mouseout', onStopDrag);
+    canvas.addEventListener('mouseup', (e) => { e.preventDefault(); onStopDrag(); });
+    canvas.addEventListener('mouseleave', (e) => { if (drawing) onStopDrag(); });
 
-    canvas.addEventListener('touchstart', (e) => { 
-        if (e.touches.length === 1) { 
-            e.preventDefault(); 
-            const c = getCanvasCoordinates(e.touches[0].clientX, e.touches[0].clientY); 
-            if (currentTool === 'fill') { doFill(Math.round(c.x), Math.round(c.y)); return; } 
-            onStartDrag(c.x, c.y); 
-        } 
+    // ===== EVENTOS DE TOUCH - CORRIGIDOS =====
+    canvas.addEventListener('touchstart', (e) => {
+        if (!isDrawer || !roundActive) return;
+        e.preventDefault(); // ESSENCIAL: impede scroll ao desenhar
+        if (e.touches.length !== 1) return;
+        const touch = e.touches[0];
+        const c = getCanvasCoordinates(touch.clientX, touch.clientY);
+        if (currentTool === 'fill') { doFill(Math.round(c.x), Math.round(c.y)); return; }
+        onStartDrag(c.x, c.y);
     }, { passive: false });
-    canvas.addEventListener('touchmove', (e) => { 
-        if (e.touches.length === 1 && drawing) { 
-            e.preventDefault(); 
-            const c = getCanvasCoordinates(e.touches[0].clientX, e.touches[0].clientY); 
-            onMoveDrag(c.x, c.y); 
-        } 
+
+    canvas.addEventListener('touchmove', (e) => {
+        if (!drawing) return;
+        e.preventDefault(); // ESSENCIAL: impede scroll ao desenhar
+        if (e.touches.length !== 1) return;
+        const touch = e.touches[0];
+        const c = getCanvasCoordinates(touch.clientX, touch.clientY);
+        onMoveDrag(c.x, c.y);
     }, { passive: false });
-    canvas.addEventListener('touchend', (e) => { e.preventDefault(); onStopDrag(); });
+
+    canvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        onStopDrag();
+    }, { passive: false });
+
+    canvas.addEventListener('touchcancel', (e) => {
+        e.preventDefault();
+        onStopDrag();
+    }, { passive: false });
 
     function onStartDrag(x, y) {
         drawing = true;
-        startX = x;
-        startY = y;
-        
+        startX = x; startY = y;
         const col = currentTool === 'eraser' ? '#ffffff' : currentColor;
         ctx.fillStyle = col; ctx.strokeStyle = col; ctx.lineWidth = currentBrushSize;
-
         if (currentShape === 'free') {
             ctx.beginPath(); ctx.moveTo(x, y);
             sendDrawData('start', x, y, col, currentBrushSize);
@@ -713,9 +745,9 @@
     }
 
     function onMoveDrag(x, y) {
+        if (!drawing) return;
         const col = currentTool === 'eraser' ? '#ffffff' : currentColor;
         ctx.lineWidth = currentBrushSize;
-
         if (currentShape === 'free') {
             ctx.lineTo(x, y); ctx.stroke();
             sendDrawData('draw', x, y, col, currentBrushSize);
@@ -731,7 +763,6 @@
     function onStopDrag() {
         if (!drawing) return;
         drawing = false;
-
         if (currentShape !== 'free' && currentShape !== 'spray') {
             const lastEvent = lastFormCoordinates;
             if (lastEvent) {
@@ -745,7 +776,6 @@
     function drawBoundingShape(shape, sX, sY, cX, cY, color, size) {
         ctx.strokeStyle = color; ctx.fillStyle = "transparent"; ctx.lineWidth = size;
         lastFormCoordinates = { shape, sX, sY, cX, cY };
-
         ctx.beginPath();
         if (shape === 'square') {
             ctx.strokeRect(sX, sY, cX - sX, cY - sY);
@@ -764,8 +794,7 @@
         for (let i = 0; i < density; i++) {
             const angle = Math.random() * Math.PI * 2;
             const radius = Math.random() * (size * 3);
-            const pX = x + Math.cos(angle) * radius; const pY = y + Math.sin(angle) * radius;
-            ctx.fillRect(pX, pY, 1, 1);
+            ctx.fillRect(x + Math.cos(angle) * radius, y + Math.sin(angle) * radius, 1, 1);
         }
     }
 
@@ -851,19 +880,15 @@
             if (rank === 1) rankLabel = "🥇 1º";
             else if (rank === 2) rankLabel = "🥈 2º";
             else if (rank === 3) rankLabel = "🥉 3º";
-
             const item = document.createElement('div');
             item.className = "player-item";
             item.id = "p-" + nome.replace(/\s+/g,'-');
             if (nome === currentDrawerName) item.classList.add('drawing');
-
             const infoDiv = document.createElement('div'); infoDiv.className = 'player-info';
             const rankSpan = document.createElement('span'); rankSpan.className = 'player-rank'; rankSpan.textContent = rankLabel;
             const nameSpan = document.createElement('span'); nameSpan.className = 'player-name'; nameSpan.textContent = nome;
-
             infoDiv.appendChild(rankSpan); infoDiv.appendChild(nameSpan);
             const scoreSpan = document.createElement('span'); scoreSpan.className = 'player-score'; scoreSpan.textContent = scores[nome] || 0;
-
             item.appendChild(infoDiv); item.appendChild(scoreSpan);
             container.appendChild(item);
         });
@@ -876,10 +901,7 @@
         const el = document.getElementById("p-" + nome.replace(/\s+/g,'-'));
         if (el) {
             const scoreEl = el.querySelector('.player-score');
-            if (scoreEl) {
-                scoreEl.classList.add('bump');
-                setTimeout(() => scoreEl.classList.remove('bump'), 350);
-            }
+            if (scoreEl) { scoreEl.classList.add('bump'); setTimeout(() => scoreEl.classList.remove('bump'), 350); }
         }
     }
 
@@ -887,7 +909,6 @@
         const box = document.getElementById('round-announcement');
         document.getElementById('announcement-title').innerText = title;
         document.getElementById('announcement-desc').innerText = desc;
-        
         box.classList.add('show');
         setTimeout(() => { box.classList.remove('show'); }, 3200);
     }
@@ -907,7 +928,6 @@
 
     function throwInteractItem(itemType) {
         if (!roundActive || isDrawer || !mqttClient) return;
-        
         if (itemType === 'egg') {
             if (eggCooldown) return;
             eggCooldown = true;
@@ -928,27 +948,21 @@
     function animateInteractThrow(thrower, target, type) {
         const throwerEl = document.getElementById("p-" + thrower.replace(/\s+/g,'-'));
         const canvasRect = canvas.getBoundingClientRect();
-        let startX = window.innerWidth / 2, startY = window.innerHeight - 100;
-        if (throwerEl) { const r = throwerEl.getBoundingClientRect(); startX = r.left + r.width/2; startY = r.top + r.height/2; }
-        
+        let sx = window.innerWidth / 2, sy = window.innerHeight - 100;
+        if (throwerEl) { const r = throwerEl.getBoundingClientRect(); sx = r.left + r.width/2; sy = r.top + r.height/2; }
         const targetX = canvasRect.left + canvasRect.width/2 + (Math.random()-0.5)*120;
         const targetY = canvasRect.top + canvasRect.height/2 + (Math.random()-0.5)*100;
-        
         const element = document.createElement('div');
         element.className = type === 'egg' ? 'egg-fly' : 'flower-fly';
         element.textContent = type === 'egg' ? '🥚' : '🌹';
-        
-        const dx = targetX - startX, dy = targetY - startY;
+        const dx = targetX - sx, dy = targetY - sy;
         const dist = Math.sqrt(dx*dx + dy*dy);
         const duration = Math.max(0.5, Math.min(1.0, dist/900));
         const angle = Math.atan2(dy, dx) * (180/Math.PI) + 90;
-        
         element.style.setProperty('--tx', dx*0.75+'px'); element.style.setProperty('--ty', dy*0.75+'px');
-        element.style.setProperty('--tx2', dx+'px'); element.style.setProperty('--tx2', dx+'px');
-        element.style.setProperty('--rot', angle+'deg'); element.style.setProperty('--duration', duration+'s');
-        element.style.left = startX+'px'; element.style.top = startY+'px';
+        element.style.setProperty('--tx2', dx+'px'); element.style.setProperty('--rot', angle+'deg'); element.style.setProperty('--duration', duration+'s');
+        element.style.left = sx+'px'; element.style.top = sy+'px';
         document.body.appendChild(element);
-        
         setTimeout(() => {
             element.remove();
             const splash = document.createElement('div');
@@ -957,16 +971,13 @@
             splash.style.left = (targetX-24)+'px'; splash.style.top = (targetY-24)+'px';
             document.body.appendChild(splash);
             setTimeout(() => splash.remove(), 900);
-            
             if (target === username) {
                 if (type === 'egg') {
                     const overlay = document.getElementById('egg-overlay');
                     overlay.classList.remove('splat'); void overlay.offsetWidth; overlay.classList.add('splat');
                     document.getElementById('canvas-container').classList.add('shake');
                     setTimeout(() => document.getElementById('canvas-container').classList.remove('shake'), 500);
-                } else if (type === 'flower') {
-                    createPetalShower();
-                }
+                } else if (type === 'flower') { createPetalShower(); }
             }
         }, duration * 1000);
     }
@@ -976,7 +987,7 @@
             setTimeout(() => {
                 const petal = document.createElement('div');
                 petal.className = 'petal-particle';
-                petal.textContent = ['🌸', '🌹', '🍃'][Math.floor(Math.random() * 3)];
+                petal.textContent = ['🌸','🌹','🍃'][Math.floor(Math.random() * 3)];
                 petal.style.left = Math.random() * window.innerWidth + 'px';
                 petal.style.setProperty('--drift', (Math.random() * 160 - 80) + 'px');
                 petal.style.setProperty('--fall-duration', (Math.random() * 1.5 + 1.5) + 's');
@@ -991,7 +1002,6 @@
         mqttClient.publish(baseTopic + "/gameflow/skip", JSON.stringify({ drawer: username, word: currentWord }));
     }
 
-    // ===== LOGIN / MQTT =====
     function connectToGame() {
         username = document.getElementById('input-username').value.trim();
         roomName = document.getElementById('input-room').value.trim().toLowerCase().replace(/[^a-z0-9]/g,"");
@@ -1018,7 +1028,6 @@
             mqttClient.subscribe(baseTopic + "/interact");
             mqttClient.subscribe(baseTopic + "/customwords");
             mqttClient.subscribe(baseTopic + "/customwords/add");
-            
             const identityPayload = JSON.stringify({ sender: "Sistema", text: `📢 ${username} entrou na sala.`, name: username, type: "system" });
             mqttClient.publish(baseTopic + "/chat", identityPayload);
             mqttClient.publish(baseTopic + "/presence", identityPayload);
@@ -1038,7 +1047,7 @@
                         const pts = data.pts || 5;
                         addScore(data.sender, pts); showScorePopup(pts, data.sender);
                         if (currentDrawerName) { const dp = Math.max(1, Math.round(pts * 0.5)); addScore(currentDrawerName, dp); showScorePopup(dp, currentDrawerName); }
-                        broadcastScores(); 
+                        broadcastScores();
                         showGarticAnnouncement("🎯 PALAVRA DESCOBERTA!", `${data.sender} acertou a palavra secreta: ${currentWord.toUpperCase()}!`);
                         handleRoundEndAutomatically();
                     } else { renderWrongGuessMessage(data.sender, data.text); }
@@ -1072,11 +1081,8 @@
                     addSystemMessage(`📝 Palavras de ${data.sender} carregadas! (${data.words.length})`);
                 }
             } else if (topic === baseTopic + "/customwords/add") {
-                // Sincroniza dinamicamente as novas palavras injetadas em tempo de execução
                 if (data.words && data.words.length > 0) {
-                    data.words.forEach(w => {
-                        if(!customWords.includes(w)) customWords.push(w);
-                    });
+                    data.words.forEach(w => { if(!customWords.includes(w)) customWords.push(w); });
                     addSystemMessage(`📝 ${data.sender} adicionou +${data.words.length} novas palavras à lista da sala!`);
                 }
             }
@@ -1111,11 +1117,9 @@
         roundActive = true; currentTimeLeft = TEMPO_RODADA;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         renderScoreboard();
-        
         const eggBtn = document.getElementById('btn-egg');
         const flowerBtn = document.getElementById('btn-flower');
         const skipBtn = document.getElementById('btn-skip');
-        
         if (currentDrawerName === username) {
             isDrawer = true; eggBtn.style.display = 'none'; flowerBtn.style.display = 'none';
             skipBtn.style.display = 'inline-flex';
@@ -1142,7 +1146,6 @@
                 document.getElementById('timer-display').innerText = "⏱️ Tempo: 0s";
                 addSystemMessage(`🛑 Tempo esgotado! A palavra era: ${currentWord.toUpperCase()}`);
                 showGarticAnnouncement("⏳ TEMPO ESGOTADO!", `Ninguém acertou a palavra secreta! Ela era: ${currentWord.toUpperCase()}`);
-                
                 document.getElementById('btn-egg').style.display = 'none';
                 document.getElementById('btn-flower').style.display = 'none';
                 document.getElementById('btn-skip').style.display = 'none';
@@ -1182,10 +1185,8 @@
         const input = document.getElementById('guess-input'); const msgText = input.value.trim();
         if (!msgText || !mqttClient) return;
         if (!roundActive || isDrawer) { input.value = ""; return; }
-
         const palpiteLimpo = msgText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
         const respostaLimpa = currentWord.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-        
         if (palpiteLimpo === respostaLimpa) {
             const pts = calcPoints(currentTimeLeft);
             mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: `Acertou: ${currentWord.toUpperCase()}! 🎯`, isCorrect: true, pts, type: "guess" }));
@@ -1205,9 +1206,8 @@
     document.getElementById('guess-input').addEventListener('keypress', function(e) { if (e.key === 'Enter') sendGuessMessage(); });
     document.getElementById('chat-input').addEventListener('keypress', function(e) { if (e.key === 'Enter') sendChatMessage(); });
 
-    // ===== RENDERIZAÇÃO DAS MENSAGENS NOS CHATS =====
-    function addSystemMessage(text) { 
-        const c = document.getElementById('guess-messages'); const m = document.createElement('div'); m.className = "msg msg-system"; m.innerText = text; c.appendChild(m); c.scrollTop = c.scrollHeight; 
+    function addSystemMessage(text) {
+        const c = document.getElementById('guess-messages'); const m = document.createElement('div'); m.className = "msg msg-system"; m.innerText = text; c.appendChild(m); c.scrollTop = c.scrollHeight;
     }
     function addSuccessMessage(sender, text) {
         const c = document.getElementById('guess-messages'); const m = document.createElement('div'); m.className = "msg msg-success"; m.innerText = `🎯 ${sender} ${text}`; c.appendChild(m); c.scrollTop = c.scrollHeight;
@@ -1220,11 +1220,11 @@
         const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-normal"; const s = document.createElement('span'); s.className = "username"; s.innerText = sender + ": ";
         m.appendChild(s); m.appendChild(document.createTextNode(text)); c.appendChild(m); c.scrollTop = c.scrollHeight;
     }
-    function addEggMessage(thrower, target) { 
-        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-egg"; m.innerText = `🥚 ${thrower} jogou um ovo em ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight; 
+    function addEggMessage(thrower, target) {
+        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-egg"; m.innerText = `🥚 ${thrower} jogou um ovo em ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
     }
-    function addFlowerMessage(thrower, target) { 
-        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-flower"; m.innerText = `🌹 ${thrower} enviou uma flor de apoio para ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight; 
+    function addFlowerMessage(thrower, target) {
+        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-flower"; m.innerText = `🌹 ${thrower} enviou uma flor de apoio para ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
     }
 
     setActiveColor('#000000');
