@@ -127,7 +127,7 @@
             padding: 8px; gap: 6px;
             border-right: 3px solid #ffd43b;
             flex-shrink: 0; overflow-y: auto;
-            width: 52px;
+            width: 56px;
         }
 
         .tool-section-label {
@@ -136,7 +136,7 @@
         }
 
         .tool-btn {
-            width: 36px; height: 36px; border-radius: 8px;
+            width: 38px; height: 38px; border-radius: 8px;
             border: 2px solid transparent; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
             font-size: 16px; background: #2a2a3e;
@@ -163,10 +163,10 @@
 
         /* ===== COLOR PALETTE ===== */
         #palette-container {
-            flex: 0 0 48px; background: #1a1a2e; border-radius: 12px;
+            flex: 0 0 46px; background: #1a1a2e; border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex; flex-direction: column; overflow: hidden;
-            padding: 6px 4px; gap: 3px;
+            padding: 6px 4px; gap: 4px;
         }
         #palette-label {
             font-size: 8px; color: #888; text-transform: uppercase;
@@ -174,7 +174,7 @@
         }
         #palette-grid {
             display: grid; grid-template-columns: repeat(2, 1fr);
-            gap: 3px; overflow-y: auto; flex: 1;
+            gap: 4px; overflow-y: auto; flex: 1;
         }
         #palette-grid::-webkit-scrollbar { width: 3px; }
         #palette-grid::-webkit-scrollbar-track { background: transparent; }
@@ -315,7 +315,6 @@
             #players-list { margin-top: 0; flex-direction: row !important; overflow-x: auto; overflow-y: hidden; height: 100%; align-items: center; gap: 5px; }
             .player-item { padding: 3px 6px; font-size: 10px; height: 100%; white-space: nowrap; display: inline-flex; }
 
-            /* Mobile: tools go horizontal below canvas */
             #canvas-wrapper { flex: none !important; height: 52% !important; width: 100%; display: flex; flex-direction: column; }
             #canvas-container { flex: 1; }
             #tools { width: 100%; flex-direction: row; overflow-x: auto; overflow-y: hidden; border-right: none; border-top: 2px solid #ffd43b; height: 48px; padding: 5px 8px; align-items: center; }
@@ -325,7 +324,7 @@
 
             #palette-container { flex: none !important; width: 100% !important; height: 36px; flex-direction: row; padding: 4px 8px; gap: 6px; border-radius: 8px; align-items: center; }
             #palette-label { display: none; }
-            #palette-grid { grid-template-columns: repeat(20, 1fr); overflow-x: auto; overflow-y: hidden; height: 100%; gap: 3px; }
+            #palette-grid { grid-template-columns: repeat(12, 1fr); overflow-x: auto; overflow-y: hidden; height: 100%; gap: 3px; }
             .color-swatch { width: 20px; height: 20px; }
             #current-color-display { width: 26px; height: 26px; }
             #color-custom { width: 24px; height: 24px; }
@@ -335,7 +334,6 @@
             #chat-container { flex: none !important; flex: 1 !important; width: 100%; border-radius: 8px; }
         }
 
-        /* Wrapper canvas + tools side by side on desktop */
         #canvas-wrapper {
             flex: 1; display: flex; flex-direction: row; overflow: hidden; min-width: 0;
         }
@@ -349,47 +347,44 @@
 <div id="login-screen">
     <div class="login-box">
         <h2>🎨 Gartic Clone</h2>
-        <input type="text" id="input-username" placeholder="Seu Nome / Apelido" required>
-        <input type="text" id="input-room" placeholder="Nome da Sala (ex: sala123)" required>
-        <textarea id="input-custom-words" placeholder="Palavras personalizadas (opcional)&#10;Ex: Geladeira, Fusca, Professor, Saudade..."></textarea>
+        <input type="text" id="input-username" placeholder="👤 Seu Nome / Apelido" required>
+        <input type="text" id="input-room" placeholder="🔑 Nome da Sala (ex: sala123)" required>
+        <textarea id="input-custom-words" placeholder="📝 Palavras personalizadas (opcional)&#10;Ex: Geladeira, Fusca, Professor, Saudade..."></textarea>
         <p class="hint">Separe as palavras por vírgula. Se deixar vazio, usa o banco padrão.</p>
-        <button class="btn" style="width:100%;padding:12px;font-size:16px;background:#118ab2;color:white;" onclick="connectToGame()">ENTRAR NO JOGO</button>
+        <button class="btn" style="width:100%;padding:12px;font-size:16px;background:#118ab2;color:white;" onclick="connectToGame()">🚀 ENTRAR NO JOGO</button>
     </div>
 </div>
 
 <header>
     <h1>🎨 GARTIC</h1>
-    <div id="word-display">Aguardando jogadores...</div>
+    <div id="word-display">⏳ Aguardando jogadores...</div>
     <div id="room-display">
         <span id="room-id">Sala: —</span>
-        <span id="timer-display">Tempo: --</span>
+        <span id="timer-display">⏱️ Tempo: --</span>
     </div>
 </header>
 
 <div id="main-container">
-    <!-- PLACAR -->
     <div id="scoreboard">
-        <h3>Jogadores</h3>
+        <h3>👥 Jogadores</h3>
         <div id="players-list"></div>
     </div>
 
-    <!-- CANVAS + FERRAMENTAS (lateral) -->
     <div id="canvas-wrapper">
-        <!-- Ferramentas laterais -->
         <div id="tools">
-            <span class="tool-section-label">Tool</span>
-
-            <!-- Pincel -->
+            <span class="tool-section-label">Modo</span>
             <div class="tool-btn active" id="tool-brush" title="Pincel" onclick="setTool('brush')">✏️</div>
-            <!-- Borracha -->
             <div class="tool-btn" id="tool-eraser" title="Borracha" onclick="setTool('eraser')">🧹</div>
-            <!-- Balde preenchimento -->
             <div class="tool-btn" id="tool-fill" title="Preencher" onclick="setTool('fill')">🪣</div>
 
             <div class="tool-separator"></div>
-            <span class="tool-section-label">Size</span>
+            <span class="tool-section-label">Forma</span>
+            <div class="tool-btn active" id="shape-round" title="Pincel Redondo" onclick="setShape('round')">🟡</div>
+            <div class="tool-btn" id="shape-square" title="Pincel Quadrado" onclick="setShape('square')">🟨</div>
+            <div class="tool-btn" id="shape-spray" title="Efeito Spray" onclick="setShape('spray')">💨</div>
 
-            <!-- Tamanhos de pincel -->
+            <div class="tool-separator"></div>
+            <span class="tool-section-label">Tam.</span>
             <div class="brush-sizes">
                 <div class="size-btn active" id="size-2" style="width:8px;height:8px;" title="Fino" onclick="setBrushSize(2,this)"></div>
                 <div class="size-btn" id="size-5" style="width:12px;height:12px;" title="Médio" onclick="setBrushSize(5,this)"></div>
@@ -399,75 +394,45 @@
             </div>
 
             <div class="tool-separator"></div>
-
-            <!-- Cor atual -->
             <div id="current-color-display" style="background:#000000;" title="Cor atual"></div>
         </div>
 
-        <!-- Canvas -->
         <div id="canvas-container">
             <canvas id="canvas"></canvas>
             <div id="fill-status">🪣 Modo Preenchimento</div>
             <div id="bottom-actions">
-                <button class="btn btn-clear" onclick="sendClear()">🗑 Limpar</button>
+                <button class="btn btn-clear" onclick="sendClear()">🗑️ Limpar</button>
                 <button id="btn-egg" onclick="throwEgg()">🥚 Jogar Ovo!</button>
             </div>
         </div>
     </div>
 
-    <!-- PALETA DE CORES -->
     <div id="palette-container">
-        <span id="palette-label">Cores</span>
+        <span id="palette-label">🎨 Cores</span>
         <div id="palette-grid"></div>
         <input type="color" id="color-custom" value="#000000" title="Cor personalizada" onchange="pickCustomColor(this)">
         <div id="current-color-display-palette" style="width:30px;height:30px;border-radius:6px;border:2px solid white;flex-shrink:0;background:#000000;"></div>
     </div>
 
-    <!-- CHAT -->
     <div id="chat-container">
         <div id="chat-messages"></div>
         <div id="chat-input-area">
-            <input type="text" id="chat-input" placeholder="Digite seu palpite..." autocomplete="off">
+            <input type="text" id="chat-input" placeholder="💬 Digite seu palpite..." autocomplete="off">
             <button id="btn-send" class="btn" onclick="sendChatMessage()">➤</button>
         </div>
     </div>
 </div>
 
 <script>
-    // ===== PALETA COMPLETA =====
+    // ===== PALETA REDUZIDA APENAS COM AS CORES PRINCIPAIS =====
     const FULL_PALETTE = [
-        // Preto e brancos
-        "#000000","#1a1a1a","#333333","#4d4d4d","#666666","#808080","#999999","#b3b3b3","#cccccc","#e6e6e6","#f2f2f2","#ffffff",
-        // Vermelhos
-        "#ff0000","#cc0000","#990000","#ff3333","#ff6666","#ff9999","#ffcccc",
-        // Laranjas
-        "#ff6600","#ff8800","#ffaa00","#ffbb33","#ffcc66","#ffdd99","#ffeecc",
-        // Amarelos
-        "#ffff00","#ffee00","#ffdd00","#ffcc00","#ffe066","#ffee99","#ffffcc",
-        // Verdes claros / Lima
-        "#99ff00","#88ee00","#aaff33","#bbff66","#ccff99","#b3ff66","#d4ff99",
-        // Verdes
-        "#00ff00","#00cc00","#009900","#006600","#33ff33","#66ff66","#99ff99","#ccffcc",
-        // Verde-água / Teal
-        "#00ff88","#00ffaa","#00ffcc","#00ddaa","#00bb88","#33ffbb","#66ffcc",
-        // Ciano
-        "#00ffff","#00cccc","#009999","#006666","#33ffff","#66ffff","#99ffff","#ccffff",
-        // Azuis claros
-        "#0099ff","#0077ff","#0055ff","#3399ff","#66aaff","#99bbff","#cce0ff",
-        // Azuis
-        "#0000ff","#0000cc","#000099","#000066","#3333ff","#6666ff","#9999ff","#ccccff",
-        // Roxos / Violetas
-        "#6600ff","#7700ee","#8800cc","#9900aa","#aa33ff","#bb66ff","#cc99ff","#ddccff",
-        // Magentas / Rosas
-        "#ff00ff","#cc00cc","#990099","#660066","#ff33ff","#ff66ff","#ff99ff","#ffccff",
-        // Rosas
-        "#ff0077","#ff0055","#ff0033","#ff3388","#ff66aa","#ff99cc","#ffccee",
-        // Marrons
-        "#663300","#884400","#aa5500","#cc6600","#994411","#bb6622","#dd8833","#cc9966","#ddaa77","#eebb99","#f5deb3",
-        // Skin tones
-        "#ffdbac","#f1c27d","#e0ac69","#c68642","#8d5524","#6b3a2a",
-        // Cores especiais / néons
-        "#ff00aa","#aa00ff","#00aaff","#00ffaa","#aaff00","#ffaa00",
+        "#000000", "#ffffff", // Preto e Branco
+        "#808080", "#ff0000", // Cinza e Vermelho
+        "#ff6600", "#ffff00", // Laranja e Amarelo
+        "#00ff00", "#009900", // Verde Claro e Escuro
+        "#00ffff", "#0000ff", // Ciano e Azul
+        "#aa33ff", "#ff00ff", // Roxo e Magenta
+        "#ff99cc", "#663300"  // Rosa e Marrom
     ];
 
     // ===== STATE =====
@@ -485,18 +450,26 @@
 
     // ===== FERRAMENTAS =====
     let currentTool = 'brush'; // 'brush' | 'eraser' | 'fill'
+    let currentShape = 'round'; // 'round' | 'square' | 'spray'
     let currentColor = '#000000';
     let currentBrushSize = 2;
 
     function setTool(tool) {
         currentTool = tool;
-        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#tools .tool-btn[id^="tool-"]').forEach(b => b.classList.remove('active'));
         document.getElementById('tool-' + tool).classList.add('active');
         const c = document.getElementById('canvas');
         c.className = '';
         if (tool === 'eraser') c.classList.add('cursor-eraser');
         else if (tool === 'fill') c.classList.add('cursor-fill');
         document.getElementById('fill-status').style.display = tool === 'fill' ? 'block' : 'none';
+    }
+
+    function setShape(shape) {
+        currentShape = shape;
+        document.querySelectorAll('#tools .tool-btn[id^="shape-"]').forEach(b => b.classList.remove('active'));
+        document.getElementById('shape-' + shape).classList.add('active');
+        if (currentTool === 'eraser' || currentTool === 'fill') setTool('brush');
     }
 
     function setBrushSize(size, el) {
@@ -510,6 +483,7 @@
         currentColor = hex;
         document.getElementById('current-color-display').style.background = hex;
         document.getElementById('current-color-display-palette').style.background = hex;
+        document.getElementById('color-custom').value = hex;
         document.querySelectorAll('.color-swatch').forEach(s => {
             s.classList.toggle('active', s.dataset.color === hex);
         });
@@ -523,6 +497,7 @@
     // ===== BUILD PALETTE =====
     function buildPalette() {
         const grid = document.getElementById('palette-grid');
+        grid.innerHTML = "";
         FULL_PALETTE.forEach(hex => {
             const swatch = document.createElement('div');
             swatch.className = 'color-swatch';
@@ -581,18 +556,55 @@
     function startDrawing(x, y) {
         if (!isDrawer || !roundActive) return;
         drawing = true;
-        ctx.beginPath(); ctx.moveTo(x, y);
-        sendDrawData('start', x, y, currentTool === 'eraser' ? '#ffffff' : currentColor, currentBrushSize);
+        
+        const col = currentTool === 'eraser' ? '#ffffff' : currentColor;
+        ctx.fillStyle = col;
+        ctx.strokeStyle = col;
+
+        if (currentTool !== 'eraser' && currentShape === 'spray') {
+            generateSpray(x, y, col, currentBrushSize);
+            sendDrawData('spray', x, y, col, currentBrushSize);
+        } else if (currentTool !== 'eraser' && currentShape === 'square') {
+            ctx.fillRect(x - currentBrushSize/2, y - currentBrushSize/2, currentBrushSize, currentBrushSize);
+            sendDrawData('square_start', x, y, col, currentBrushSize);
+        } else {
+            ctx.beginPath(); ctx.moveTo(x, y);
+            sendDrawData('start', x, y, col, currentBrushSize);
+        }
     }
+
     function draw(x, y) {
         if (!drawing || !isDrawer || !roundActive) return;
         const col = currentTool === 'eraser' ? '#ffffff' : currentColor;
         ctx.strokeStyle = col;
+        ctx.fillStyle = col;
         ctx.lineWidth = currentBrushSize;
-        ctx.lineTo(x, y); ctx.stroke();
-        sendDrawData('draw', x, y, col, currentBrushSize);
+
+        if (currentTool !== 'eraser' && currentShape === 'spray') {
+            generateSpray(x, y, col, currentBrushSize);
+            sendDrawData('spray', x, y, col, currentBrushSize);
+        } else if (currentTool !== 'eraser' && currentShape === 'square') {
+            ctx.fillRect(x - currentBrushSize/2, y - currentBrushSize/2, currentBrushSize, currentBrushSize);
+            sendDrawData('square_draw', x, y, col, currentBrushSize);
+        } else {
+            ctx.lineTo(x, y); ctx.stroke();
+            sendDrawData('draw', x, y, col, currentBrushSize);
+        }
     }
+
     function stopDrawing() { drawing = false; }
+
+    function generateSpray(x, y, color, size) {
+        ctx.fillStyle = color;
+        const density = size * 2;
+        for (let i = 0; i < density; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const radius = Math.random() * (size * 2);
+            const pX = x + Math.cos(angle) * radius;
+            const pY = y + Math.sin(angle) * radius;
+            ctx.fillRect(pX, pY, 1, 1);
+        }
+    }
 
     // ===== FLOOD FILL =====
     function doFill(startX, startY) {
@@ -629,23 +641,24 @@
         }
 
         ctx.putImageData(imageData, 0, 0);
-
-        // Envia via MQTT como snapshot (canvas base64)
         sendDrawData('fill', startX, startY, fillColor, 0);
     }
 
     // ===== REMOTE DRAW =====
-    let remoteCtx = { drawing: false, lastColor: '#000000', lastSize: 2 };
-
     function renderRemoteDraw(data) {
         ctx.strokeStyle = data.color;
+        ctx.fillStyle = data.color;
         ctx.lineWidth = data.size || 2;
         ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        
         if (data.action === 'start') { ctx.beginPath(); ctx.moveTo(data.x, data.y); }
         else if (data.action === 'draw') { ctx.lineTo(data.x, data.y); ctx.stroke(); }
-        else if (data.action === 'clear') { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+        else if (data.action === 'square_start' || data.action === 'square_draw') {
+            ctx.fillRect(data.x - data.size/2, data.y - data.size/2, data.size, data.size);
+        } else if (data.action === 'spray') {
+            generateSpray(data.x, data.y, data.color, data.size);
+        } else if (data.action === 'clear') { ctx.clearRect(0, 0, canvas.width, canvas.height); }
         else if (data.action === 'fill') {
-            // Reproduce fill on remote
             doRemoteFill(Math.round(data.x), Math.round(data.y), data.color);
         }
     }
@@ -781,7 +794,7 @@
             mqttClient.subscribe(baseTopic + "/scores");
             mqttClient.subscribe(baseTopic + "/egg");
             mqttClient.subscribe(baseTopic + "/customwords");
-            const identityPayload = JSON.stringify({ sender: "Sistema", text: `${username} entrou na sala.`, name: username });
+            const identityPayload = JSON.stringify({ sender: "Sistema", text: `📢 ${username} entrou na sala.`, name: username });
             mqttClient.publish(baseTopic + "/chat", identityPayload);
             mqttClient.publish(baseTopic + "/presence", identityPayload);
             if (customWords.length > 0) { mqttClient.publish(baseTopic + "/customwords", JSON.stringify({ words: customWords, sender: username })); }
@@ -864,32 +877,32 @@
         const eggBtn = document.getElementById('btn-egg');
         if (currentDrawerName === username) {
             isDrawer = true; eggBtn.style.display = 'none';
-            document.getElementById('word-display').innerText = "Sua Palavra: " + currentWord.toUpperCase();
-            addSystemMessage(`Sua vez! Palavra: ${currentWord.toUpperCase()}`);
+            document.getElementById('word-display').innerText = "✏️ Sua Palavra: " + currentWord.toUpperCase();
+            addSystemMessage(`✏️ Sua vez! Palavra: ${currentWord.toUpperCase()}`);
         } else {
             isDrawer = false;
             eggBtn.style.display = 'inline-flex'; eggBtn.classList.remove('cooldown');
             eggBtn.textContent = '🥚 Jogar Ovo!'; eggCooldown = false;
             const u = "_ ".repeat(currentWord.length).trim();
-            document.getElementById('word-display').innerText = `Desenho de ${currentDrawerName} (${u})`;
-            addSystemMessage(`${currentDrawerName} está desenhando...`);
+            document.getElementById('word-display').innerText = `🎨 Desenho de ${currentDrawerName} (${u})`;
+            addSystemMessage(`🎨 ${currentDrawerName} está desenhando...`);
         }
         startLocalTimer(TEMPO_RODADA);
     }
 
     function startLocalTimer(seconds) {
         currentTimeLeft = seconds;
-        document.getElementById('timer-display').innerText = "Tempo: " + currentTimeLeft + "s";
+        document.getElementById('timer-display').innerText = "⏱️ Tempo: " + currentTimeLeft + "s";
         countdownInterval = setInterval(() => {
             currentTimeLeft--;
             if (currentTimeLeft <= 0) {
                 clearInterval(countdownInterval);
-                document.getElementById('timer-display').innerText = "Tempo: 0s";
-                addSystemMessage(`Tempo esgotado! A palavra era: ${currentWord.toUpperCase()}`);
+                document.getElementById('timer-display').innerText = "⏱️ Tempo: 0s";
+                addSystemMessage(`🛑 Tempo esgotado! A palavra era: ${currentWord.toUpperCase()}`);
                 document.getElementById('btn-egg').style.display = 'none';
                 handleRoundEndAutomatically();
             } else {
-                document.getElementById('timer-display').innerText = "Tempo: " + currentTimeLeft + "s";
+                document.getElementById('timer-display').innerText = "⏱️ Tempo: " + currentTimeLeft + "s";
             }
         }, 1000);
     }
@@ -909,7 +922,7 @@
         const item = document.createElement('div');
         item.className = "player-item";
         item.id = "p-" + nome.replace(/\s+/g,'-');
-        const nameSpan = document.createElement('span'); nameSpan.className = 'player-name'; nameSpan.textContent = nome;
+        const nameSpan = document.createElement('span'); nameSpan.className = 'player-name'; nameSpan.textContent = "👤 " + nome;
         const scoreSpan = document.createElement('span'); scoreSpan.className = 'player-score'; scoreSpan.textContent = '0';
         item.appendChild(nameSpan); item.appendChild(scoreSpan);
         container.appendChild(item);
@@ -946,8 +959,8 @@
     function addSystemMessage(text) { const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-system"; m.innerText = text; c.appendChild(m); c.scrollTop = c.scrollHeight; }
     function addSuccessMessage(sender, text) {
         const c = document.getElementById('chat-messages'); const m = document.createElement('div');
-        m.className = "msg msg-success"; m.innerText = `${sender} ${text}`; c.appendChild(m); c.scrollTop = c.scrollHeight;
-        document.getElementById('word-display').innerText = "Adivinhado! Próxima rodada em breve...";
+        m.className = "msg msg-success"; m.innerText = `🎯 ${sender} ${text}`; c.appendChild(m); c.scrollTop = c.scrollHeight;
+        document.getElementById('word-display').innerText = "🎉 Adivinhado! Próxima rodada...";
     }
     function renderNormalMessage(sender, text) {
         const c = document.getElementById('chat-messages'); const m = document.createElement('div');
@@ -956,7 +969,6 @@
     }
     function addEggMessage(thrower, target) { const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-egg"; m.innerText = `🥚 ${thrower} jogou um ovo em ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight; }
 
-    // Init color display
     setActiveColor('#000000');
 </script>
 </body>
