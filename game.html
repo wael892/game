@@ -358,27 +358,34 @@
                 display: inline-flex; flex-shrink: 0; align-items: center;
             }
 
-            /* Canvas wrapper: flex: 1 para pegar todo espaço restante */
+            /* Canvas wrapper: coluna no mobile */
             #canvas-wrapper {
                 flex: 1 1 0 !important;
+                min-height: 0 !important;
                 display: flex !important;
                 flex-direction: column !important;
-                min-height: 0 !important;
-                overflow: hidden;
-                width: 100%;
             }
 
-            /* Canvas container ocupa o espaço restante dentro do wrapper */
+            /* drawing-area: canvas em cima, tools embaixo no mobile */
+            #drawing-area {
+                flex: 1 1 0 !important;
+                min-height: 0 !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+
+            /* Canvas container ocupa todo o espaço disponível */
             #canvas-container {
                 flex: 1 1 0 !important;
                 min-height: 0 !important;
-                position: relative;
+                position: relative !important;
+                overflow: hidden !important;
             }
 
-            /* Canvas em si usa 100% do container */
+            /* Canvas preenche o container via absolute */
             #canvas {
-                position: absolute;
-                top: 0; left: 0;
+                position: absolute !important;
+                top: 0 !important; left: 0 !important;
                 width: 100% !important;
                 height: 100% !important;
             }
@@ -443,9 +450,13 @@
         }
 
         #canvas-wrapper {
-            flex: 1; display: flex; flex-direction: row; overflow: hidden; min-width: 0;
+            flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0;
         }
-        #canvas-container { flex: 1; position: relative; }
+        /* drawing-area: tools à esquerda + canvas à direita (desktop) */
+        #drawing-area {
+            flex: 1; display: flex; flex-direction: row; overflow: hidden; min-height: 0;
+        }
+        #canvas-container { flex: 1; position: relative; min-height: 0; }
 
         #fill-status {
             display: none;
@@ -496,47 +507,49 @@
     </div>
 
     <div id="canvas-wrapper">
-        <div id="tools">
-            <span class="tool-section-label">Modo</span>
-            <div class="tool-btn active" id="tool-brush" title="Pincel Livre" onclick="setTool('brush')">✏️</div>
-            <div class="tool-btn" id="tool-eraser" title="Borracha" onclick="setTool('eraser')">🧹</div>
-            <div class="tool-btn" id="tool-fill" title="Preencher" onclick="setTool('fill')">🪣</div>
+        <div id="drawing-area">
+            <div id="tools">
+                <span class="tool-section-label">Modo</span>
+                <div class="tool-btn active" id="tool-brush" title="Pincel Livre" onclick="setTool('brush')">✏️</div>
+                <div class="tool-btn" id="tool-eraser" title="Borracha" onclick="setTool('eraser')">🧹</div>
+                <div class="tool-btn" id="tool-fill" title="Preencher" onclick="setTool('fill')">🪣</div>
 
-            <div class="tool-separator"></div>
-            <span class="tool-section-label">Forma</span>
-            <div class="tool-btn active" id="shape-free" title="Desenho Livre" onclick="setShape('free')">〰️</div>
-            <div class="tool-btn" id="shape-circle" title="Arrastar Círculo" onclick="setShape('circle')">⭕</div>
-            <div class="tool-btn" id="shape-square" title="Arrastar Quadrado" onclick="setShape('square')">⬜</div>
-            <div class="tool-btn" id="shape-triangle" title="Arrastar Triângulo" onclick="setShape('triangle')">🔺</div>
-            <div class="tool-btn" id="shape-spray" title="Efeito Spray" onclick="setShape('spray')">💨</div>
+                <div class="tool-separator"></div>
+                <span class="tool-section-label">Forma</span>
+                <div class="tool-btn active" id="shape-free" title="Desenho Livre" onclick="setShape('free')">〰️</div>
+                <div class="tool-btn" id="shape-circle" title="Arrastar Círculo" onclick="setShape('circle')">⭕</div>
+                <div class="tool-btn" id="shape-square" title="Arrastar Quadrado" onclick="setShape('square')">⬜</div>
+                <div class="tool-btn" id="shape-triangle" title="Arrastar Triângulo" onclick="setShape('triangle')">🔺</div>
+                <div class="tool-btn" id="shape-spray" title="Efeito Spray" onclick="setShape('spray')">💨</div>
 
-            <div class="tool-separator"></div>
-            <span class="tool-section-label">Tam.</span>
-            <div class="brush-sizes">
-                <div class="size-btn active" id="size-2" style="width:8px;height:8px;" title="Fino" onclick="setBrushSize(2,this)"></div>
-                <div class="size-btn" id="size-5" style="width:12px;height:12px;" title="Médio" onclick="setBrushSize(5,this)"></div>
-                <div class="size-btn" id="size-10" style="width:18px;height:18px;" title="Grosso" onclick="setBrushSize(10,this)"></div>
-                <div class="size-btn" id="size-20" style="width:24px;height:24px;" title="Extra grosso" onclick="setBrushSize(20,this)"></div>
-                <div class="size-btn" id="size-40" style="width:32px;height:32px;" title="Super grosso" onclick="setBrushSize(40,this)"></div>
+                <div class="tool-separator"></div>
+                <span class="tool-section-label">Tam.</span>
+                <div class="brush-sizes">
+                    <div class="size-btn active" id="size-2" style="width:8px;height:8px;" title="Fino" onclick="setBrushSize(2,this)"></div>
+                    <div class="size-btn" id="size-5" style="width:12px;height:12px;" title="Médio" onclick="setBrushSize(5,this)"></div>
+                    <div class="size-btn" id="size-10" style="width:18px;height:18px;" title="Grosso" onclick="setBrushSize(10,this)"></div>
+                    <div class="size-btn" id="size-20" style="width:24px;height:24px;" title="Extra grosso" onclick="setBrushSize(20,this)"></div>
+                    <div class="size-btn" id="size-40" style="width:32px;height:32px;" title="Super grosso" onclick="setBrushSize(40,this)"></div>
+                </div>
+
+                <div class="tool-separator"></div>
+                <div id="current-color-display" style="background:#000000;" title="Cor atual"></div>
             </div>
 
-            <div class="tool-separator"></div>
-            <div id="current-color-display" style="background:#000000;" title="Cor atual"></div>
+            <div id="canvas-container">
+                <div id="round-announcement">
+                    <h2 id="announcement-title">FIM DE RODADA</h2>
+                    <p id="announcement-desc">Descrição do que rolou</p>
+                </div>
+                <canvas id="canvas"></canvas>
+                <div id="fill-status">🪣 Modo Preenchimento</div>
+            </div>
         </div>
-
-        <div id="canvas-container">
-            <div id="round-announcement">
-                <h2 id="announcement-title">FIM DE RODADA</h2>
-                <p id="announcement-desc">Descrição do que rolou</p>
-            </div>
-            <canvas id="canvas"></canvas>
-            <div id="fill-status">🪣 Modo Preenchimento</div>
-            <div id="bottom-actions">
-                <button class="btn btn-clear" onclick="sendClear()">🗑️ Limpar</button>
-                <button id="btn-skip" class="btn btn-skip" onclick="skipRound()">⏭️ Pular Vez</button>
-                <button id="btn-egg" class="action-interact-btn" onclick="throwInteractItem('egg')">🥚 Jogar Ovo!</button>
-                <button id="btn-flower" class="action-interact-btn" onclick="throwInteractItem('flower')">🌹 Dar Flor!</button>
-            </div>
+        <div id="bottom-actions">
+            <button class="btn btn-clear" onclick="sendClear()">🗑️ Limpar</button>
+            <button id="btn-skip" class="btn btn-skip" onclick="skipRound()">⏭️ Pular Vez</button>
+            <button id="btn-egg" class="action-interact-btn" onclick="throwInteractItem('egg')">🥚 Jogar Ovo!</button>
+            <button id="btn-flower" class="action-interact-btn" onclick="throwInteractItem('flower')">🌹 Dar Flor!</button>
         </div>
     </div>
 
