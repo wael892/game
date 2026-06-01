@@ -130,6 +130,20 @@
         canvas.cursor-eraser { cursor: cell; }
         canvas.cursor-fill   { cursor: copy; }
 
+        /* ===== ANÚNCIO DE TELA CENTRAL (ESTILO GARTIC) ===== */
+        #round-announcement {
+            position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%) scale(0.5);
+            background: rgba(26, 26, 46, 0.95); color: white;
+            padding: 18px 30px; border-radius: 16px; font-weight: bold; text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4); border: 3px solid #ffd43b;
+            z-index: 500; pointer-events: none; display: none; opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 85%; width: max-content;
+        }
+        #round-announcement.show { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        #round-announcement h2 { font-size: 22px; color: #ffd43b; margin-bottom: 4px; }
+        #round-announcement p { font-size: 14px; color: #e6e6e6; font-weight: normal; }
+
         /* ===== TOOLBAR ===== */
         #tools {
             background: #1a1a2e;
@@ -211,7 +225,7 @@
             align-self: center;
         }
 
-        /* ===== CLEAR BTN + INTERACTION ACTIONS ===== */
+        /* ===== CLEAR BTN + ACTIONS ===== */
         #bottom-actions {
             display: flex; gap: 6px; padding: 4px 8px;
             background: #1a1a2e; border-top: 2px solid #2a2a3e;
@@ -219,6 +233,7 @@
         }
         .btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; flex-shrink: 0; }
         .btn-clear { background: #ef476f; color: white; }
+        .btn-skip { background: #f4a261; color: white; display: none; }
         
         .action-interact-btn {
             color: white; font-size: 13px; padding: 5px 10px; border-radius: 7px; border: none; cursor: pointer; font-weight: bold; flex-shrink: 0; display: none; transition: transform 0.1s, background 0.2s; box-shadow: 0 3px 8px rgba(0,0,0,0.15);
@@ -268,7 +283,6 @@
         #egg-overlay.splat { animation: splatFade 1.2s ease-out forwards; }
         @keyframes splatFade { 0% { opacity: 0.7; } 100% { opacity: 0; } }
 
-        /* Pétalas caindo */
         .petal-particle {
             position: fixed; pointer-events: none; font-size: 18px; z-index: 9997;
             animation: petalFall var(--fall-duration, 2s) linear forwards;
@@ -427,10 +441,17 @@
 
         <!-- Canvas -->
         <div id="canvas-container">
+            <!-- ANÚNCIO FLUTUANTE CENTRAL DO GARTIC -->
+            <div id="round-announcement">
+                <h2 id="announcement-title">FIM DE RODADA</h2>
+                <p id="announcement-desc">Descrição do que rolou</p>
+            </div>
+
             <canvas id="canvas"></canvas>
             <div id="fill-status">🪣 Modo Preenchimento</div>
             <div id="bottom-actions">
                 <button class="btn btn-clear" onclick="sendClear()">🗑️ Limpar</button>
+                <button id="btn-skip" class="btn btn-skip" onclick="skipRound()">⏭️ Pular Vez</button>
                 <button id="btn-egg" class="action-interact-btn" onclick="throwInteractItem('egg')">🥚 Jogar Ovo!</button>
                 <button id="btn-flower" class="action-interact-btn" onclick="throwInteractItem('flower')">🌹 Dar Flor!</button>
             </div>
@@ -811,7 +832,32 @@
         }
     }
 
-    // ===== LÓGICA DE INTERAÇÕES: OVO E FLOR =====
+    // ===== FUNÇÃO DE EXIBIÇÃO DE ALERTA GARTIC NA TELA =====
+    function showGarticAnnouncement(title, desc) {
+        const box = document.getElementById('round-announcement');
+        document.getElementById('announcement-title').innerText = title;
+        document.getElementById('announcement-desc').innerText = desc;
+        
+        box.classList.add('show');
+        setTimeout(() => {
+            box.classList.remove('show');
+        }, 3200);
+    }
+
+    function showScorePopup(pts, nome) {
+        const playerEl = document.getElementById("p-" + nome.replace(/\s+/g,'-'));
+        if (!playerEl) return;
+        const rect = playerEl.getBoundingClientRect();
+        const popup = document.createElement('div');
+        popup.className = 'score-popup';
+        popup.textContent = '+' + pts + ' pts';
+        popup.style.left = (rect.left + rect.width/2 - 30) + 'px';
+        popup.style.top  = (rect.top - 10) + 'px';
+        document.body.appendChild(popup);
+        setTimeout(() => popup.remove(), 1500);
+    }
+
+    // ===== INTERAÇÕES DO JOGO =====
     function throwInteractItem(itemType) {
         if (!roundActive || isDrawer || !mqttClient) return;
         
@@ -867,13 +913,11 @@
             
             if (target === username) {
                 if (type === 'egg') {
-                    // Efeito do ovo: Suja a tela e treme o canvas
                     const overlay = document.getElementById('egg-overlay');
                     overlay.classList.remove('splat'); void overlay.offsetWidth; overlay.classList.add('splat');
                     document.getElementById('canvas-container').classList.add('shake');
                     setTimeout(() => document.getElementById('canvas-container').classList.remove('shake'), 500);
                 } else if (type === 'flower') {
-                    // Efeito da flor: Chuva de pétalas flutuantes na tela
                     createPetalShower();
                 }
             }
@@ -893,6 +937,12 @@
                 setTimeout(() => petal.remove(), 3000);
             }, i * 100);
         }
+    }
+
+    // Lógica para pular rodada (Passar a vez)
+    function skipRound() {
+        if (!roundActive || !isDrawer || !mqttClient) return;
+        mqttClient.publish(baseTopic + "/gameflow/skip", JSON.stringify({ drawer: username, word: currentWord }));
     }
 
     // ===== LOGIN / MQTT =====
@@ -917,6 +967,7 @@
             mqttClient.subscribe(baseTopic + "/presence");
             mqttClient.subscribe(baseTopic + "/presence/echo");
             mqttClient.subscribe(baseTopic + "/gameflow");
+            mqttClient.subscribe(baseTopic + "/gameflow/skip");
             mqttClient.subscribe(baseTopic + "/scores");
             mqttClient.subscribe(baseTopic + "/interact");
             mqttClient.subscribe(baseTopic + "/customwords");
@@ -939,7 +990,11 @@
                         const pts = data.pts || 5;
                         addScore(data.sender, pts); showScorePopup(pts, data.sender);
                         if (currentDrawerName) { const dp = Math.max(1, Math.round(pts * 0.5)); addScore(currentDrawerName, dp); showScorePopup(dp, currentDrawerName); }
-                        broadcastScores(); handleRoundEndAutomatically();
+                        broadcastScores(); 
+                        
+                        // Alerta central do Gartic: Alguém acertou
+                        showGarticAnnouncement("🎯 PALAVRA DESCOBERTA!", `${data.sender} acertou a palavra secreta: ${currentWord.toUpperCase()}!`);
+                        handleRoundEndAutomatically();
                     } else { renderWrongGuessMessage(data.sender, data.text); }
                 } else if (data.type === "talk") { renderNormalMessage(data.sender, data.text); }
             } else if (topic === baseTopic + "/draw" && !isDrawer) {
@@ -955,6 +1010,11 @@
                 if (data.name && data.name !== username) { adicionarJogadorLista(data.name); checkAndAutoStart(); }
             } else if (topic === baseTopic + "/gameflow") {
                 handleGameFlow(data);
+            } else if (topic === baseTopic + "/gameflow/skip") {
+                // Alerta central do Gartic: Desenhista pulou a vez
+                showGarticAnnouncement("⏭️ VEZ PULADA!", `${data.drawer} decidiu passar a vez! A palavra era: ${data.word.toUpperCase()}`);
+                addSystemMessage(`⏭️ Vez pulada por ${data.drawer}. A palavra era: ${data.word.toUpperCase()}`);
+                handleRoundEndAutomatically();
             } else if (topic === baseTopic + "/scores") {
                 if (data.scores) { for (const [n,p] of Object.entries(data.scores)) { if (n !== username) { scores[n]=p; } } renderScoreboard(); }
             } else if (topic === baseTopic + "/interact") {
@@ -1001,13 +1061,15 @@
         
         const eggBtn = document.getElementById('btn-egg');
         const flowerBtn = document.getElementById('btn-flower');
+        const skipBtn = document.getElementById('btn-skip');
         
         if (currentDrawerName === username) {
             isDrawer = true; eggBtn.style.display = 'none'; flowerBtn.style.display = 'none';
+            skipBtn.style.display = 'inline-flex'; // Desenhista pode pular vez
             document.getElementById('word-display').innerText = "✏️ Sua Palavra: " + currentWord.toUpperCase();
             addSystemMessage(`✏️ Sua vez! Palavra: ${currentWord.toUpperCase()}`);
         } else {
-            isDrawer = false;
+            isDrawer = false; skipBtn.style.display = 'none';
             eggBtn.style.display = 'inline-flex'; eggBtn.classList.remove('cooldown'); eggBtn.textContent = '🥚 Jogar Ovo!';
             flowerBtn.style.display = 'inline-flex'; flowerBtn.classList.remove('cooldown'); flowerBtn.textContent = '🌹 Dar Flor!';
             const u = "_ ".repeat(currentWord.length).trim();
@@ -1026,8 +1088,13 @@
                 clearInterval(countdownInterval);
                 document.getElementById('timer-display').innerText = "⏱️ Tempo: 0s";
                 addSystemMessage(`🛑 Tempo esgotado! A palavra era: ${currentWord.toUpperCase()}`);
+                
+                // Alerta central do Gartic: Tempo Esgotado
+                showGarticAnnouncement("⏳ TEMPO ESGOTADO!", `Ninguém acertou a palavra secreta! Ela era: ${currentWord.toUpperCase()}`);
+                
                 document.getElementById('btn-egg').style.display = 'none';
                 document.getElementById('btn-flower').style.display = 'none';
+                document.getElementById('btn-skip').style.display = 'none';
                 handleRoundEndAutomatically();
             } else {
                 document.getElementById('timer-display').innerText = "⏱️ Tempo: " + currentTimeLeft + "s";
@@ -1039,6 +1106,7 @@
         roundActive = false; clearInterval(countdownInterval);
         document.getElementById('btn-egg').style.display = 'none';
         document.getElementById('btn-flower').style.display = 'none';
+        document.getElementById('btn-skip').style.display = 'none';
         if (currentDrawerName === username) { nextRoundTimeout = setTimeout(() => { drawNewRound(); }, 4000); }
     }
 
@@ -1053,6 +1121,7 @@
         mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action, x, y, color, size, shapeType, endX, endY }));
     }
 
+    // Limpar tela (Apenas desenhista)
     function sendClear() {
         if (!isDrawer) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
