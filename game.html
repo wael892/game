@@ -310,27 +310,33 @@
 
         /* ===== MOBILE - Layout completamente repensado ===== */
         @media (max-width: 768px) {
-            body { padding: 4px; }
+            body { padding: 4px; overflow: hidden; }
 
             header {
-                padding: 5px 8px; margin-bottom: 4px;
-                height: 40px; border-radius: 8px; flex-shrink: 0;
+                padding: 5px 8px; margin-bottom: 0;
+                height: 44px; border-radius: 8px; flex-shrink: 0;
             }
             h1 { font-size: 11px; }
             #word-display { font-size: 10px; padding: 2px 6px; }
             #room-display { font-size: 9px; }
             #timer-display { font-size: 10px; }
-            #words-management-panel { top: 45px; left: 4px; width: 260px; }
+            #words-management-panel { top: 48px; left: 4px; width: 260px; }
 
-            /* Container principal: coluna */
+            /* Container principal usa posição absoluta para ter altura exata */
             #main-container {
+                position: absolute;
+                top: 52px; /* header 44px + gap 8px */
+                left: 4px;
+                right: 4px;
+                bottom: 4px;
                 flex-direction: column;
                 gap: 4px;
+                overflow: hidden;
             }
 
-            /* Placar horizontal compacto */
+            /* Placar horizontal compacto - altura fixa */
             #scoreboard {
-                flex: 0 0 38px !important;
+                flex: 0 0 36px !important;
                 width: 100%;
                 padding: 3px 6px;
                 border-radius: 6px;
@@ -348,86 +354,98 @@
             }
             .player-item {
                 padding: 3px 6px; font-size: 10px;
-                height: 100%; white-space: nowrap;
-                display: inline-flex; flex-shrink: 0;
+                height: 28px; white-space: nowrap;
+                display: inline-flex; flex-shrink: 0; align-items: center;
             }
 
-            /* Wrapper do canvas ocupa o máximo de espaço disponível */
+            /* Canvas wrapper: flex: 1 para pegar todo espaço restante */
             #canvas-wrapper {
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-                min-height: 0;
+                flex: 1 1 0 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                min-height: 0 !important;
                 overflow: hidden;
+                width: 100%;
             }
 
-            /* Canvas container cresce para preencher */
+            /* Canvas container ocupa o espaço restante dentro do wrapper */
             #canvas-container {
-                flex: 1;
-                min-height: 0;
+                flex: 1 1 0 !important;
+                min-height: 0 !important;
+                position: relative;
             }
 
-            /* Toolbar HORIZONTAL abaixo do canvas */
+            /* Canvas em si usa 100% do container */
+            #canvas {
+                position: absolute;
+                top: 0; left: 0;
+                width: 100% !important;
+                height: 100% !important;
+            }
+
+            /* Toolbar HORIZONTAL abaixo do canvas - altura fixa */
             #tools {
                 width: 100%;
                 flex-direction: row;
                 overflow-x: auto; overflow-y: hidden;
                 border-right: none;
                 border-top: 2px solid #ffd43b;
-                height: 52px;
+                height: 50px;
+                min-height: 50px;
                 padding: 6px 10px;
                 align-items: center;
                 gap: 8px;
-                flex-shrink: 0;
+                flex-shrink: 0 !important;
             }
             .tool-section-label { display: none; }
             .tool-separator { width: 1px; height: 32px; background: #444; margin: 0 2px; flex-shrink: 0; }
             .brush-sizes { flex-direction: row; gap: 6px; align-items: center; }
-            /* Botões de ferramentas maiores no mobile para toque fácil */
-            .tool-btn { width: 40px; height: 40px; font-size: 18px; flex-shrink: 0; }
+            .tool-btn { width: 38px; height: 38px; font-size: 17px; flex-shrink: 0; }
             .size-btn { flex-shrink: 0; }
 
-            /* Paleta HORIZONTAL compacta */
+            /* Paleta HORIZONTAL - altura fixa */
             #palette-container {
-                flex: 0 0 44px !important;
+                flex: 0 0 42px !important;
                 width: 100% !important;
-                height: 44px;
-                flex-direction: row;
-                padding: 5px 10px;
-                gap: 8px;
+                height: 42px !important;
+                flex-direction: row !important;
+                padding: 5px 8px;
+                gap: 6px;
                 border-radius: 8px;
                 align-items: center;
-                flex-shrink: 0;
+                flex-shrink: 0 !important;
             }
             #palette-label { display: none; }
             #palette-grid {
-                grid-template-columns: repeat(14, 1fr);
+                grid-template-columns: repeat(14, 22px);
                 overflow-x: auto; overflow-y: hidden;
-                height: 100%;
+                height: 28px;
                 gap: 3px;
                 flex: 1;
             }
-            .color-swatch { width: 24px; height: 24px; border-radius: 4px; }
-            #current-color-display { width: 30px; height: 30px; flex-shrink: 0; }
-            #color-custom { width: 28px; height: 28px; border-radius: 4px; flex-shrink: 0; }
+            .color-swatch { width: 22px; height: 22px; border-radius: 4px; }
+            #current-color-display { width: 28px; height: 28px; flex-shrink: 0; }
+            #color-custom { width: 26px; height: 26px; border-radius: 4px; flex-shrink: 0; }
 
-            #bottom-actions { padding: 3px 6px; flex-wrap: wrap; }
+            #bottom-actions { padding: 3px 6px; flex-wrap: wrap; gap: 4px; }
 
-            /* Chats: altura fixa pequena no mobile */
+            /* Chats lado a lado - altura fixa */
             #right-chats-wrapper {
-                flex: 0 0 160px !important;
-                width: 100%;
-                flex-direction: row;
+                flex: 0 0 150px !important;
+                width: 100% !important;
+                flex-direction: row !important;
                 gap: 4px;
+                flex-shrink: 0 !important;
             }
             .chat-box-container { flex: 1; min-width: 0; }
-            .chat-messages-area { font-size: 10px; }
+            .chat-messages-area { font-size: 10px; padding: 5px; }
+            .chat-input-field { font-size: 11px; padding: 4px; }
         }
 
         #canvas-wrapper {
             flex: 1; display: flex; flex-direction: row; overflow: hidden; min-width: 0;
         }
-        #canvas-container { flex: 1; }
+        #canvas-container { flex: 1; position: relative; }
 
         #fill-status {
             display: none;
