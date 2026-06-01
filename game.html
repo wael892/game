@@ -641,7 +641,8 @@
         currentShape = shape;
         document.querySelectorAll('#tools .tool-btn[id^="shape-"]').forEach(b => b.classList.remove('active'));
         document.getElementById('shape-' + shape).classList.add('active');
-        if (currentTool === 'eraser' || currentTool === 'fill') setTool('brush');
+        // Não redirecionar para brush se estiver sendo chamado pelo próprio setTool('eraser')
+        if (currentTool === 'fill') setTool('brush');
     }
 
     function setBrushSize(size, el) {
