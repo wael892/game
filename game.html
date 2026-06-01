@@ -375,12 +375,15 @@
 </header>
 
 <div id="main-container">
+    <!-- PLACAR -->
     <div id="scoreboard">
         <h3>🏆 Pódio</h3>
         <div id="players-list"></div>
     </div>
 
+    <!-- CANVAS + FERRAMENTAS -->
     <div id="canvas-wrapper">
+        <!-- Ferramentas laterais -->
         <div id="tools">
             <span class="tool-section-label">Modo</span>
             <div class="tool-btn active" id="tool-brush" title="Pincel Livre" onclick="setTool('brush')">✏️</div>
@@ -409,6 +412,7 @@
             <div id="current-color-display" style="background:#000000;" title="Cor atual"></div>
         </div>
 
+        <!-- Canvas -->
         <div id="canvas-container">
             <canvas id="canvas"></canvas>
             <div id="fill-status">🪣 Modo Preenchimento</div>
@@ -419,6 +423,7 @@
         </div>
     </div>
 
+    <!-- PALETA DE CORES REDUZIDA -->
     <div id="palette-container">
         <span id="palette-label">🎨 Cores</span>
         <div id="palette-grid"></div>
@@ -426,6 +431,7 @@
         <div id="current-color-display-palette" style="width:30px;height:30px;border-radius:6px;border:2px solid white;flex-shrink:0;background:#000000;"></div>
     </div>
 
+    <!-- CHAT -->
     <div id="chat-container">
         <div id="chat-messages"></div>
         <div id="chat-input-area">
@@ -458,13 +464,13 @@
 
     // ===== FERRAMENTAS =====
     let currentTool = 'brush';
-    let currentShape = 'free'; // 'free' | 'circle' | 'square' | 'triangle' | 'spray'
+    let currentShape = 'free';
     let currentColor = '#000000';
     let currentBrushSize = 2;
 
-    // Coordenadas iniciais para o arrasto das formas geométricas
     let startX = 0, startY = 0;
-    let snapshot = null; // Guarda o estado do canvas para renderizar o "preview" dinâmico
+    let snapshot = null;
+    let lastFormCoordinates = null;
 
     function setTool(tool) {
         currentTool = tool;
@@ -561,7 +567,6 @@
         };
     }
 
-    // ===== LÓGICA DE EVENTOS DO MOUSE / TOUCH =====
     canvas.addEventListener('mousedown', (e) => {
         if (!isDrawer || !roundActive) return;
         const c = getCanvasCoordinates(e.clientX, e.clientY);
@@ -593,7 +598,6 @@
     }, { passive: false });
     canvas.addEventListener('touchend', (e) => { e.preventDefault(); onStopDrag(); });
 
-    // Início do traço/arrasto
     function onStartDrag(x, y) {
         drawing = true;
         startX = x;
@@ -609,12 +613,10 @@
             ctx.moveTo(x, y);
             sendDrawData('start', x, y, col, currentBrushSize);
         } else {
-            // Salva o estado atual do canvas para simular o rascunho sem estragar o fundo
             snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
         }
     }
 
-    // Movimentação do arrasto
     function onMoveDrag(x, y) {
         const col = currentTool === 'eraser' ? '#ffffff' : currentColor;
         ctx.lineWidth = currentBrushSize;
@@ -627,18 +629,15 @@
             generateSpray(x, y, col, currentBrushSize);
             sendDrawData('spray', x, y, col, currentBrushSize);
         } else {
-            // Restaura o canvas limpo para redesenhar a forma geométrica dinamicamente no novo tamanho
             if (snapshot) ctx.putImageData(snapshot, 0, 0);
-            drawPreviewShape(currentShape, startX, startY, x, y, col, currentBrushSize);
+            drawBoundingShape(currentShape, startX, startY, x, y, col, currentBrushSize);
         }
     }
 
-    // Quando solta o clique (Fixa as formas no canvas oficial e envia)
     function onStopDrag() {
         if (!drawing) return;
         drawing = false;
 
-        // Se era uma forma que precisava arrastar, agora envia o comando final definitivo
         if (currentShape !== 'free' && currentShape !== 'spray') {
             const lastEvent = lastFormCoordinates;
             if (lastEvent) {
@@ -650,11 +649,8 @@
         lastFormCoordinates = null;
     }
 
-    // Guardar dados temporários para o evento final de fixar a forma geométrica
-    let lastFormCoordinates = null;
-
-    // Renderiza o rascunho em tempo real na tela de quem está desenhando
-    function drawPreviewShape(shape, sX, sY, cX, cY, color, size) {
+    // Desenha formas com base no retângulo delimitador (Bounding Box) estilo Gartic original
+    function drawBoundingShape(shape, sX, sY, cX, cY, color, size) {
         ctx.strokeStyle = color;
         ctx.fillStyle = "transparent";
         ctx.lineWidth = size;
@@ -664,8 +660,17 @@
         if (shape === 'square') {
             ctx.strokeRect(sX, sY, cX - sX, cY - sY);
         } else if (shape === 'circle') {
-            let radius = Math.sqrt(Math.pow(cX - sX, 2) + Math.pow(cY - sY, 2));
-            ctx.arc(sX, sY, radius, 0, 2 * Math.PI);
+            // Lógica igual ao Gartic: O círculo se molda perfeitamente dentro do arrasto como uma elipse/arco delimitado
+            let rx = (cX - sX) / 2;
+            let ry = (cY - sY) / 2;
+            let cx = sX + rx;
+            let cy = sY + ry;
+            
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.scale(Math.abs(rx), Math.abs(ry));
+            ctx.arc(0, 0, 1, 0, 2 * Math.PI);
+            ctx.restore();
             ctx.stroke();
         } else if (shape === 'triangle') {
             ctx.moveTo(sX + (cX - sX) / 2, sY);
@@ -676,7 +681,6 @@
         }
     }
 
-    // Função auxiliar do efeito de spray
     function generateSpray(x, y, color, size) {
         ctx.fillStyle = color;
         const density = size * 4;
@@ -689,7 +693,6 @@
         }
     }
 
-    // ===== BALDE DE PREENCHIMENTO =====
     function doFill(startX, startY) {
         if (!isDrawer || !roundActive) return;
         const fillColor = currentColor;
@@ -717,7 +720,6 @@
         sendDrawData('fill', startX, startY, fillColor, 0);
     }
 
-    // ===== REMOTE DRAW (RENDERIZAÇÃO PARA OS ADIVINHADORES) =====
     function renderRemoteDraw(data) {
         ctx.strokeStyle = data.color; 
         ctx.fillStyle = data.color; 
@@ -729,14 +731,21 @@
         else if (data.action === 'clear') { ctx.clearRect(0, 0, canvas.width, canvas.height); }
         else if (data.action === 'fill') { doRemoteFill(Math.round(data.x), Math.round(data.y), data.color); }
         else if (data.action === 'final_shape') {
-            // Desenha a forma geométrica final calculada na tela remota dos adivinhadores
             ctx.fillStyle = "transparent";
             ctx.beginPath();
             if (data.shapeType === 'square') {
                 ctx.strokeRect(data.x, data.y, data.endX - data.x, data.endY - data.y);
             } else if (data.shapeType === 'circle') {
-                let radius = Math.sqrt(Math.pow(data.endX - data.x, 2) + Math.pow(data.endY - data.y, 2));
-                ctx.arc(data.x, data.y, radius, 0, 2 * Math.PI);
+                let rx = (data.endX - data.x) / 2;
+                let ry = (data.endY - data.y) / 2;
+                let cx = data.x + rx;
+                let cy = data.y + ry;
+                
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.scale(Math.abs(rx), Math.abs(ry));
+                ctx.arc(0, 0, 1, 0, 2 * Math.PI);
+                ctx.restore();
                 ctx.stroke();
             } else if (data.shapeType === 'triangle') {
                 ctx.moveTo(data.x + (data.endX - data.x) / 2, data.y);
