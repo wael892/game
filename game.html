@@ -12,7 +12,7 @@
             background-color: #ffd43b;
             display: flex; flex-direction: column; align-items: center;
             height: 100vh; height: -webkit-fill-available;
-            padding: 10px; overscroll-behavior: none; overflow: hidden;
+            padding: 8px; overscroll-behavior: none; overflow: hidden;
         }
 
         #login-screen {
@@ -20,202 +20,226 @@
             background: #ffd43b; display: flex; justify-content: center;
             align-items: center; z-index: 1000;
         }
-
         .login-box {
             background: white; padding: 30px; border-radius: 15px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             width: 100%; max-width: 400px; text-align: center;
         }
-
         .login-box h2 { color: #118ab2; margin-bottom: 20px; }
-
         .login-box input {
             width: 100%; padding: 12px; margin-bottom: 15px;
             border: 2px solid #ced4da; border-radius: 8px;
             outline: none; font-size: 16px;
         }
-
         .login-box input:focus { border-color: #118ab2; }
-
         .login-box textarea {
             width: 100%; padding: 12px; margin-bottom: 15px;
             border: 2px solid #ced4da; border-radius: 8px;
             outline: none; font-size: 14px; resize: vertical;
             min-height: 70px; color: #333;
         }
-
         .login-box textarea:focus { border-color: #118ab2; }
-
-        .login-box .hint {
-            font-size: 11px; color: #888; margin-top: -10px;
-            margin-bottom: 15px; text-align: left;
-        }
+        .login-box .hint { font-size: 11px; color: #888; margin-top: -10px; margin-bottom: 15px; text-align: left; }
 
         header {
-            text-align: center; margin-bottom: 10px; background: white;
-            padding: 10px 20px; border-radius: 50px;
+            text-align: center; margin-bottom: 6px; background: white;
+            padding: 8px 16px; border-radius: 50px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            width: 100%; max-width: 1200px;
+            width: 100%; max-width: 1400px;
             display: flex; justify-content: space-between; align-items: center;
             gap: 10px; flex-shrink: 0;
         }
-
         h1 { color: #118ab2; font-size: 20px; flex-shrink: 0; }
-
         #word-display {
-            font-weight: bold; font-size: 18px; color: #ef476f;
-            background: #f8f9fa; padding: 5px 15px; border-radius: 20px;
-            border: 2px dashed #ef476f; text-align: center; word-break: break-word;
+            font-weight: bold; font-size: 16px; color: #ef476f;
+            background: #f8f9fa; padding: 4px 14px; border-radius: 20px;
+            border: 2px dashed #ef476f; text-align: center; word-break: break-word; flex: 1;
         }
-
         #room-display {
             font-weight: bold; color: #666; font-size: 12px;
             display: flex; flex-direction: column; align-items: flex-end;
             gap: 2px; flex-shrink: 0;
         }
-
         #timer-display { font-weight: bold; color: #ef476f; font-size: 14px; }
 
         #main-container {
-            display: flex; width: 100%; max-width: 1200px;
-            flex: 1; gap: 10px; overflow: hidden;
+            display: flex; width: 100%; max-width: 1400px;
+            flex: 1; gap: 8px; overflow: hidden; min-height: 0;
         }
 
+        /* ===== SCOREBOARD ===== */
         #scoreboard {
-            flex: 1; background: white; border-radius: 15px; padding: 12px;
+            flex: 0 0 130px; background: white; border-radius: 12px; padding: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex; flex-direction: column; overflow: hidden;
         }
-
-        #scoreboard h3 { color: #555; padding-bottom: 5px; border-bottom: 2px solid #f1f3f5; font-size: 16px; }
-
+        #scoreboard h3 { color: #555; padding-bottom: 5px; border-bottom: 2px solid #f1f3f5; font-size: 14px; }
         #players-list {
-            margin-top: 10px; overflow-y: auto; flex: 1;
-            display: flex; flex-direction: column; gap: 6px;
+            margin-top: 8px; overflow-y: auto; flex: 1;
+            display: flex; flex-direction: column; gap: 5px;
         }
-
         .player-item {
-            background: #f8f9fa; padding: 8px; border-radius: 6px;
-            font-weight: bold; color: #333; font-size: 13px;
+            background: #f8f9fa; padding: 7px 8px; border-radius: 6px;
+            font-weight: bold; color: #333; font-size: 12px;
             border-left: 4px solid #118ab2;
             display: flex; justify-content: space-between; align-items: center;
         }
-
         .player-item.drawing { border-left-color: #ef476f; background: #ffe3e8; }
-
         .player-score {
-            background: #118ab2; color: white; border-radius: 12px;
-            padding: 2px 8px; font-size: 12px; font-weight: bold;
-            min-width: 36px; text-align: center;
+            background: #118ab2; color: white; border-radius: 10px;
+            padding: 1px 7px; font-size: 11px; font-weight: bold;
+            min-width: 32px; text-align: center;
             transition: transform 0.2s, background 0.3s;
         }
-
         .player-item.drawing .player-score { background: #ef476f; }
-
         .player-score.bump { transform: scale(1.4); background: #06d6a0 !important; }
 
         .score-popup {
             position: fixed; pointer-events: none;
-            font-size: 22px; font-weight: bold; color: #06d6a0;
+            font-size: 20px; font-weight: bold; color: #06d6a0;
             text-shadow: 0 2px 6px rgba(0,0,0,0.25);
             animation: floatUp 1.4s ease-out forwards; z-index: 9999;
         }
-
         @keyframes floatUp {
             0%   { opacity: 1; transform: translateY(0) scale(1); }
             60%  { opacity: 1; transform: translateY(-40px) scale(1.15); }
             100% { opacity: 0; transform: translateY(-70px) scale(0.9); }
         }
 
+        /* ===== CANVAS ===== */
         #canvas-container {
-            flex: 3; background: white; border-radius: 15px;
+            flex: 1; background: white; border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex; flex-direction: column; overflow: hidden; position: relative;
+            min-width: 0;
         }
-
         canvas {
             flex: 1; background: #ffffff; cursor: crosshair;
-            touch-action: none; width: 100%; height: 100%;
+            touch-action: none; width: 100%; height: 100%; display: block;
         }
+        canvas.cursor-eraser { cursor: cell; }
+        canvas.cursor-fill   { cursor: copy; }
 
+        /* ===== TOOLBAR ===== */
         #tools {
-            height: 60px; background: #e9ecef;
-            display: flex; align-items: center; padding: 0 10px;
-            gap: 10px; border-top: 2px solid #dee2e6;
-            overflow-x: auto; flex-shrink: 0;
+            background: #1a1a2e;
+            display: flex; flex-direction: column;
+            padding: 8px; gap: 6px;
+            border-right: 3px solid #ffd43b;
+            flex-shrink: 0; overflow-y: auto;
+            width: 52px;
         }
 
-        .color-circle {
-            width: 28px; height: 28px; border-radius: 50%;
-            cursor: pointer; border: 2px solid transparent; flex-shrink: 0;
+        .tool-section-label {
+            font-size: 8px; color: #888; text-transform: uppercase;
+            letter-spacing: 0.5px; text-align: center; margin-top: 2px;
         }
 
-        .color-circle.active { border-color: #000; }
-
-        .btn {
-            padding: 8px 12px; border: none; border-radius: 5px;
-            cursor: pointer; font-weight: bold; font-size: 13px; flex-shrink: 0;
-        }
-
-        .btn-clear { background: #ef476f; color: white; }
-
-        /* ===== BOTÃO OVO ===== */
-        #btn-egg {
-            background: #f4a261;
-            color: white;
-            font-size: 18px;
-            padding: 6px 14px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
+        .tool-btn {
+            width: 36px; height: 36px; border-radius: 8px;
+            border: 2px solid transparent; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; background: #2a2a3e;
+            color: white; transition: all 0.15s;
             flex-shrink: 0;
-            display: none;
-            transition: transform 0.1s, background 0.2s;
+        }
+        .tool-btn:hover { background: #3a3a5e; border-color: #ffd43b; }
+        .tool-btn.active { background: #ffd43b; color: #1a1a2e; border-color: #ffa500; }
+
+        .brush-sizes {
+            display: flex; flex-direction: column; gap: 4px; align-items: center;
+        }
+        .size-btn {
+            cursor: pointer; border-radius: 50%; background: white;
+            border: 2px solid #555; transition: border-color 0.15s, transform 0.1s;
+            flex-shrink: 0;
+        }
+        .size-btn:hover { border-color: #ffd43b; transform: scale(1.15); }
+        .size-btn.active { border-color: #ffd43b; box-shadow: 0 0 0 2px rgba(255,212,59,0.5); }
+
+        .tool-separator {
+            height: 1px; background: #333; margin: 3px 0;
+        }
+
+        /* ===== COLOR PALETTE ===== */
+        #palette-container {
+            flex: 0 0 48px; background: #1a1a2e; border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; overflow: hidden;
+            padding: 6px 4px; gap: 3px;
+        }
+        #palette-label {
+            font-size: 8px; color: #888; text-transform: uppercase;
+            letter-spacing: 0.5px; text-align: center;
+        }
+        #palette-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 3px; overflow-y: auto; flex: 1;
+        }
+        #palette-grid::-webkit-scrollbar { width: 3px; }
+        #palette-grid::-webkit-scrollbar-track { background: transparent; }
+        #palette-grid::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+
+        .color-swatch {
+            width: 18px; height: 18px; border-radius: 4px;
+            cursor: pointer; border: 2px solid transparent;
+            transition: transform 0.1s, border-color 0.1s;
+            flex-shrink: 0;
+        }
+        .color-swatch:hover { transform: scale(1.2); border-color: white; }
+        .color-swatch.active { border-color: white; transform: scale(1.15); box-shadow: 0 0 0 1px #ffd43b; }
+
+        #color-custom {
+            width: 100%; height: 22px; border: none; border-radius: 4px;
+            cursor: pointer; padding: 0; flex-shrink: 0;
+        }
+
+        #current-color-display {
+            width: 36px; height: 36px; border-radius: 8px;
+            border: 3px solid white; flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            align-self: center;
+        }
+
+        /* ===== CLEAR BTN + EGG ===== */
+        #bottom-actions {
+            display: flex; gap: 6px; padding: 4px 8px;
+            background: #1a1a2e; border-top: 2px solid #2a2a3e;
+            align-items: center; flex-shrink: 0;
+        }
+        .btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; flex-shrink: 0; }
+        .btn-clear { background: #ef476f; color: white; }
+        #btn-egg {
+            background: #f4a261; color: white; font-size: 14px;
+            padding: 5px 12px; border-radius: 7px; border: none;
+            cursor: pointer; font-weight: bold; flex-shrink: 0;
+            display: none; transition: transform 0.1s, background 0.2s;
             box-shadow: 0 3px 8px rgba(0,0,0,0.15);
         }
-
         #btn-egg:active { transform: scale(0.92); background: #e76f51; }
+        #btn-egg.cooldown { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
-        #btn-egg.cooldown {
-            opacity: 0.4;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-
-        /* ===== ANIMAÇÃO DO OVO ===== */
+        /* ===== EGG ANIMATIONS ===== */
         .egg-fly {
-            position: fixed;
-            font-size: 36px;
-            pointer-events: none;
+            position: fixed; font-size: 36px; pointer-events: none;
             z-index: 9999;
             animation: eggFly var(--duration, 0.9s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-            transform-origin: center;
         }
-
         @keyframes eggFly {
             0%   { opacity: 1; transform: translate(0,0) rotate(0deg) scale(1); }
             70%  { opacity: 1; transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.1); }
             85%  { opacity: 1; transform: translate(var(--tx2), var(--ty2)) rotate(var(--rot)) scale(1.3); }
             100% { opacity: 0; transform: translate(var(--tx2), var(--ty2)) rotate(var(--rot)) scale(0.5); }
         }
-
-        /* Splash do ovo quebrando */
         .egg-splash {
-            position: fixed;
-            font-size: 48px;
-            pointer-events: none;
-            z-index: 9999;
-            animation: eggSplash 0.8s ease-out forwards;
+            position: fixed; font-size: 48px; pointer-events: none;
+            z-index: 9999; animation: eggSplash 0.8s ease-out forwards;
         }
-
         @keyframes eggSplash {
             0%   { opacity: 1; transform: scale(0.5); }
             40%  { opacity: 1; transform: scale(1.6); }
             100% { opacity: 0; transform: scale(2.2); }
         }
-
-        /* Shake na tela quando leva ovo */
         @keyframes screenShake {
             0%  { transform: translate(0,0); }
             15% { transform: translate(-6px, 3px); }
@@ -225,137 +249,97 @@
             75% { transform: translate(-2px, 2px); }
             100%{ transform: translate(0,0); }
         }
-
         .shake { animation: screenShake 0.45s ease; }
-
-        /* Cobertura amarela quando leva ovo */
         #egg-overlay {
             position: fixed; inset: 0; pointer-events: none;
             background: rgba(255, 200, 0, 0.45);
-            opacity: 0; z-index: 9998;
-            transition: opacity 0.1s;
+            opacity: 0; z-index: 9998; transition: opacity 0.1s;
         }
+        #egg-overlay.splat { animation: splatFade 1.2s ease-out forwards; }
+        @keyframes splatFade { 0% { opacity: 0.7; } 100% { opacity: 0; } }
 
-        #egg-overlay.splat {
-            animation: splatFade 1.2s ease-out forwards;
-        }
-
-        @keyframes splatFade {
-            0%   { opacity: 0.7; }
-            100% { opacity: 0; }
-        }
-
+        /* ===== CHAT ===== */
         #chat-container {
-            flex: 1.5; background: white; border-radius: 15px;
+            flex: 0 0 200px; background: white; border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex; flex-direction: column; overflow: hidden;
         }
-
         #chat-messages {
-            flex: 1; padding: 12px; overflow-y: auto;
-            display: flex; flex-direction: column; gap: 6px;
+            flex: 1; padding: 10px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 5px;
         }
-
-        .msg { padding: 6px 10px; border-radius: 5px; font-size: 13px; word-break: break-all; line-height: 1.4; }
+        .msg { padding: 5px 8px; border-radius: 5px; font-size: 12px; word-break: break-all; line-height: 1.4; }
         .msg-system  { background: #e2f0d9; color: #385723; font-weight: bold; }
         .msg-success { background: #d1e7dd; color: #0f5132; font-weight: bold; border: 1px solid #badbcc; }
         .msg-normal  { background: #f1f3f5; color: #333; }
         .msg-normal .username { font-weight: bold; color: #118ab2; }
         .msg-egg     { background: #fff3cd; color: #856404; font-weight: bold; border: 1px solid #ffc107; }
-
         #chat-input-area {
-            display: flex; padding: 8px; border-top: 2px solid #dee2e6;
+            display: flex; padding: 7px; border-top: 2px solid #dee2e6;
             background: #f8f9fa; flex-shrink: 0;
         }
-
         #chat-input {
-            flex: 1; padding: 8px; border: 2px solid #ced4da;
-            border-radius: 5px; outline: none; font-size: 14px;
+            flex: 1; padding: 7px; border: 2px solid #ced4da;
+            border-radius: 5px; outline: none; font-size: 13px;
         }
+        #btn-send { background: #118ab2; color: white; margin-left: 5px; font-size: 11px; padding: 5px 10px; }
 
-        #btn-send { background: #118ab2; color: white; margin-left: 6px; }
+        /* ===== FILL INDICATOR ===== */
+        #fill-status {
+            position: absolute; top: 8px; right: 8px;
+            background: rgba(0,0,0,0.7); color: #ffd43b;
+            padding: 3px 10px; border-radius: 20px; font-size: 11px;
+            font-weight: bold; display: none; pointer-events: none;
+        }
 
         /* ===== MOBILE ===== */
         @media (max-width: 768px) {
-            body { padding: 5px; overflow: hidden; position: relative; }
-
-            header {
-                padding: 6px 10px; margin-bottom: 5px; border-radius: 10px;
-                gap: 5px; height: 45px; width: 100%;
-            }
-
-            h1 { font-size: 12px; }
-
-            #word-display { font-size: 11px; padding: 2px 6px; border-radius: 6px; flex: 1; }
+            body { padding: 4px; }
+            header { padding: 5px 8px; margin-bottom: 4px; height: 40px; border-radius: 8px; }
+            h1 { font-size: 11px; }
+            #word-display { font-size: 10px; padding: 2px 6px; }
             #room-display { font-size: 9px; }
             #timer-display { font-size: 10px; }
 
             #main-container {
-                position: absolute; top: 60px; left: 5px; right: 5px; bottom: 5px;
-                flex-direction: column; display: flex !important; height: auto; gap: 5px;
+                position: absolute; top: 52px; left: 4px; right: 4px; bottom: 4px;
+                flex-direction: column; height: auto; gap: 4px;
             }
 
             #scoreboard {
-                display: flex !important; flex: none !important; height: 40px !important;
-                width: 100%; padding: 4px 8px; border-radius: 8px;
-                flex-direction: row; align-items: center; gap: 6px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                flex: none !important; height: 36px !important;
+                width: 100%; padding: 3px 6px; border-radius: 6px;
+                flex-direction: row; align-items: center;
             }
+            #scoreboard h3 { display: none; }
+            #players-list { margin-top: 0; flex-direction: row !important; overflow-x: auto; overflow-y: hidden; height: 100%; align-items: center; gap: 5px; }
+            .player-item { padding: 3px 6px; font-size: 10px; height: 100%; white-space: nowrap; display: inline-flex; }
 
-            #scoreboard h3 { display: none !important; }
+            /* Mobile: tools go horizontal below canvas */
+            #canvas-wrapper { flex: none !important; height: 52% !important; width: 100%; display: flex; flex-direction: column; }
+            #canvas-container { flex: 1; }
+            #tools { width: 100%; flex-direction: row; overflow-x: auto; overflow-y: hidden; border-right: none; border-top: 2px solid #ffd43b; height: 48px; padding: 5px 8px; align-items: center; }
+            .tool-section-label { display: none; }
+            .tool-separator { width: 1px; height: 100%; margin: 0 4px; }
+            .brush-sizes { flex-direction: row; gap: 5px; }
 
-            #players-list {
-                margin-top: 0; flex-direction: row !important;
-                overflow-x: auto; overflow-y: hidden;
-                width: 100%; height: 100%; gap: 6px; align-items: center;
-            }
+            #palette-container { flex: none !important; width: 100% !important; height: 36px; flex-direction: row; padding: 4px 8px; gap: 6px; border-radius: 8px; align-items: center; }
+            #palette-label { display: none; }
+            #palette-grid { grid-template-columns: repeat(20, 1fr); overflow-x: auto; overflow-y: hidden; height: 100%; gap: 3px; }
+            .color-swatch { width: 20px; height: 20px; }
+            #current-color-display { width: 26px; height: 26px; }
+            #color-custom { width: 24px; height: 24px; }
 
-            .player-item {
-                padding: 4px 8px; font-size: 11px; height: 100%;
-                white-space: nowrap; border-left: 3px solid #118ab2;
-                border-radius: 4px; display: inline-flex; align-items: center; gap: 6px;
-            }
+            #bottom-actions { padding: 3px 6px; }
 
-            .player-score { font-size: 10px; padding: 1px 6px; }
-
-            #canvas-container {
-                flex: none !important; height: 55% !important;
-                width: 100%; border-radius: 10px;
-                display: flex; flex-direction: column;
-            }
-
-            #tools { height: 38px; padding: 0 5px; gap: 5px; }
-            .color-circle { width: 22px; height: 22px; }
-            .btn { padding: 4px 10px; font-size: 11px; }
-            #btn-egg { font-size: 14px; padding: 4px 10px; }
-
-            #chat-container {
-                flex: none !important; height: calc(45% - 45px) !important;
-                width: 100%; border-radius: 10px;
-                display: flex; flex-direction: column; overflow: hidden;
-                background: white; position: relative;
-            }
-
-            #chat-messages {
-                position: absolute; top: 0; left: 0; right: 0; bottom: 48px;
-                padding: 6px; gap: 4px; overflow-y: auto;
-            }
-
-            .msg { padding: 4px 6px; font-size: 11px; }
-
-            #chat-input-area {
-                position: absolute; bottom: 0; left: 0; right: 0;
-                height: 48px; padding: 6px; background: #f8f9fa;
-                display: flex !important; align-items: center; border-top: 1px solid #dee2e6;
-            }
-
-            #chat-input { padding: 8px; font-size: 16px; height: 100%; border: 1px solid #ced4da; }
-
-            #btn-send {
-                padding: 0 14px; font-size: 13px; height: 100%;
-                margin-left: 6px; display: flex; align-items: center; justify-content: center;
-            }
+            #chat-container { flex: none !important; flex: 1 !important; width: 100%; border-radius: 8px; }
         }
+
+        /* Wrapper canvas + tools side by side on desktop */
+        #canvas-wrapper {
+            flex: 1; display: flex; flex-direction: row; overflow: hidden; min-width: 0;
+        }
+        #canvas-container { flex: 1; }
     </style>
 </head>
 <body>
@@ -374,43 +358,119 @@
 </div>
 
 <header>
-    <h1>GARTIC</h1>
+    <h1>🎨 GARTIC</h1>
     <div id="word-display">Aguardando jogadores...</div>
     <div id="room-display">
-        <span id="room-id">Sala: Não conectado</span>
+        <span id="room-id">Sala: —</span>
         <span id="timer-display">Tempo: --</span>
     </div>
 </header>
 
 <div id="main-container">
+    <!-- PLACAR -->
     <div id="scoreboard">
-        <h3>Jogadores na Sala:</h3>
+        <h3>Jogadores</h3>
         <div id="players-list"></div>
     </div>
 
-    <div id="canvas-container">
-        <canvas id="canvas"></canvas>
+    <!-- CANVAS + FERRAMENTAS (lateral) -->
+    <div id="canvas-wrapper">
+        <!-- Ferramentas laterais -->
         <div id="tools">
-            <div class="color-circle active" style="background:#000000;" onclick="changeColor('#000000',this)"></div>
-            <div class="color-circle" style="background:#ef476f;" onclick="changeColor('#ef476f',this)"></div>
-            <div class="color-circle" style="background:#ffd166;" onclick="changeColor('#ffd166',this)"></div>
-            <div class="color-circle" style="background:#06d6a0;" onclick="changeColor('#06d6a0',this)"></div>
-            <div class="color-circle" style="background:#118ab2;" onclick="changeColor('#118ab2',this)"></div>
-            <button class="btn btn-clear" onclick="sendClear()">Limpar</button>
-            <button id="btn-egg" onclick="throwEgg()">🥚 Jogar Ovo!</button>
+            <span class="tool-section-label">Tool</span>
+
+            <!-- Pincel -->
+            <div class="tool-btn active" id="tool-brush" title="Pincel" onclick="setTool('brush')">✏️</div>
+            <!-- Borracha -->
+            <div class="tool-btn" id="tool-eraser" title="Borracha" onclick="setTool('eraser')">🧹</div>
+            <!-- Balde preenchimento -->
+            <div class="tool-btn" id="tool-fill" title="Preencher" onclick="setTool('fill')">🪣</div>
+
+            <div class="tool-separator"></div>
+            <span class="tool-section-label">Size</span>
+
+            <!-- Tamanhos de pincel -->
+            <div class="brush-sizes">
+                <div class="size-btn active" id="size-2" style="width:8px;height:8px;" title="Fino" onclick="setBrushSize(2,this)"></div>
+                <div class="size-btn" id="size-5" style="width:12px;height:12px;" title="Médio" onclick="setBrushSize(5,this)"></div>
+                <div class="size-btn" id="size-10" style="width:18px;height:18px;" title="Grosso" onclick="setBrushSize(10,this)"></div>
+                <div class="size-btn" id="size-20" style="width:24px;height:24px;" title="Extra grosso" onclick="setBrushSize(20,this)"></div>
+                <div class="size-btn" id="size-40" style="width:32px;height:32px;" title="Super grosso" onclick="setBrushSize(40,this)"></div>
+            </div>
+
+            <div class="tool-separator"></div>
+
+            <!-- Cor atual -->
+            <div id="current-color-display" style="background:#000000;" title="Cor atual"></div>
+        </div>
+
+        <!-- Canvas -->
+        <div id="canvas-container">
+            <canvas id="canvas"></canvas>
+            <div id="fill-status">🪣 Modo Preenchimento</div>
+            <div id="bottom-actions">
+                <button class="btn btn-clear" onclick="sendClear()">🗑 Limpar</button>
+                <button id="btn-egg" onclick="throwEgg()">🥚 Jogar Ovo!</button>
+            </div>
         </div>
     </div>
 
+    <!-- PALETA DE CORES -->
+    <div id="palette-container">
+        <span id="palette-label">Cores</span>
+        <div id="palette-grid"></div>
+        <input type="color" id="color-custom" value="#000000" title="Cor personalizada" onchange="pickCustomColor(this)">
+        <div id="current-color-display-palette" style="width:30px;height:30px;border-radius:6px;border:2px solid white;flex-shrink:0;background:#000000;"></div>
+    </div>
+
+    <!-- CHAT -->
     <div id="chat-container">
         <div id="chat-messages"></div>
         <div id="chat-input-area">
-            <input type="text" id="chat-input" placeholder="Digite seu palpite aqui..." autocomplete="off">
-            <button id="btn-send" class="btn" onclick="sendChatMessage()">Enviar</button>
+            <input type="text" id="chat-input" placeholder="Digite seu palpite..." autocomplete="off">
+            <button id="btn-send" class="btn" onclick="sendChatMessage()">➤</button>
         </div>
     </div>
 </div>
 
 <script>
+    // ===== PALETA COMPLETA =====
+    const FULL_PALETTE = [
+        // Preto e brancos
+        "#000000","#1a1a1a","#333333","#4d4d4d","#666666","#808080","#999999","#b3b3b3","#cccccc","#e6e6e6","#f2f2f2","#ffffff",
+        // Vermelhos
+        "#ff0000","#cc0000","#990000","#ff3333","#ff6666","#ff9999","#ffcccc",
+        // Laranjas
+        "#ff6600","#ff8800","#ffaa00","#ffbb33","#ffcc66","#ffdd99","#ffeecc",
+        // Amarelos
+        "#ffff00","#ffee00","#ffdd00","#ffcc00","#ffe066","#ffee99","#ffffcc",
+        // Verdes claros / Lima
+        "#99ff00","#88ee00","#aaff33","#bbff66","#ccff99","#b3ff66","#d4ff99",
+        // Verdes
+        "#00ff00","#00cc00","#009900","#006600","#33ff33","#66ff66","#99ff99","#ccffcc",
+        // Verde-água / Teal
+        "#00ff88","#00ffaa","#00ffcc","#00ddaa","#00bb88","#33ffbb","#66ffcc",
+        // Ciano
+        "#00ffff","#00cccc","#009999","#006666","#33ffff","#66ffff","#99ffff","#ccffff",
+        // Azuis claros
+        "#0099ff","#0077ff","#0055ff","#3399ff","#66aaff","#99bbff","#cce0ff",
+        // Azuis
+        "#0000ff","#0000cc","#000099","#000066","#3333ff","#6666ff","#9999ff","#ccccff",
+        // Roxos / Violetas
+        "#6600ff","#7700ee","#8800cc","#9900aa","#aa33ff","#bb66ff","#cc99ff","#ddccff",
+        // Magentas / Rosas
+        "#ff00ff","#cc00cc","#990099","#660066","#ff33ff","#ff66ff","#ff99ff","#ffccff",
+        // Rosas
+        "#ff0077","#ff0055","#ff0033","#ff3388","#ff66aa","#ff99cc","#ffccee",
+        // Marrons
+        "#663300","#884400","#aa5500","#cc6600","#994411","#bb6622","#dd8833","#cc9966","#ddaa77","#eebb99","#f5deb3",
+        // Skin tones
+        "#ffdbac","#f1c27d","#e0ac69","#c68642","#8d5524","#6b3a2a",
+        // Cores especiais / néons
+        "#ff00aa","#aa00ff","#00aaff","#00ffaa","#aaff00","#ffaa00",
+    ];
+
+    // ===== STATE =====
     let username = "", roomName = "", mqttClient = null, baseTopic = "";
     const listaJogadores = new Set();
     const scores = {};
@@ -419,19 +479,70 @@
     let countdownInterval = null, nextRoundTimeout = null, currentTimeLeft = 0;
     const TEMPO_RODADA = 60;
     let eggCooldown = false;
-
-    // Palavras customizadas da sala (sincronizadas via MQTT)
     let customWords = [];
     const PALAVRAS_PADRAO = ["Cachorro","Gato","Carro","Aviao","Banana","Maca","Casa","Arvore","Bola","Computador","Celular","Caneta","Chave","Livro","Relogio","Cadeira","Garfo","Sapato","Oculos","Sol","Lua","Flor","Peixe","Passaro"];
+    function getPalavras() { return customWords.length > 0 ? customWords : PALAVRAS_PADRAO; }
 
-    function getPalavras() {
-        return customWords.length > 0 ? customWords : PALAVRAS_PADRAO;
+    // ===== FERRAMENTAS =====
+    let currentTool = 'brush'; // 'brush' | 'eraser' | 'fill'
+    let currentColor = '#000000';
+    let currentBrushSize = 2;
+
+    function setTool(tool) {
+        currentTool = tool;
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tool-' + tool).classList.add('active');
+        const c = document.getElementById('canvas');
+        c.className = '';
+        if (tool === 'eraser') c.classList.add('cursor-eraser');
+        else if (tool === 'fill') c.classList.add('cursor-fill');
+        document.getElementById('fill-status').style.display = tool === 'fill' ? 'block' : 'none';
     }
+
+    function setBrushSize(size, el) {
+        currentBrushSize = size;
+        document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+        ctx.lineWidth = size;
+    }
+
+    function setActiveColor(hex) {
+        currentColor = hex;
+        document.getElementById('current-color-display').style.background = hex;
+        document.getElementById('current-color-display-palette').style.background = hex;
+        document.querySelectorAll('.color-swatch').forEach(s => {
+            s.classList.toggle('active', s.dataset.color === hex);
+        });
+    }
+
+    function pickCustomColor(input) {
+        setActiveColor(input.value);
+        if (currentTool === 'eraser') setTool('brush');
+    }
+
+    // ===== BUILD PALETTE =====
+    function buildPalette() {
+        const grid = document.getElementById('palette-grid');
+        FULL_PALETTE.forEach(hex => {
+            const swatch = document.createElement('div');
+            swatch.className = 'color-swatch';
+            swatch.dataset.color = hex;
+            swatch.style.background = hex;
+            swatch.title = hex;
+            if (hex === currentColor) swatch.classList.add('active');
+            swatch.addEventListener('click', () => {
+                setActiveColor(hex);
+                if (currentTool === 'eraser') setTool('brush');
+            });
+            grid.appendChild(swatch);
+        });
+    }
+    buildPalette();
 
     // ===== CANVAS =====
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    let drawing = false, currentColor = '#000000';
+    let drawing = false;
     const VIRTUAL_WIDTH = 800, VIRTUAL_HEIGHT = 600;
 
     function ajustarAlturaJanela() { document.body.style.height = window.innerHeight + "px"; }
@@ -441,7 +552,7 @@
 
     function initCanvasResolution() {
         canvas.width = VIRTUAL_WIDTH; canvas.height = VIRTUAL_HEIGHT;
-        ctx.lineCap = 'round'; ctx.lineWidth = 6;
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = currentBrushSize;
     }
     initCanvasResolution();
 
@@ -453,19 +564,119 @@
         };
     }
 
-    canvas.addEventListener('mousedown', (e) => { const c = getCanvasCoordinates(e.clientX, e.clientY); startDrawing(c.x, c.y); });
+    canvas.addEventListener('mousedown', (e) => {
+        if (!isDrawer || !roundActive) return;
+        const c = getCanvasCoordinates(e.clientX, e.clientY);
+        if (currentTool === 'fill') { doFill(Math.round(c.x), Math.round(c.y)); return; }
+        startDrawing(c.x, c.y);
+    });
     canvas.addEventListener('mousemove', (e) => { const c = getCanvasCoordinates(e.clientX, e.clientY); draw(c.x, c.y); });
     canvas.addEventListener('mouseup', stopDrawing);
     canvas.addEventListener('mouseout', stopDrawing);
 
-    canvas.addEventListener('touchstart', (e) => { if (e.touches.length===1) { e.preventDefault(); const c = getCanvasCoordinates(e.touches[0].clientX, e.touches[0].clientY); startDrawing(c.x, c.y); } }, { passive: false });
+    canvas.addEventListener('touchstart', (e) => { if (e.touches.length===1) { e.preventDefault(); const c = getCanvasCoordinates(e.touches[0].clientX, e.touches[0].clientY); if (currentTool === 'fill') { doFill(Math.round(c.x), Math.round(c.y)); return; } startDrawing(c.x, c.y); } }, { passive: false });
     canvas.addEventListener('touchmove', (e) => { if (e.touches.length===1) { e.preventDefault(); const c = getCanvasCoordinates(e.touches[0].clientX, e.touches[0].clientY); draw(c.x, c.y); } }, { passive: false });
     canvas.addEventListener('touchend', (e) => { e.preventDefault(); stopDrawing(); });
 
-    function startDrawing(x, y) { if (!isDrawer || !roundActive) return; drawing = true; ctx.beginPath(); ctx.moveTo(x, y); sendDrawData('start', x, y, currentColor); }
-    function draw(x, y) { if (!drawing || !isDrawer || !roundActive) return; ctx.strokeStyle = currentColor; ctx.lineTo(x, y); ctx.stroke(); sendDrawData('draw', x, y, currentColor); }
-    function stopDrawing() { if (!isDrawer) return; drawing = false; sendDrawData('stop', 0, 0, currentColor); }
-    function changeColor(color, element) { currentColor = color; document.querySelectorAll('.color-circle').forEach(el => el.classList.remove('active')); element.classList.add('active'); }
+    function startDrawing(x, y) {
+        if (!isDrawer || !roundActive) return;
+        drawing = true;
+        ctx.beginPath(); ctx.moveTo(x, y);
+        sendDrawData('start', x, y, currentTool === 'eraser' ? '#ffffff' : currentColor, currentBrushSize);
+    }
+    function draw(x, y) {
+        if (!drawing || !isDrawer || !roundActive) return;
+        const col = currentTool === 'eraser' ? '#ffffff' : currentColor;
+        ctx.strokeStyle = col;
+        ctx.lineWidth = currentBrushSize;
+        ctx.lineTo(x, y); ctx.stroke();
+        sendDrawData('draw', x, y, col, currentBrushSize);
+    }
+    function stopDrawing() { drawing = false; }
+
+    // ===== FLOOD FILL =====
+    function doFill(startX, startY) {
+        if (!isDrawer || !roundActive) return;
+        const fillColor = currentColor;
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        const idx = (startY * canvas.width + startX) * 4;
+        const targetR = data[idx], targetG = data[idx+1], targetB = data[idx+2], targetA = data[idx+3];
+
+        const fillR = parseInt(fillColor.slice(1,3),16);
+        const fillG = parseInt(fillColor.slice(3,5),16);
+        const fillB = parseInt(fillColor.slice(5,7),16);
+
+        if (targetR === fillR && targetG === fillG && targetB === fillB) return;
+
+        const stack = [[startX, startY]];
+        const visited = new Uint8Array(canvas.width * canvas.height);
+
+        function match(i) {
+            return Math.abs(data[i]-targetR)<32 && Math.abs(data[i+1]-targetG)<32 && Math.abs(data[i+2]-targetB)<32 && Math.abs(data[i+3]-targetA)<32;
+        }
+
+        while (stack.length) {
+            const [x, y] = stack.pop();
+            if (x < 0 || x >= canvas.width || y < 0 || y >= canvas.height) continue;
+            const vi = y * canvas.width + x;
+            if (visited[vi]) continue;
+            const pi = vi * 4;
+            if (!match(pi)) continue;
+            visited[vi] = 1;
+            data[pi] = fillR; data[pi+1] = fillG; data[pi+2] = fillB; data[pi+3] = 255;
+            stack.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+
+        // Envia via MQTT como snapshot (canvas base64)
+        sendDrawData('fill', startX, startY, fillColor, 0);
+    }
+
+    // ===== REMOTE DRAW =====
+    let remoteCtx = { drawing: false, lastColor: '#000000', lastSize: 2 };
+
+    function renderRemoteDraw(data) {
+        ctx.strokeStyle = data.color;
+        ctx.lineWidth = data.size || 2;
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        if (data.action === 'start') { ctx.beginPath(); ctx.moveTo(data.x, data.y); }
+        else if (data.action === 'draw') { ctx.lineTo(data.x, data.y); ctx.stroke(); }
+        else if (data.action === 'clear') { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+        else if (data.action === 'fill') {
+            // Reproduce fill on remote
+            doRemoteFill(Math.round(data.x), Math.round(data.y), data.color);
+        }
+    }
+
+    function doRemoteFill(startX, startY, fillColor) {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        const idx = (startY * canvas.width + startX) * 4;
+        const targetR = data[idx], targetG = data[idx+1], targetB = data[idx+2], targetA = data[idx+3];
+        const fillR = parseInt(fillColor.slice(1,3),16);
+        const fillG = parseInt(fillColor.slice(3,5),16);
+        const fillB = parseInt(fillColor.slice(5,7),16);
+        if (targetR === fillR && targetG === fillG && targetB === fillB) return;
+        const stack = [[startX, startY]];
+        const visited = new Uint8Array(canvas.width * canvas.height);
+        function match(i) {
+            return Math.abs(data[i]-targetR)<32 && Math.abs(data[i+1]-targetG)<32 && Math.abs(data[i+2]-targetB)<32 && Math.abs(data[i+3]-targetA)<32;
+        }
+        while (stack.length) {
+            const [x, y] = stack.pop();
+            if (x < 0 || x >= canvas.width || y < 0 || y >= canvas.height) continue;
+            const vi = y * canvas.width + x;
+            if (visited[vi]) continue;
+            const pi = vi * 4;
+            if (!match(pi)) continue;
+            visited[vi] = 1;
+            data[pi] = fillR; data[pi+1] = fillG; data[pi+2] = fillB; data[pi+3] = 255;
+            stack.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
+        }
+        ctx.putImageData(imageData, 0, 0);
+    }
 
     // ===== PONTUAÇÃO =====
     function getScore(nome) { return scores[nome] || 0; }
@@ -503,76 +714,41 @@
         if (!roundActive || isDrawer || eggCooldown || !mqttClient) return;
         eggCooldown = true;
         const btn = document.getElementById('btn-egg');
-        btn.classList.add('cooldown');
-        btn.textContent = '🥚 Recarregando...';
-
+        btn.classList.add('cooldown'); btn.textContent = '🥚 Recarregando...';
         mqttClient.publish(baseTopic + "/egg", JSON.stringify({ thrower: username, target: currentDrawerName }));
-
         setTimeout(() => {
             eggCooldown = false;
-            btn.classList.remove('cooldown');
-            btn.textContent = '🥚 Jogar Ovo!';
+            btn.classList.remove('cooldown'); btn.textContent = '🥚 Jogar Ovo!';
         }, 8000);
     }
 
     function animateEggThrow(thrower, target) {
-        // Posição de onde parte: nome do thrower no placar
         const throwerEl = document.getElementById("p-" + thrower.replace(/\s+/g,'-'));
         const canvasRect = canvas.getBoundingClientRect();
-
-        let startX = window.innerWidth / 2;
-        let startY = window.innerHeight - 100;
-        if (throwerEl) {
-            const r = throwerEl.getBoundingClientRect();
-            startX = r.left + r.width / 2;
-            startY = r.top + r.height / 2;
-        }
-
-        // Alvo: canvas (desenhista)
-        const targetX = canvasRect.left + canvasRect.width / 2 + (Math.random() - 0.5) * 80;
-        const targetY = canvasRect.top + canvasRect.height / 2 + (Math.random() - 0.5) * 60;
-
+        let startX = window.innerWidth / 2, startY = window.innerHeight - 100;
+        if (throwerEl) { const r = throwerEl.getBoundingClientRect(); startX = r.left + r.width/2; startY = r.top + r.height/2; }
+        const targetX = canvasRect.left + canvasRect.width/2 + (Math.random()-0.5)*80;
+        const targetY = canvasRect.top + canvasRect.height/2 + (Math.random()-0.5)*60;
         const egg = document.createElement('div');
-        egg.className = 'egg-fly';
-        egg.textContent = '🥚';
-
-        const dx = targetX - startX;
-        const dy = targetY - startY;
+        egg.className = 'egg-fly'; egg.textContent = '🥚';
+        const dx = targetX - startX, dy = targetY - startY;
         const dist = Math.sqrt(dx*dx + dy*dy);
-        const duration = Math.max(0.5, Math.min(1.1, dist / 900));
-        const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
-
-        egg.style.setProperty('--tx', dx * 0.75 + 'px');
-        egg.style.setProperty('--ty', dy * 0.75 + 'px');
-        egg.style.setProperty('--tx2', dx + 'px');
-        egg.style.setProperty('--ty2', dy + 'px');
-        egg.style.setProperty('--rot', angle + 'deg');
-        egg.style.setProperty('--duration', duration + 's');
-        egg.style.left = startX + 'px';
-        egg.style.top  = startY + 'px';
-
+        const duration = Math.max(0.5, Math.min(1.1, dist/900));
+        const angle = Math.atan2(dy, dx) * (180/Math.PI) + 90;
+        egg.style.setProperty('--tx', dx*0.75+'px'); egg.style.setProperty('--ty', dy*0.75+'px');
+        egg.style.setProperty('--tx2', dx+'px'); egg.style.setProperty('--ty2', dy+'px');
+        egg.style.setProperty('--rot', angle+'deg'); egg.style.setProperty('--duration', duration+'s');
+        egg.style.left = startX+'px'; egg.style.top = startY+'px';
         document.body.appendChild(egg);
-
-        // Splash ao chegar
         setTimeout(() => {
             egg.remove();
-
-            // splat emoji
             const splash = document.createElement('div');
-            splash.className = 'egg-splash';
-            splash.textContent = '💥';
-            splash.style.left = (targetX - 24) + 'px';
-            splash.style.top  = (targetY - 24) + 'px';
+            splash.className = 'egg-splash'; splash.textContent = '💥';
+            splash.style.left = (targetX-24)+'px'; splash.style.top = (targetY-24)+'px';
             document.body.appendChild(splash);
             setTimeout(() => splash.remove(), 900);
-
-            // overlay amarelo
             const overlay = document.getElementById('egg-overlay');
-            overlay.classList.remove('splat');
-            void overlay.offsetWidth;
-            overlay.classList.add('splat');
-
-            // shake no canvas se o target for o desenhista local
+            overlay.classList.remove('splat'); void overlay.offsetWidth; overlay.classList.add('splat');
             if (target === username) {
                 document.getElementById('canvas-container').classList.add('shake');
                 setTimeout(() => document.getElementById('canvas-container').classList.remove('shake'), 500);
@@ -583,15 +759,10 @@
     // ===== LOGIN / MQTT =====
     function connectToGame() {
         username = document.getElementById('input-username').value.trim();
-        roomName = document.getElementById('input-room').value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+        roomName = document.getElementById('input-room').value.trim().toLowerCase().replace(/[^a-z0-9]/g,"");
         const customInput = document.getElementById('input-custom-words').value.trim();
-
         if (!username || !roomName) { alert("Por favor, digite seu nome e o nome da sala!"); return; }
-
-        if (customInput) {
-            customWords = customInput.split(',').map(w => w.trim()).filter(w => w.length > 0);
-        }
-
+        if (customInput) { customWords = customInput.split(',').map(w => w.trim()).filter(w => w.length > 0); }
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('room-id').innerText = "Sala: " + roomName;
         adicionarJogadorLista(username);
@@ -601,7 +772,6 @@
     function initMqtt() {
         baseTopic = "gartic_clone_free_2026/" + roomName;
         mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
-
         mqttClient.on('connect', () => {
             mqttClient.subscribe(baseTopic + "/chat");
             mqttClient.subscribe(baseTopic + "/draw");
@@ -611,22 +781,15 @@
             mqttClient.subscribe(baseTopic + "/scores");
             mqttClient.subscribe(baseTopic + "/egg");
             mqttClient.subscribe(baseTopic + "/customwords");
-
             const identityPayload = JSON.stringify({ sender: "Sistema", text: `${username} entrou na sala.`, name: username });
             mqttClient.publish(baseTopic + "/chat", identityPayload);
             mqttClient.publish(baseTopic + "/presence", identityPayload);
-
-            // Se trouxe palavras customizadas, compartilha com a sala
-            if (customWords.length > 0) {
-                mqttClient.publish(baseTopic + "/customwords", JSON.stringify({ words: customWords, sender: username }));
-            }
-
+            if (customWords.length > 0) { mqttClient.publish(baseTopic + "/customwords", JSON.stringify({ words: customWords, sender: username })); }
             setTimeout(() => { checkAndAutoStart(); }, 2000);
         });
 
         mqttClient.on('message', (topic, message) => {
             const data = JSON.parse(message.toString());
-
             if (topic === baseTopic + "/chat") {
                 if (data.sender === "Sistema") {
                     addSystemMessage(data.text);
@@ -634,28 +797,18 @@
                 } else if (data.isCorrect) {
                     addSuccessMessage(data.sender, data.text);
                     const pts = data.pts || 50;
-                    addScore(data.sender, pts);
-                    showScorePopup(pts, data.sender);
-                    if (currentDrawerName) {
-                        const drawerPts = Math.round(pts * 0.5);
-                        addScore(currentDrawerName, drawerPts);
-                        showScorePopup(drawerPts, currentDrawerName);
-                    }
+                    addScore(data.sender, pts); showScorePopup(pts, data.sender);
+                    if (currentDrawerName) { const dp = Math.round(pts*0.5); addScore(currentDrawerName, dp); showScorePopup(dp, currentDrawerName); }
                     broadcastScores();
                     handleRoundEndAutomatically();
-                } else {
-                    renderNormalMessage(data.sender, data.text);
-                }
+                } else { renderNormalMessage(data.sender, data.text); }
             } else if (topic === baseTopic + "/draw" && !isDrawer) {
                 renderRemoteDraw(data);
             } else if (topic === baseTopic + "/presence") {
                 if (data.name && data.name !== username) {
                     adicionarJogadorLista(data.name);
                     mqttClient.publish(baseTopic + "/presence/echo", JSON.stringify({ name: username }));
-                    // Re-compartilha palavras custom pra quem chegou
-                    if (customWords.length > 0) {
-                        mqttClient.publish(baseTopic + "/customwords", JSON.stringify({ words: customWords, sender: username }));
-                    }
+                    if (customWords.length > 0) { mqttClient.publish(baseTopic + "/customwords", JSON.stringify({ words: customWords, sender: username })); }
                     checkAndAutoStart();
                 }
             } else if (topic === baseTopic + "/presence/echo") {
@@ -663,20 +816,14 @@
             } else if (topic === baseTopic + "/gameflow") {
                 handleGameFlow(data);
             } else if (topic === baseTopic + "/scores") {
-                if (data.scores) {
-                    for (const [nome, pts] of Object.entries(data.scores)) {
-                        if (nome !== username) { scores[nome] = pts; updatePlayerScoreDisplay(nome); }
-                    }
-                }
+                if (data.scores) { for (const [n,p] of Object.entries(data.scores)) { if (n !== username) { scores[n]=p; updatePlayerScoreDisplay(n); } } }
             } else if (topic === baseTopic + "/egg") {
-                // Animação do ovo pra todo mundo
                 animateEggThrow(data.thrower, data.target);
                 addEggMessage(data.thrower, data.target);
             } else if (topic === baseTopic + "/customwords") {
-                // Sincroniza palavras customizadas de quem criou a sala
                 if (data.words && data.words.length > 0 && customWords.length === 0) {
                     customWords = data.words;
-                    addSystemMessage(`📝 Palavras personalizadas carregadas de ${data.sender}! (${data.words.length} palavras)`);
+                    addSystemMessage(`📝 Palavras de ${data.sender} carregadas! (${data.words.length})`);
                 }
             }
         });
@@ -689,54 +836,44 @@
 
     function checkAndAutoStart() {
         if (!roundActive && currentDrawerName === "" && listaJogadores.size > 0) {
-            const playersArr = Array.from(listaJogadores);
-            if (playersArr[0] === username) { drawNewRound(); }
+            const arr = Array.from(listaJogadores);
+            if (arr[0] === username) { drawNewRound(); }
         }
     }
 
     function drawNewRound() {
         if (!mqttClient) return;
-        const playersArr = Array.from(listaJogadores);
-        if (playersArr.length === 0) return;
-        currentDrawerIndex = (currentDrawerIndex + 1) % playersArr.length;
-        const nextDrawer = playersArr[currentDrawerIndex];
+        const arr = Array.from(listaJogadores);
+        if (arr.length === 0) return;
+        currentDrawerIndex = (currentDrawerIndex + 1) % arr.length;
+        const nextDrawer = arr[currentDrawerIndex];
         const lista = getPalavras();
         const randomWord = lista[Math.floor(Math.random() * lista.length)];
         mqttClient.publish(baseTopic + "/gameflow", JSON.stringify({ drawer: nextDrawer, word: randomWord, currentIndex: currentDrawerIndex }));
     }
 
     function handleGameFlow(data) {
-        clearInterval(countdownInterval);
-        clearTimeout(nextRoundTimeout);
-        currentDrawerName = data.drawer;
-        currentWord = data.word;
+        clearInterval(countdownInterval); clearTimeout(nextRoundTimeout);
+        currentDrawerName = data.drawer; currentWord = data.word;
         currentDrawerIndex = data.currentIndex;
-        roundActive = true;
-        currentTimeLeft = TEMPO_RODADA;
-
+        roundActive = true; currentTimeLeft = TEMPO_RODADA;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         document.querySelectorAll('.player-item').forEach(el => el.classList.remove('drawing'));
         const drawerEl = document.getElementById("p-" + currentDrawerName.replace(/\s+/g,'-'));
         if (drawerEl) drawerEl.classList.add('drawing');
-
         const eggBtn = document.getElementById('btn-egg');
-
         if (currentDrawerName === username) {
-            isDrawer = true;
-            eggBtn.style.display = 'none';
+            isDrawer = true; eggBtn.style.display = 'none';
             document.getElementById('word-display').innerText = "Sua Palavra: " + currentWord.toUpperCase();
-            addSystemMessage(`Sua vez de desenhar! Palavra: ${currentWord.toUpperCase()}`);
+            addSystemMessage(`Sua vez! Palavra: ${currentWord.toUpperCase()}`);
         } else {
             isDrawer = false;
-            eggBtn.style.display = 'inline-flex';
-            eggBtn.classList.remove('cooldown');
-            eggBtn.textContent = '🥚 Jogar Ovo!';
-            eggCooldown = false;
-            let underscores = "_ ".repeat(currentWord.length).trim();
-            document.getElementById('word-display').innerText = "Desenho de " + currentDrawerName + " (" + underscores + ")";
-            addSystemMessage(`${currentDrawerName} está desenhando... tente adivinhar!`);
+            eggBtn.style.display = 'inline-flex'; eggBtn.classList.remove('cooldown');
+            eggBtn.textContent = '🥚 Jogar Ovo!'; eggCooldown = false;
+            const u = "_ ".repeat(currentWord.length).trim();
+            document.getElementById('word-display').innerText = `Desenho de ${currentDrawerName} (${u})`;
+            addSystemMessage(`${currentDrawerName} está desenhando...`);
         }
-
         startLocalTimer(TEMPO_RODADA);
     }
 
@@ -748,7 +885,7 @@
             if (currentTimeLeft <= 0) {
                 clearInterval(countdownInterval);
                 document.getElementById('timer-display').innerText = "Tempo: 0s";
-                addSystemMessage(`O tempo acabou! A palavra era: ${currentWord.toUpperCase()}`);
+                addSystemMessage(`Tempo esgotado! A palavra era: ${currentWord.toUpperCase()}`);
                 document.getElementById('btn-egg').style.display = 'none';
                 handleRoundEndAutomatically();
             } else {
@@ -758,12 +895,9 @@
     }
 
     function handleRoundEndAutomatically() {
-        roundActive = false;
-        clearInterval(countdownInterval);
+        roundActive = false; clearInterval(countdownInterval);
         document.getElementById('btn-egg').style.display = 'none';
-        if (currentDrawerName === username) {
-            nextRoundTimeout = setTimeout(() => { drawNewRound(); }, 4000);
-        }
+        if (currentDrawerName === username) { nextRoundTimeout = setTimeout(() => { drawNewRound(); }, 4000); }
     }
 
     function adicionarJogadorLista(nome) {
@@ -775,27 +909,15 @@
         const item = document.createElement('div');
         item.className = "player-item";
         item.id = "p-" + nome.replace(/\s+/g,'-');
-        const nameSpan = document.createElement('span');
-        nameSpan.className = 'player-name';
-        nameSpan.textContent = nome;
-        const scoreSpan = document.createElement('span');
-        scoreSpan.className = 'player-score';
-        scoreSpan.textContent = '0';
-        item.appendChild(nameSpan);
-        item.appendChild(scoreSpan);
+        const nameSpan = document.createElement('span'); nameSpan.className = 'player-name'; nameSpan.textContent = nome;
+        const scoreSpan = document.createElement('span'); scoreSpan.className = 'player-score'; scoreSpan.textContent = '0';
+        item.appendChild(nameSpan); item.appendChild(scoreSpan);
         container.appendChild(item);
     }
 
-    function sendDrawData(action, x, y, color) {
+    function sendDrawData(action, x, y, color, size) {
         if (!mqttClient) return;
-        mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action, x, y, color }));
-    }
-
-    function renderRemoteDraw(data) {
-        ctx.strokeStyle = data.color;
-        if (data.action === 'start') { ctx.beginPath(); ctx.moveTo(data.x, data.y); }
-        else if (data.action === 'draw') { ctx.lineTo(data.x, data.y); ctx.stroke(); }
-        else if (data.action === 'clear') { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+        mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action, x, y, color, size }));
     }
 
     function sendClear() {
@@ -808,61 +930,34 @@
         const input = document.getElementById('chat-input');
         const msgText = input.value.trim();
         if (!msgText || !mqttClient) return;
-        const palpiteLimpo = msgText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const respostaLimpa = currentWord.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const palpiteLimpo = msgText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+        const respostaLimpa = currentWord.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
         if (roundActive && !isDrawer && palpiteLimpo === respostaLimpa) {
             const pts = calcPoints(currentTimeLeft);
-            mqttClient.publish(baseTopic + "/chat", JSON.stringify({
-                sender: username,
-                text: `Acertou a palavra secreta: ${currentWord.toUpperCase()}! 🎯`,
-                isCorrect: true, pts
-            }));
+            mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: `Acertou: ${currentWord.toUpperCase()}! 🎯`, isCorrect: true, pts }));
         } else {
             mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: msgText, isCorrect: false }));
         }
         input.value = "";
     }
 
-    document.getElementById('chat-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') sendChatMessage();
-    });
+    document.getElementById('chat-input').addEventListener('keypress', function(e) { if (e.key === 'Enter') sendChatMessage(); });
 
-    function addSystemMessage(text) {
-        const c = document.getElementById('chat-messages');
-        const m = document.createElement('div');
-        m.className = "msg msg-system";
-        m.innerText = text;
-        c.appendChild(m); c.scrollTop = c.scrollHeight;
-    }
-
+    function addSystemMessage(text) { const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-system"; m.innerText = text; c.appendChild(m); c.scrollTop = c.scrollHeight; }
     function addSuccessMessage(sender, text) {
-        const c = document.getElementById('chat-messages');
-        const m = document.createElement('div');
-        m.className = "msg msg-success";
-        m.innerText = `${sender} ${text}`;
-        c.appendChild(m); c.scrollTop = c.scrollHeight;
-        document.getElementById('word-display').innerText = "Adivinhado! Próxima rodada em instantes...";
+        const c = document.getElementById('chat-messages'); const m = document.createElement('div');
+        m.className = "msg msg-success"; m.innerText = `${sender} ${text}`; c.appendChild(m); c.scrollTop = c.scrollHeight;
+        document.getElementById('word-display').innerText = "Adivinhado! Próxima rodada em breve...";
     }
-
     function renderNormalMessage(sender, text) {
-        const c = document.getElementById('chat-messages');
-        const m = document.createElement('div');
-        m.className = "msg msg-normal";
-        const spanName = document.createElement('span');
-        spanName.className = "username";
-        spanName.innerText = sender + ": ";
-        m.appendChild(spanName);
-        m.appendChild(document.createTextNode(text));
-        c.appendChild(m); c.scrollTop = c.scrollHeight;
+        const c = document.getElementById('chat-messages'); const m = document.createElement('div');
+        m.className = "msg msg-normal"; const s = document.createElement('span'); s.className = "username"; s.innerText = sender + ": ";
+        m.appendChild(s); m.appendChild(document.createTextNode(text)); c.appendChild(m); c.scrollTop = c.scrollHeight;
     }
+    function addEggMessage(thrower, target) { const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-egg"; m.innerText = `🥚 ${thrower} jogou um ovo em ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight; }
 
-    function addEggMessage(thrower, target) {
-        const c = document.getElementById('chat-messages');
-        const m = document.createElement('div');
-        m.className = "msg msg-egg";
-        m.innerText = `🥚 ${thrower} jogou um ovo em ${target}!`;
-        c.appendChild(m); c.scrollTop = c.scrollHeight;
-    }
+    // Init color display
+    setActiveColor('#000000');
 </script>
 </body>
 </html>
