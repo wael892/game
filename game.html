@@ -47,7 +47,7 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             width: 100%; max-width: 1400px;
             display: flex; justify-content: space-between; align-items: center;
-            gap: 10px; flex-shrink: 0;
+            gap: 10px; flex-shrink: 0; position: relative;
         }
         h1 { color: #118ab2; font-size: 20px; flex-shrink: 0; }
         #word-display {
@@ -61,6 +61,27 @@
             gap: 2px; flex-shrink: 0;
         }
         #timer-display { font-weight: bold; color: #ef476f; font-size: 14px; }
+
+        /* ===== PAINEL DE PALAVRAS IN-GAME ===== */
+        .btn-words-toggle {
+            background: #118ab2; color: white; border: none; padding: 6px 12px;
+            border-radius: 20px; font-weight: bold; font-size: 12px; cursor: pointer;
+            display: flex; align-items: center; gap: 4px; transition: background 0.2s;
+        }
+        .btn-words-toggle:hover { background: #0f7495; }
+        #words-management-panel {
+            position: absolute; top: 55px; left: 16px; background: white;
+            padding: 12px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            border: 2px solid #118ab2; z-index: 600; width: 280px; display: none;
+            flex-direction: column; gap: 8px; text-align: left;
+        }
+        #words-management-panel label { font-size: 11px; font-weight: bold; color: #333; }
+        #words-management-panel textarea {
+            width: 100%; height: 60px; padding: 6px; font-size: 12px;
+            border: 1px solid #ced4da; border-radius: 6px; resize: none; outline: none;
+        }
+        #words-management-panel textarea:focus { border-color: #118ab2; }
+        #words-management-panel .panel-actions { display: flex; justify-content: flex-end; gap: 6px; }
 
         #main-container {
             display: flex; width: 100%; max-width: 1400px;
@@ -130,7 +151,7 @@
         canvas.cursor-eraser { cursor: cell; }
         canvas.cursor-fill   { cursor: copy; }
 
-        /* ===== ANÚNCIO DE TELA CENTRAL (ESTILO GARTIC) ===== */
+        /* ===== ANÚNCIO DE TELA CENTRAL ===== */
         #round-announcement {
             position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%) scale(0.5);
             background: rgba(26, 26, 46, 0.95); color: white;
@@ -337,6 +358,7 @@
             #word-display { font-size: 10px; padding: 2px 6px; }
             #room-display { font-size: 9px; }
             #timer-display { font-size: 10px; }
+            #words-management-panel { top: 45px; left: 4px; width: 260px; }
 
             #main-container {
                 position: absolute; top: 52px; left: 4px; right: 4px; bottom: 4px;
@@ -386,7 +408,7 @@
         <h2>🎨 Gartic Clone</h2>
         <input type="text" id="input-username" placeholder="👤 Seu Nome / Apelido" required>
         <input type="text" id="input-room" placeholder="🔑 Nome da Sala (ex: sala123)" required>
-        <textarea id="input-custom-words" placeholder="📝 Palavras personalizadas (opcional)&#10;Ex: Geladeira, Fusca, Professor, Saudade..."></textarea>
+        <textarea id="input-custom-words" placeholder="📝 Palavras iniciais (opcional)&#10;Ex: Geladeira, Fusca, Professor, Saudade..."></textarea>
         <p class="hint">Separe as palavras por vírgula. Se deixar vazio, usa o banco padrão.</p>
         <button class="btn" style="width:100%;padding:12px;font-size:16px;background:#118ab2;color:white;" onclick="connectToGame()">🚀 ENTRAR NO JOGO</button>
     </div>
@@ -394,6 +416,18 @@
 
 <header>
     <h1>🎨 GARTIC</h1>
+    <button class="btn-words-toggle" onclick="toggleWordsPanel()">📝 Palavras</button>
+    
+    <!-- PAINEL EM TEMPO REAL PARA ADICIONAR NOVAS PALAVRAS -->
+    <div id="words-management-panel">
+        <label>➕ Adicionar Palavras na Sala:</label>
+        <textarea id="runtime-new-words" placeholder="Ex: Avô, Pastel, Tubarão... (separe por vírgula)"></textarea>
+        <div class="panel-actions">
+            <button class="btn" style="background:#ef476f; color:white; padding:4px 8px; font-size:11px;" onclick="toggleWordsPanel()">Fechar</button>
+            <button class="btn" style="background:#06d6a0; color:white; padding:4px 8px; font-size:11px;" onclick="submitRuntimeWords()">Adicionar</button>
+        </div>
+    </div>
+
     <div id="word-display">⏳ Aguardando jogadores...</div>
     <div id="room-display">
         <span id="room-id">Sala: —</span>
@@ -441,7 +475,6 @@
 
         <!-- Canvas -->
         <div id="canvas-container">
-            <!-- ANÚNCIO FLUTUANTE CENTRAL DO GARTIC -->
             <div id="round-announcement">
                 <h2 id="announcement-title">FIM DE RODADA</h2>
                 <p id="announcement-desc">Descrição do que rolou</p>
@@ -518,6 +551,24 @@
     let startX = 0, startY = 0;
     let snapshot = null;
     let lastFormCoordinates = null;
+
+    function toggleWordsPanel() {
+        const panel = document.getElementById('words-management-panel');
+        panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function submitRuntimeWords() {
+        const textarea = document.getElementById('runtime-new-words');
+        const content = textarea.value.trim();
+        if (!content || !mqttClient) return;
+
+        const newWordsArr = content.split(',').map(w => w.trim()).filter(w => w.length > 0);
+        if (newWordsArr.length > 0) {
+            mqttClient.publish(baseTopic + "/customwords/add", JSON.stringify({ words: newWordsArr, sender: username }));
+            textarea.value = "";
+            toggleWordsPanel();
+        }
+    }
 
     function setTool(tool) {
         currentTool = tool;
@@ -832,16 +883,13 @@
         }
     }
 
-    // ===== FUNÇÃO DE EXIBIÇÃO DE ALERTA GARTIC NA TELA =====
     function showGarticAnnouncement(title, desc) {
         const box = document.getElementById('round-announcement');
         document.getElementById('announcement-title').innerText = title;
         document.getElementById('announcement-desc').innerText = desc;
         
         box.classList.add('show');
-        setTimeout(() => {
-            box.classList.remove('show');
-        }, 3200);
+        setTimeout(() => { box.classList.remove('show'); }, 3200);
     }
 
     function showScorePopup(pts, nome) {
@@ -857,7 +905,6 @@
         setTimeout(() => popup.remove(), 1500);
     }
 
-    // ===== INTERAÇÕES DO JOGO =====
     function throwInteractItem(itemType) {
         if (!roundActive || isDrawer || !mqttClient) return;
         
@@ -897,7 +944,7 @@
         const angle = Math.atan2(dy, dx) * (180/Math.PI) + 90;
         
         element.style.setProperty('--tx', dx*0.75+'px'); element.style.setProperty('--ty', dy*0.75+'px');
-        element.style.setProperty('--tx2', dx+'px'); element.style.setProperty('--ty2', dy+'px');
+        element.style.setProperty('--tx2', dx+'px'); element.style.setProperty('--tx2', dx+'px');
         element.style.setProperty('--rot', angle+'deg'); element.style.setProperty('--duration', duration+'s');
         element.style.left = startX+'px'; element.style.top = startY+'px';
         document.body.appendChild(element);
@@ -939,7 +986,6 @@
         }
     }
 
-    // Lógica para pular rodada (Passar a vez)
     function skipRound() {
         if (!roundActive || !isDrawer || !mqttClient) return;
         mqttClient.publish(baseTopic + "/gameflow/skip", JSON.stringify({ drawer: username, word: currentWord }));
@@ -971,6 +1017,8 @@
             mqttClient.subscribe(baseTopic + "/scores");
             mqttClient.subscribe(baseTopic + "/interact");
             mqttClient.subscribe(baseTopic + "/customwords");
+            mqttClient.subscribe(baseTopic + "/customwords/add");
+            
             const identityPayload = JSON.stringify({ sender: "Sistema", text: `📢 ${username} entrou na sala.`, name: username, type: "system" });
             mqttClient.publish(baseTopic + "/chat", identityPayload);
             mqttClient.publish(baseTopic + "/presence", identityPayload);
@@ -991,8 +1039,6 @@
                         addScore(data.sender, pts); showScorePopup(pts, data.sender);
                         if (currentDrawerName) { const dp = Math.max(1, Math.round(pts * 0.5)); addScore(currentDrawerName, dp); showScorePopup(dp, currentDrawerName); }
                         broadcastScores(); 
-                        
-                        // Alerta central do Gartic: Alguém acertou
                         showGarticAnnouncement("🎯 PALAVRA DESCOBERTA!", `${data.sender} acertou a palavra secreta: ${currentWord.toUpperCase()}!`);
                         handleRoundEndAutomatically();
                     } else { renderWrongGuessMessage(data.sender, data.text); }
@@ -1011,7 +1057,6 @@
             } else if (topic === baseTopic + "/gameflow") {
                 handleGameFlow(data);
             } else if (topic === baseTopic + "/gameflow/skip") {
-                // Alerta central do Gartic: Desenhista pulou a vez
                 showGarticAnnouncement("⏭️ VEZ PULADA!", `${data.drawer} decidiu passar a vez! A palavra era: ${data.word.toUpperCase()}`);
                 addSystemMessage(`⏭️ Vez pulada por ${data.drawer}. A palavra era: ${data.word.toUpperCase()}`);
                 handleRoundEndAutomatically();
@@ -1025,6 +1070,14 @@
                 if (data.words && data.words.length > 0 && customWords.length === 0) {
                     customWords = data.words;
                     addSystemMessage(`📝 Palavras de ${data.sender} carregadas! (${data.words.length})`);
+                }
+            } else if (topic === baseTopic + "/customwords/add") {
+                // Sincroniza dinamicamente as novas palavras injetadas em tempo de execução
+                if (data.words && data.words.length > 0) {
+                    data.words.forEach(w => {
+                        if(!customWords.includes(w)) customWords.push(w);
+                    });
+                    addSystemMessage(`📝 ${data.sender} adicionou +${data.words.length} novas palavras à lista da sala!`);
                 }
             }
         });
@@ -1065,7 +1118,7 @@
         
         if (currentDrawerName === username) {
             isDrawer = true; eggBtn.style.display = 'none'; flowerBtn.style.display = 'none';
-            skipBtn.style.display = 'inline-flex'; // Desenhista pode pular vez
+            skipBtn.style.display = 'inline-flex';
             document.getElementById('word-display').innerText = "✏️ Sua Palavra: " + currentWord.toUpperCase();
             addSystemMessage(`✏️ Sua vez! Palavra: ${currentWord.toUpperCase()}`);
         } else {
@@ -1088,8 +1141,6 @@
                 clearInterval(countdownInterval);
                 document.getElementById('timer-display').innerText = "⏱️ Tempo: 0s";
                 addSystemMessage(`🛑 Tempo esgotado! A palavra era: ${currentWord.toUpperCase()}`);
-                
-                // Alerta central do Gartic: Tempo Esgotado
                 showGarticAnnouncement("⏳ TEMPO ESGOTADO!", `Ninguém acertou a palavra secreta! Ela era: ${currentWord.toUpperCase()}`);
                 
                 document.getElementById('btn-egg').style.display = 'none';
@@ -1121,7 +1172,6 @@
         mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action, x, y, color, size, shapeType, endX, endY }));
     }
 
-    // Limpar tela (Apenas desenhista)
     function sendClear() {
         if (!isDrawer) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
