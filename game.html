@@ -137,10 +137,8 @@
         }
         canvas {
             flex: 1; background: #ffffff; cursor: crosshair;
-            /* CRÍTICO: touch-action none para permitir desenho via toque */
             touch-action: none;
             width: 100%; height: 100%; display: block;
-            /* Evita seleção de texto ao arrastar */
             -webkit-user-select: none; user-select: none;
         }
         canvas.cursor-eraser { cursor: cell; }
@@ -180,7 +178,6 @@
             font-size: 16px; background: #2a2a3e;
             color: white; transition: all 0.15s;
             flex-shrink: 0;
-            /* Evita duplo-toque zoom em mobile */
             -webkit-tap-highlight-color: transparent;
         }
         .tool-btn:hover { background: #3a3a5e; border-color: #ffd43b; }
@@ -308,7 +305,6 @@
         .chat-input-field { flex: 1; padding: 6px; border: 2px solid #ced4da; border-radius: 5px; outline: none; font-size: 12px; }
         .chat-send-btn { background: #118ab2; color: white; margin-left: 4px; font-size: 11px; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
-        /* ===== MOBILE - Layout completamente repensado ===== */
         @media (max-width: 768px) {
             body { padding: 4px; overflow: hidden; }
 
@@ -322,10 +318,9 @@
             #timer-display { font-size: 10px; }
             #words-management-panel { top: 48px; left: 4px; width: 260px; }
 
-            /* Container principal usa posição absoluta para ter altura exata */
             #main-container {
                 position: absolute;
-                top: 52px; /* header 44px + gap 8px */
+                top: 52px;
                 left: 4px;
                 right: 4px;
                 bottom: 4px;
@@ -334,7 +329,6 @@
                 overflow: hidden;
             }
 
-            /* Placar horizontal compacto - altura fixa */
             #scoreboard {
                 flex: 0 0 36px !important;
                 width: 100%;
@@ -358,7 +352,6 @@
                 display: inline-flex; flex-shrink: 0; align-items: center;
             }
 
-            /* Canvas wrapper: coluna no mobile */
             #canvas-wrapper {
                 flex: 1 1 0 !important;
                 min-height: 0 !important;
@@ -366,7 +359,6 @@
                 flex-direction: column !important;
             }
 
-            /* drawing-area: canvas em cima, tools embaixo no mobile */
             #drawing-area {
                 flex: 1 1 0 !important;
                 min-height: 0 !important;
@@ -374,7 +366,6 @@
                 flex-direction: column !important;
             }
 
-            /* Canvas container ocupa todo o espaço disponível */
             #canvas-container {
                 flex: 1 1 0 !important;
                 min-height: 0 !important;
@@ -382,7 +373,6 @@
                 overflow: hidden !important;
             }
 
-            /* Canvas preenche o container via absolute */
             #canvas {
                 position: absolute !important;
                 top: 0 !important; left: 0 !important;
@@ -390,7 +380,6 @@
                 height: 100% !important;
             }
 
-            /* Toolbar HORIZONTAL abaixo do canvas - altura fixa */
             #tools {
                 width: 100%;
                 flex-direction: row;
@@ -410,7 +399,6 @@
             .tool-btn { width: 38px; height: 38px; font-size: 17px; flex-shrink: 0; }
             .size-btn { flex-shrink: 0; }
 
-            /* Paleta HORIZONTAL - altura fixa */
             #palette-container {
                 flex: 0 0 42px !important;
                 width: 100% !important;
@@ -436,7 +424,6 @@
 
             #bottom-actions { padding: 3px 6px; flex-wrap: wrap; gap: 4px; }
 
-            /* Chats lado a lado - altura fixa */
             #right-chats-wrapper {
                 flex: 0 0 150px !important;
                 width: 100% !important;
@@ -452,7 +439,6 @@
         #canvas-wrapper {
             flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0;
         }
-        /* drawing-area: tools à esquerda + canvas à direita (desktop) */
         #drawing-area {
             flex: 1; display: flex; flex-direction: row; overflow: hidden; min-height: 0;
         }
@@ -597,10 +583,12 @@
     const TEMPO_RODADA = 60;
     let eggCooldown = false, flowerCooldown = false;
     let customWords = [];
+    let gameEnded = false;
+    const PONTUACAO_MAXIMA = 1000;
+    
     const PALAVRAS_PADRAO = ["Cachorro","Gato","Carro","Aviao","Banana","Maca","Casa","Arvore","Bola","Computador","Celular","Caneta","Chave","Livro","Relogio","Cadeira","Garfo","Sapato","Oculos","Sol","Lua","Flor","Peixe","Passaro"];
     function getPalavras() { return customWords.length > 0 ? customWords : PALAVRAS_PADRAO; }
 
-    // ===== STORAGE PERSISTENTE =====
     async function salvarPalavras() {
         try {
             await window.storage.set("words:" + roomName, JSON.stringify(customWords), true);
@@ -617,7 +605,7 @@
                     addSystemMessage("💾 " + customWords.length + " palavras carregadas da memória da sala!");
                 }
             }
-        } catch(e) { /* sala nova */ }
+        } catch(e) { }
     }
 
     let currentTool = 'brush';
@@ -636,7 +624,7 @@
     function submitRuntimeWords() {
         const textarea = document.getElementById('runtime-new-words');
         const content = textarea.value.trim();
-        if (!content || !mqttClient) return;
+        if (!content || !mqttClient || gameEnded) return;
         const newWordsArr = content.split(',').map(w => w.trim()).filter(w => w.length > 0);
         if (newWordsArr.length > 0) {
             mqttClient.publish(baseTopic + "/customwords/add", JSON.stringify({ words: newWordsArr, sender: username }));
@@ -646,6 +634,7 @@
     }
 
     function setTool(tool) {
+        if (gameEnded) return;
         currentTool = tool;
         document.querySelectorAll('#tools .tool-btn[id^="tool-"]').forEach(b => b.classList.remove('active'));
         document.getElementById('tool-' + tool).classList.add('active');
@@ -658,10 +647,10 @@
     }
 
     function setShape(shape) {
+        if (gameEnded) return;
         currentShape = shape;
         document.querySelectorAll('#tools .tool-btn[id^="shape-"]').forEach(b => b.classList.remove('active'));
         document.getElementById('shape-' + shape).classList.add('active');
-        // Não redirecionar para brush se estiver sendo chamado pelo próprio setTool('eraser')
         if (currentTool === 'fill') setTool('brush');
     }
 
@@ -706,7 +695,6 @@
     }
     buildPalette();
 
-    // ===== CANVAS =====
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     let drawing = false;
@@ -736,16 +724,15 @@
         };
     }
 
-    // ===== EVENTOS DE MOUSE =====
     canvas.addEventListener('mousedown', (e) => {
-        if (!isDrawer || !roundActive) return;
+        if (!isDrawer || !roundActive || gameEnded) return;
         e.preventDefault();
         const c = getCanvasCoordinates(e.clientX, e.clientY);
         if (currentTool === 'fill') { doFill(Math.round(c.x), Math.round(c.y)); return; }
         onStartDrag(c.x, c.y);
     });
     canvas.addEventListener('mousemove', (e) => {
-        if (!drawing) return;
+        if (!drawing || gameEnded) return;
         e.preventDefault();
         const c = getCanvasCoordinates(e.clientX, e.clientY);
         onMoveDrag(c.x, c.y);
@@ -753,10 +740,9 @@
     canvas.addEventListener('mouseup', (e) => { e.preventDefault(); onStopDrag(); });
     canvas.addEventListener('mouseleave', (e) => { if (drawing) onStopDrag(); });
 
-    // ===== EVENTOS DE TOUCH - CORRIGIDOS =====
     canvas.addEventListener('touchstart', (e) => {
-        if (!isDrawer || !roundActive) return;
-        e.preventDefault(); // ESSENCIAL: impede scroll ao desenhar
+        if (!isDrawer || !roundActive || gameEnded) return;
+        e.preventDefault();
         if (e.touches.length !== 1) return;
         const touch = e.touches[0];
         const c = getCanvasCoordinates(touch.clientX, touch.clientY);
@@ -765,8 +751,8 @@
     }, { passive: false });
 
     canvas.addEventListener('touchmove', (e) => {
-        if (!drawing) return;
-        e.preventDefault(); // ESSENCIAL: impede scroll ao desenhar
+        if (!drawing || gameEnded) return;
+        e.preventDefault();
         if (e.touches.length !== 1) return;
         const touch = e.touches[0];
         const c = getCanvasCoordinates(touch.clientX, touch.clientY);
@@ -851,7 +837,7 @@
     }
 
     function doFill(startX, startY) {
-        if (!isDrawer || !roundActive) return;
+        if (!isDrawer || !roundActive || gameEnded) return;
         const fillColor = currentColor;
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const data = imageData.data;
@@ -946,7 +932,36 @@
         });
     }
 
+    function checkEndGameConditions() {
+        for (const [jogador, pontuacao] of Object.entries(scores)) {
+            if (pontuacao >= PONTUACAO_MAXIMA) {
+                triggerVictory(jogador);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function triggerVictory(vencedor) {
+        gameEnded = true;
+        roundActive = false;
+        clearInterval(countdownInterval);
+        clearTimeout(nextRoundTimeout);
+        
+        document.getElementById('btn-egg').style.display = 'none';
+        document.getElementById('btn-flower').style.display = 'none';
+        document.getElementById('btn-skip').style.display = 'none';
+        
+        document.getElementById('word-display').innerText = `🏆 FIM DE JOGO! O CAMPEÃO É ${vencedor.toUpperCase()}!`;
+        document.getElementById('timer-display').innerText = "⏱️ Fim";
+        
+        showGarticAnnouncement("👑 TEMOS UM CAMPEÃO!", `${vencedor} atingiu a marca de ${scores[vencedor]} pontos e venceu a partida! 🎉`);
+        addSystemMessage(`👑 FIM DE JOGO! O grande vencedor desta sala é: ${vencedor} com ${scores[vencedor]} pontos!`);
+        createPetalShower();
+    }
+
     function addScore(nome, pts) {
+        if (gameEnded) return;
         if (!scores[nome]) scores[nome] = 0;
         scores[nome] += pts;
         renderScoreboard();
@@ -979,7 +994,7 @@
     }
 
     function throwInteractItem(itemType) {
-        if (!roundActive || isDrawer || !mqttClient) return;
+        if (!roundActive || isDrawer || !mqttClient || gameEnded) return;
         if (itemType === 'egg') {
             if (eggCooldown) return;
             eggCooldown = true;
@@ -1050,7 +1065,7 @@
     }
 
     function skipRound() {
-        if (!roundActive || !isDrawer || !mqttClient) return;
+        if (!roundActive || !isDrawer || !mqttClient || gameEnded) return;
         mqttClient.publish(baseTopic + "/gameflow/skip", JSON.stringify({ drawer: username, word: currentWord }));
     }
 
@@ -1080,10 +1095,11 @@
             mqttClient.subscribe(baseTopic + "/interact");
             mqttClient.subscribe(baseTopic + "/customwords");
             mqttClient.subscribe(baseTopic + "/customwords/add");
+            
             const identityPayload = JSON.stringify({ sender: "Sistema", text: `📢 ${username} entrou na sala.`, name: username, type: "system" });
             mqttClient.publish(baseTopic + "/chat", identityPayload);
             mqttClient.publish(baseTopic + "/presence", identityPayload);
-            // Carrega palavras salvas do storage antes de publicar
+            
             await carregarPalavrasSalvas();
             if (customWords.length > 0) { mqttClient.publish(baseTopic + "/customwords", JSON.stringify({ words: customWords, sender: username })); }
             setTimeout(() => { checkAndAutoStart(); }, 2000);
@@ -1091,6 +1107,7 @@
 
         mqttClient.on('message', (topic, message) => {
             const data = JSON.parse(message.toString());
+            
             if (topic === baseTopic + "/chat") {
                 if (data.type === "system") {
                     addSystemMessage(data.text);
@@ -1102,11 +1119,14 @@
                         addScore(data.sender, pts); showScorePopup(pts, data.sender);
                         if (currentDrawerName) { const dp = Math.max(1, Math.round(pts * 0.5)); addScore(currentDrawerName, dp); showScorePopup(dp, currentDrawerName); }
                         broadcastScores();
+                        
+                        if (checkEndGameConditions()) return;
+                        
                         showGarticAnnouncement("🎯 PALAVRA DESCOBERTA!", `${data.sender} acertou a palavra secreta: ${currentWord.toUpperCase()}!`);
                         handleRoundEndAutomatically();
                     } else { renderWrongGuessMessage(data.sender, data.text); }
                 } else if (data.type === "talk") { renderNormalMessage(data.sender, data.text); }
-            } else if (topic === baseTopic + "/draw" && !isDrawer) {
+            } else if (topic === baseTopic + "/draw" && !isDrawer && !gameEnded) {
                 renderRemoteDraw(data);
             } else if (topic === baseTopic + "/presence") {
                 if (data.name && data.name !== username) {
@@ -1117,14 +1137,20 @@
                 }
             } else if (topic === baseTopic + "/presence/echo") {
                 if (data.name && data.name !== username) { adicionarJogadorLista(data.name); checkAndAutoStart(); }
-            } else if (topic === baseTopic + "/gameflow") {
+            } else if (topic === baseTopic + "/gameflow" && !gameEnded) {
                 handleGameFlow(data);
-            } else if (topic === baseTopic + "/gameflow/skip") {
+            } else if (topic === baseTopic + "/gameflow/skip" && !gameEnded) {
                 showGarticAnnouncement("⏭️ VEZ PULADA!", `${data.drawer} decidiu passar a vez! A palavra era: ${data.word.toUpperCase()}`);
                 addSystemMessage(`⏭️ Vez pulada por ${data.drawer}. A palavra era: ${data.word.toUpperCase()}`);
                 handleRoundEndAutomatically();
             } else if (topic === baseTopic + "/scores") {
-                if (data.scores) { for (const [n,p] of Object.entries(data.scores)) { if (n !== username) { scores[n]=p; } } renderScoreboard(); }
+                if (data.scores) { 
+                    for (const [n,p] of Object.entries(data.scores)) { 
+                        if (n !== username) { scores[n]=p; } 
+                    } 
+                    renderScoreboard(); 
+                    checkEndGameConditions();
+                }
             } else if (topic === baseTopic + "/interact") {
                 animateInteractThrow(data.thrower, data.target, data.type);
                 if (data.type === 'egg') addEggMessage(data.thrower, data.target);
@@ -1151,14 +1177,14 @@
     }
 
     function checkAndAutoStart() {
-        if (!roundActive && currentDrawerName === "" && listaJogadores.size > 0) {
+        if (!roundActive && currentDrawerName === "" && listaJogadores.size > 0 && !gameEnded) {
             const arr = Array.from(listaJogadores);
             if (arr[0] === username) { drawNewRound(); }
         }
     }
 
     function drawNewRound() {
-        if (!mqttClient) return;
+        if (!mqttClient || gameEnded) return;
         const arr = Array.from(listaJogadores); if (arr.length === 0) return;
         currentDrawerIndex = (currentDrawerIndex + 1) % arr.length;
         const nextDrawer = arr[currentDrawerIndex];
@@ -1168,6 +1194,7 @@
     }
 
     function handleGameFlow(data) {
+        if (gameEnded) return;
         clearInterval(countdownInterval); clearTimeout(nextRoundTimeout);
         currentDrawerName = data.drawer; currentWord = data.word; currentDrawerIndex = data.currentIndex;
         roundActive = true; currentTimeLeft = TEMPO_RODADA;
@@ -1193,9 +1220,11 @@
     }
 
     function startLocalTimer(seconds) {
+        if (gameEnded) return;
         currentTimeLeft = seconds;
         document.getElementById('timer-display').innerText = "⏱️ Tempo: " + currentTimeLeft + "s";
         countdownInterval = setInterval(() => {
+            if (gameEnded) { clearInterval(countdownInterval); return; }
             currentTimeLeft--;
             if (currentTimeLeft <= 0) {
                 clearInterval(countdownInterval);
@@ -1217,7 +1246,8 @@
         document.getElementById('btn-egg').style.display = 'none';
         document.getElementById('btn-flower').style.display = 'none';
         document.getElementById('btn-skip').style.display = 'none';
-        if (currentDrawerName === username) { nextRoundTimeout = setTimeout(() => { drawNewRound(); }, 4000); }
+        if (gameEnded) return;
+        if (currentDrawerName === username) { nextRoundTimeout = setTimeout(() => { if (!gameEnded) drawNewRound(); }, 4000); }
     }
 
     function adicionarJogadorLista(nome) {
@@ -1227,19 +1257,19 @@
     }
 
     function sendDrawData(action, x, y, color, size, shapeType = '', endX = 0, endY = 0) {
-        if (!mqttClient) return;
+        if (!mqttClient || !roundActive || gameEnded) return;
         mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action, x, y, color, size, shapeType, endX, endY }));
     }
 
     function sendClear() {
-        if (!isDrawer) return;
+        if (!isDrawer || gameEnded) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         if (mqttClient) mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action: 'clear' }));
     }
 
     function sendGuessMessage() {
         const input = document.getElementById('guess-input'); const msgText = input.value.trim();
-        if (!msgText || !mqttClient) return;
+        if (!msgText || !mqttClient || gameEnded) return;
         if (!roundActive || isDrawer) { input.value = ""; return; }
         const palpiteLimpo = msgText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
         const respostaLimpa = currentWord.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
@@ -1267,10 +1297,10 @@
     }
     function addSuccessMessage(sender, text) {
         const c = document.getElementById('guess-messages'); const m = document.createElement('div'); m.className = "msg msg-success"; m.innerText = `🎯 ${sender} ${text}`; c.appendChild(m); c.scrollTop = c.scrollHeight;
-        document.getElementById('word-display').innerText = "🎉 Adivinhado! Próxima rodada...";
+        if (!gameEnded) document.getElementById('word-display').innerText = "🎉 Adivinhado! Próxima rodada...";
     }
     function renderWrongGuessMessage(sender, text) {
-        const c = document.getElementById('guess-messages'); const m = document.createElement('div'); m.className = "msg msg-wrong"; m.innerText = `${sender}: ${text}`; c.appendChild(m); c.scrollTop = c.scrollHeight;
+        const c = document.getElementById('guess-messages'); const m = document.createElement('div'); m.className = "msg msg-wrong"; m.innerText = `${sender}: ${text}`; c.appendChild(m); c.scrollTop = m.scrollHeight;
     }
     function renderNormalMessage(sender, text) {
         const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-normal"; const s = document.createElement('span'); s.className = "username"; s.innerText = sender + ": ";
