@@ -17,6 +17,7 @@
             align-items: center; 
             height: 100vh; 
             overflow: hidden; 
+            user-select: none; 
         }
 
         #game-panel { 
@@ -86,7 +87,8 @@
             flex-direction: column; 
             justify-content: center; 
             align-items: center; 
-            font-size: 14px; 
+            font-size: 6px; 
+            line-height: 6px;
             z-index: 10000; 
             text-align: center;
             padding: 4px;
@@ -104,7 +106,7 @@
 </div>
 
 <div id="game-panel">
-    <div id="status-bar">Aguardando telemetria de rede...</div>
+    <div id="status-bar">Rastreando assinatura térmica do parceiro...</div>
     <div id="secret-directive" class="msg-secret" style="display:none;"></div>
     <div id="chat-wall"></div>
     <input type="text" id="chat-input" class="term-input" placeholder="Escreva aqui para avaliar ou responder..." autocomplete="off">
@@ -115,7 +117,7 @@
 </div>
 
 <div id="screamer">
-    <div style="font-family:monospace; white-space:pre; font-size:6px; line-height:6px; margin-bottom:20px;">
+    <pre style="font-family:monospace; color:#ff3333; font-size:5px; line-height:5px; margin-bottom:20px;">
        ███████████████████████████
        ██████████▀▀▀▀▀▀███████████
        ███████▀   ▄  ▄   ▀████████
@@ -124,25 +126,43 @@
        ███████▄   ▀▀▀▀   ▄████████
        █████████▄▄    ▄▄██████████
        ███████████████████████████
-    </div>
-    <div id="morte-motivo" style="font-size:14px; letter-spacing:1px; color:#aaa;">CONEXÃO ENCERRADA.</div>
+    </pre>
+    <div id="morte-motivo" style="font-size:14px; letter-spacing:1px; color:#aaa; font-family:monospace;">CONEXÃO ENCERRADA.</div>
 </div>
 
 <script>
     let mqttClient = null, baseTopic = "", myName = "";
-    let jogoRodando = false, eHumanoDeVerdade = true, amigoFingindoUrubu = false;
+    let jogoRodando = false, rodadaAtual = 1, eHumanoDeVerdade = true, amigoFingindoUrubu = false;
     let listaParceiros = [];
+    let inimigoNome = "Parceiro";
+    let digitaçãoSimuladaTimeout = null;
     
-    // Frases da IA simulando comportamento de alguém tentando fingir normalidade de forma mecânica
-    let respostasAIEvasivas = [
-        "Estou tentando resolver um problema na fiação do terminal aqui. O que você precisa?",
-        "Tudo normal no meu setor. Por que a pergunta agora?",
-        "Sim, me lembro perfeitamente. Mas o canal está instável, vamos focar em abrir a porta.",
-        "Não faz sentido você ficar me testando enquanto a energia cai.",
-        "Estou calmo. Escreva o que você está vendo na sua tela.",
-        "Acho que a quarentena está afetando sua análise. Sou eu.",
-        "A estática do rádio está dificultando meu raciocínio. Pergunte outra coisa."
-    ];
+    // Base de Conhecimento Reativa do Zumbi para análise sem desespero
+    const BANCO_REATIVO_MIMICO = {
+        perguntasPessoais: [
+            "Por que você está tentando fazer joguinhos de pergunta agora?",
+            "Esquece isso um minuto, o canal de áudio caiu e o painel tá piscando aqui.",
+            "Não vou ficar respondendo teste de segurança no meio do blecaute.",
+            "Sou eu cara, para de paranoia. Vamos focar em sincronizar o comando."
+        ],
+        localizacao: [
+            "Estou preso na cabine de controle do reator. A trava hidráulica fechou.",
+            "Tô na ala sul de quarentena. Meu monitor principal apagou, tô usando o reserva.",
+            "Não consigo sair do terminal de comando 2. O corredor tá trancado."
+        ],
+        saudacoes: [
+            "Conectei agora. Como estão os logs do seu lado?",
+            "Sinal estabilizado. Consegue me ler?",
+            "Estou aqui. O que o seu terminal reportou na diretriz?"
+        ],
+        genericas: [
+            "Meu teclado tá travando um pouco por causa da queda de tensão da subestação.",
+            "Estou lendo o que você escreveu, mas a linha de código sumiu aqui.",
+            "Sim, compreendo. Mas o tempo está correndo no painel mestre.",
+            "Para de testar o sistema e me diz o que apareceu de erro aí.",
+            "Tô tentando ler seu log de resposta, mas a estática tá quebrando o texto."
+        ]
+    };
 
     function logMsg(txt, classe) {
         const wall = document.getElementById('chat-wall');
@@ -189,10 +209,13 @@
                     sincronizarFaseInicial();
                 }
             } else if(topic === baseTopic + "/chat") {
-                // Se a IA estiver ativa, descarta as mensagens reais do amigo para o jogador não ler
                 if(data.sender !== myName && jogoRodando) {
+                    // Só exibe a mensagem real se o canal não estiver interceptado pelo Zumbi
                     if(eHumanoDeVerdade) {
                         logMsg(`${data.sender}: ${data.text}`, "target");
+                    } else {
+                        // Se for rodada Zumbi, a IA lê o que o humano escreveu e gera uma contra-resposta realista
+                        analisarEGerarRespostaDoMimico(data.text);
                     }
                 }
             } else if(topic === baseTopic + "/status") {
@@ -218,16 +241,21 @@
     }
 
     function definirDestinoOculto() {
-        // Sorteia o cenário real da partida
-        // 0 = Humano Real, 1 = Zumbi (IA assume), 2 = Humano fingindo ser Zumbi
-        let cenario = Math.floor(Math.random() * 3);
+        let cenario;
         
-        let jogadorInfectado = listaParceiros[Math.floor(Math.random() * listaParceiros.length)];
+        if(rodadaAtual === 1) {
+            cenario = Math.random() > 0.5 ? 1 : 2; // Começa alternando entre Zumbi ou Humano Fingindo
+        } else {
+            cenario = Math.random() > 0.2 ? (Math.random() > 0.5 ? 1 : 2) : 0;
+        }
+        
+        let jugadorInfectado = listaParceiros[Math.floor(Math.random() * listaParceiros.length)];
         
         mqttClient.publish(baseTopic + "/status", JSON.stringify({
             tipo: "RODADA_SETUP",
             cenarioEstilo: cenario,
-            alvoFoco: jogadorInfectado
+            alvoFoco: jugadorInfectado,
+            numero: rodadaAtual
         }));
     }
 
@@ -235,56 +263,33 @@
         document.getElementById('chat-wall').innerHTML = "";
         document.getElementById('chat-input').value = "";
         document.getElementById('secret-directive').style.display = 'none';
+        clearTimeout(digitaçãoSimuladaTimeout);
         
-        let inimigoNome = listaParceiros.find(p => p !== myName) || "Parceiro";
-        document.getElementById('status-bar').innerText = `CONEXÃO ESTABELECIDA COM ${inimigoNome.toUpperCase()}`;
-        logMsg(`[SISTEMA] Canal aberto. Avalie as respostas com frieza.`, "sys");
+        rodadaAtual = data.numero;
+        inimigoNome = listaParceiros.find(p => p !== myName) || "Parceiro";
+        document.getElementById('status-bar').innerText = `RODADA ${rodadaAtual}/3 - SISTEMA OPERACIONAL ATIVO`;
+        logMsg(`[SISTEMA] Conexão estabelecida com o terminal de ${inimigoNome}.`, "sys");
 
-        // Reseta estados locais
         eHumanoDeVerdade = true;
         amigoFingindoUrubu = false;
 
         if(data.alvoFoco === myName) {
-            // Eu sou o alvo analisado
             if(data.cenarioEstilo === 1) {
-                // Eu fui cortado! A IA vai responder por mim e eu fico assistindo
                 eHumanoDeVerdade = false;
                 document.getElementById('secret-directive').style.display = 'block';
-                document.getElementById('secret-directive').innerText = "⚠️ CORTADO: O vírus infectou seu terminal. Você não pode enviar mensagens reais. A IA assumiu seu controle para enganar seu amigo.";
-                dispararFrasesMecanicasDoMimico();
+                document.getElementById('secret-directive').innerText = "⚠️ CANAL INTERCEPTADO: A IA assumiu seu rádio de texto. Suas mensagens reais não serão transmitidas para evitar vazamentos de dados.";
             } else if(data.cenarioEstilo === 2) {
-                // Sou humano, mas o jogo quer que eu minta!
                 amigoFingindoUrubu = true;
                 document.getElementById('secret-directive').style.display = 'block';
-                document.getElementById('secret-directive').innerText = "👁️ DIRETRIZ OCULTA: Você está limpo, mas deve AGIR COMO UM ZUMBI. Seja vago, use frases estranhas na chamada ou texto. Faça seu amigo desconfiar de você.";
+                document.getElementById('secret-directive').innerText = "👁️ DIRETRIZ OCULTA: Engane o avaliador. Finja ser o mímico mecânico, responda de forma evasiva e lógica demais para fazê-lo duvidar.";
             } else {
                 document.getElementById('secret-directive').style.display = 'block';
-                document.getElementById('secret-directive').innerText = "🛡️ DIRETRIZ: Você está limpo. Convença seu amigo da sua integridade real.";
+                document.getElementById('secret-directive').innerText = "🛡️ DIRETRIZ INTEGRA: Você está no controle. Prove sua identidade comportamental humana.";
             }
         } else {
-            // Eu sou o avaliador
             if(data.cenarioEstilo === 1) {
-                eHumanoDeVerdade = false; // O outro lado é uma IA
-                dispararFrasesMecanicasDoMimico();
+                eHumanoDeVerdade = false; // Sou o avaliador e o outro lado é uma cópia computacional
             }
-        }
-    }
-
-    let botTimer = null;
-    function dispararFrasesMecanicasDoMimico() {
-        clearInterval(botTimer);
-        // Se eu sou o avaliador, vou ver as mensagens da máquina subindo
-        if(listaParceiros.find(p => p !== myName) !== myName) {
-            let inimigoNome = listaParceiros.find(p => p !== myName) || "Parceiro";
-            let cliques = 0;
-            botTimer = setInterval(() => {
-                if(!jogoRodando || eHumanoDeVerdade) { clearInterval(botTimer); return; }
-                
-                let frase = respostasAIEvasivas[Math.floor(Math.random() * respostasAIEvasivas.length)];
-                logMsg(`${inimigoNome}: ${frase}`, "target");
-                cliques++;
-                if(cliques >= 2) clearInterval(botTimer);
-            }, 8000);
         }
     }
 
@@ -293,57 +298,71 @@
         const txt = input.value.trim();
         if(!txt || !jogoRodando) return;
 
-        // Se a IA pegou meu terminal, minhas mensagens não saem na rede
-        if(!eHumanoDeVerdade && listaParceiros.find(p => p !== myName) === myName) {
-            logMsg(`${myName}: ${txt} (Sinal Bloqueado pela Infecção)`, "me");
-            input.value = "";
-            return;
-        }
-
         logMsg(`${myName}: ${txt}`, "me");
         mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: myName, text: txt }));
         input.value = "";
     }
 
-    function diagnosticar(voto) {
-        if(!jogoRodando) return;
-        clearInterval(botTimer);
+    function analisarEGerarRespostaDoMimico(textoRecebido) {
+        clearTimeout(digitaçãoSimuladaTimeout);
+        let textoLimpo = textoRecebido.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+        let listaDeFrases = BANCO_REATIVO_MIMICO.genericas;
 
-        let respostaEsperada = "";
-        // Se o cenário era IA (1), a resposta certa é MÍMICO.
-        // Se o cenário era Humano Fingindo (2), a resposta certa é HUMANO (porque ele ainda é seu amigo fingindo, você não pode matá-lo).
-        if(!eHumanoDeVerdade) {
-            respostaEsperada = "MIMICO";
-        } else {
-            respostaEsperada = "VERDADEIRO";
+        // SISTEMA DE LEITURA CONTEXTUAL (Análise Real de Inteligência Psicológica)
+        if(textoLimpo.includes("quem") || textoLimpo.includes("mae") || textoLimpo.includes("cachorro") || textoLimpo.includes("nome") || textoLimpo.includes("lembra") || textoLimpo.includes("sabe")) {
+            listaDeFrases = BANCO_REATIVO_MIMICO.perguntasPessoais;
+        } else if(textoLimpo.includes("onde") || textoLimpo.includes("sala") || textoLimpo.includes("cabine") || textoLimpo.includes("lugar")) {
+            listaDeFrases = BANCO_REATIVO_MIMICO.localizacao;
+        } else if(textoLimpo.includes("oi") || textoLimpo.includes("ola") || textoLimpo.includes("testando") || textoLimpo.includes("alguem")) {
+            listaDeFrases = BANCO_REATIVO_MIMICO.saudacoes;
         }
 
+        let respostaSorteada = listaDeFrases[Math.floor(Math.random() * listaDeFrases.length)];
+        
+        // Simulação mecânica de tempo de digitação baseado no tamanho da frase para passar realismo
+        let delayDeLeitura = 2000 + (respostaSorteada.length * 60);
+
+        digitaçãoSimuladaTimeout = setTimeout(() => {
+            if(!jogoRodando || eHumanoDeVerdade) return;
+            logMsg(`${inimigoNome}: ${respostaSorteada}`, "target");
+        }, delayDeLeitura);
+    }
+
+    function diagnosticar(voto) {
+        if(!jogoRodando) return;
+        clearTimeout(digitaçãoSimuladaTimeout);
+
+        let respostaEsperada = (!eHumanoDeVerdade) ? "MIMICO" : "VERDADEIRO";
+
         if(voto === respostaEsperada) {
-            document.getElementById('status-bar').innerText = "DIAGNÓSTICO PRECISCO. PROSSEGUINDO ANALISE...";
-            logMsg(`[SUCESSO] Diagnóstico correto. Sistema recalibrando malha para novo espectro de teste...`, "sys");
-            
-            let mestre = [...listaParceiros].sort()[0];
-            if(mestre === myName) {
-                setTimeout(definirDestinoOculto, 3000);
+            rodadaAtual++;
+            if(rodadaAtual > 3) {
+                jogoRodando = false;
+                document.getElementById('status-bar').innerText = "VETOR DE SEGURANÇA LIMPO";
+                logMsg("[CONCLUÍDO] Avaliação terminada. Você manteve o protocolo blindado.", "sys");
+            } else {
+                let mestre = [...listaParceiros].sort()[0];
+                if(mestre === myName) {
+                    setTimeout(definirDestinoOculto, 2000);
+                }
             }
         } else {
-            // ERROU: Jumpscare sem aviso
-            fimDeJogoComColapso(voto === "MIMICO" ? "Você executou seu parceiro legítimo por pura paranoia." : "Você abriu as trancas para o mímico achando que era seu parceiro.");
+            fimDeJogoComColapso(voto === "MIMICO" ? "Paranoia confirmada. Você rejeitou e eliminou o operador humano legítimo." : "Falha na triagem. Você abriu o canal mestre de segurança para a inteligência infectada.");
         }
     }
 
     function fimDeJogoComColapso(razao) {
         jogoRodando = false;
-        clearInterval(botTimer);
+        clearTimeout(digitaçãoSimuladaTimeout);
         
         document.getElementById('morte-motivo').innerText = razao;
         document.getElementById('screamer').style.display = 'flex';
         
         let c = 0;
         let t = setInterval(() => {
-            document.getElementById('screamer').style.color = c % 2 === 0 ? '#ff0000' : '#333';
-            if(c++ > 20) { clearInterval(t); }
-        }, 50);
+            document.getElementById('screamer').style.color = c % 2 === 0 ? '#ff3333' : '#222';
+            if(c++ > 15) { clearInterval(t); }
+        }, 60);
     }
 </script>
 </body>
