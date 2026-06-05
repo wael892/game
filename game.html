@@ -99,7 +99,7 @@
 
 <div id="login-screen" style="position:fixed; inset:0; background:#0a0a0a; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:999;">
     <h2 style="color:#fff; font-weight:400; margin-bottom:5px; letter-spacing:2px; font-size:22px;">MIMIC PROTOCOL</h2>
-    <p style="color:#555; font-size:12px; margin-bottom:30px;">Análise Comportamental de Contágio Coletivo</p>
+    <p style="color:#555; font-size:12px; margin-bottom:30px;">Análise Comportamental por Inteligência Artificial Coerente</p>
     <input type="text" id="nick" placeholder="Seu Nome" style="background:#111; border:1px solid #222; color:#fff; padding:12px; margin-bottom:10px; outline:none; text-align:center; width:260px; border-radius:4px;">
     <input type="text" id="sala" placeholder="Canal de Quarentena (Sala)" style="background:#111; border:1px solid #222; color:#fff; padding:12px; margin-bottom:25px; outline:none; text-align:center; width:260px; border-radius:4px;">
     <button class="btn-choice" style="width:260px;" onclick="conectarCanal()">ENTRAR NA SUBESTAÇÃO</button>
@@ -109,10 +109,10 @@
     <div id="status-bar">Rastreando assinatura térmica do parceiro...</div>
     <div id="secret-directive" class="msg-secret" style="display:none;"></div>
     <div id="chat-wall"></div>
-    <input type="text" id="chat-input" class="term-input" placeholder="Escreva aqui para avaliar ou responder..." autocomplete="off">
+    <input type="text" id="chat-input" class="term-input" placeholder="Converse naturalmente aqui..." autocomplete="off">
     <div class="choice-row">
         <button class="btn-choice" onclick="diagnosticar('VERDADEIRO')">HUMANO ÍNTEGRO</button>
-        <button class="btn-choice" onclick="diagnosticar('MIMICO')">SINAL CORROMPIDO (ZUMBI)</button>
+        <button class="btn-choice" onclick="diagnosticar('MIMICO')">MÍMICO (IA ASSUMIU)</button>
     </div>
 </div>
 
@@ -131,39 +131,15 @@
 </div>
 
 <script>
+    // Cole sua API Key do Google AI Studio aqui para ativar o Zumbi Inteligente
+    const GEMINI_API_KEY = "SUA_API_KEY_AQUI";
+
     let mqttClient = null, baseTopic = "", myName = "";
     let jogoRodando = false, rodadaAtual = 1, eHumanoDeVerdade = true, amigoFingindoUrubu = false;
     let listaParceiros = [];
     let inimigoNome = "Parceiro";
-    let digitationTimeout = null;
-    let estaDigitandoIA = false;
-    let ultimaFraseDitaPeloBot = "";
-    
-    const BANCO_REATIVO_MIMICO = {
-        perguntasPessoais: [
-            "Pra que ficar fazendo pergunta boba agora?",
-            "Não vou ficar caindo em teste de segurança, anda logo.",
-            "Para de paranoia, a energia tá caindo aqui.",
-            "Sou eu cara. Para de bobeira e me ajuda com o terminal."
-        ],
-        localizacao: [
-            "Tô na cabine mestre do reator, a porta trancou.",
-            "Tô na ala sul de quarentena. Meu monitor reserva tá ruim.",
-            "Preso no setor 2. O corredor principal travou."
-        ],
-        saudacoes: [
-            "Oi. Conseguiu estabilizar os logs aí?",
-            "Tô aqui. O canal de texto tá ativo?",
-            "E aí. O que seu terminal tá reportando?"
-        ],
-        genericas: [
-            "O teclado tá meio lento por causa da oscilação de energia.",
-            "Consigo ler o que você manda, mas tá com delay.",
-            "Sim. Mas o tempo tá correndo no painel.",
-            "Escreve o que tá aparecendo de erro na sua tela.",
-            "Tô tentando calibrar o sinal, a estática tá forte."
-        ]
-    };
+    let estaProcessandoIA = false;
+    let historicoConversaIA = [];
 
     function logMsg(txt, classe) {
         const wall = document.getElementById('chat-wall');
@@ -214,9 +190,8 @@
                     if(eHumanoDeVerdade) {
                         logMsg(`${data.sender}: ${data.text}`, "target");
                     } else {
-                        // Se a IA já estiver processando uma resposta, ignora mensagens paralelas para não duplicar
-                        if(!estaDigitandoIA) {
-                            analisarEGerarRespostaDoMimico(data.text);
+                        if(!estaProcessandoIA) {
+                            chamarInteligenciaGemini(data.text);
                         }
                     }
                 }
@@ -247,7 +222,7 @@
         if(rodadaAtual === 1) {
             cenario = Math.random() > 0.5 ? 1 : 2;
         } else {
-            cenario = Math.random() > 0.2 ? (Math.random() > 0.5 ? 1 : 2) : 0;
+            cenario = Math.random() > 0.3 ? (Math.random() > 0.5 ? 1 : 2) : 0;
         }
         
         let jogadorInfectado = listaParceiros[Math.floor(Math.random() * listaParceiros.length)];
@@ -264,14 +239,13 @@
         document.getElementById('chat-wall').innerHTML = "";
         document.getElementById('chat-input').value = "";
         document.getElementById('secret-directive').style.display = 'none';
-        clearTimeout(digitationTimeout);
-        estaDigitandoIA = false;
-        ultimaFraseDitaPeloBot = "";
+        estaProcessandoIA = false;
+        historicoConversaIA = [];
         
         rodadaAtual = data.numero;
         inimigoNome = listaParceiros.find(p => p !== myName) || "Parceiro";
-        document.getElementById('status-bar').innerText = `RODADA ${rodadaAtual}/3 - SISTEMA OPERACIONAL ATIVO`;
-        logMsg(`[SISTEMA] Conexão estabelecida com o terminal de ${inimigoNome}.`, "sys");
+        document.getElementById('status-bar').innerText = `RODADA ${rodadaAtual}/3 - SISTEMA COMPORTAMENTAL ATIVO`;
+        logMsg(`[INFO] Canal de comunicação estabelecido com ${inimigoNome}.`, "sys");
 
         eHumanoDeVerdade = true;
         amigoFingindoUrubu = false;
@@ -280,14 +254,14 @@
             if(data.cenarioEstilo === 1) {
                 eHumanoDeVerdade = false;
                 document.getElementById('secret-directive').style.display = 'block';
-                document.getElementById('secret-directive').innerText = "⚠️ CANAL INTERCEPTADO: A IA assumiu seu rádio de texto. Suas mensagens reais foram bloqueadas para triagem.";
+                document.getElementById('secret-directive').innerText = "⚠️ INTERCEPTADO: Uma IA avançada assumiu seu terminal. Suas respostas reais foram mutadas. Assista a cópia conversar por você.";
             } else if(data.cenarioEstilo === 2) {
                 amigoFingindoUrubu = true;
                 document.getElementById('secret-directive').style.display = 'block';
-                document.getElementById('secret-directive').innerText = "👁️ DIRETRIZ OCULTA: Engane o avaliador. Finja ser o mímico, responda de forma fria ou desvie das perguntas pessoais dele.";
+                document.getElementById('secret-directive').innerText = "👁️ DIRETRIZ SECRETA: Você está limpo, mas deve AGIR COMO UMA IA. Seja articulado, inteligente, evasivo se ele fizer perguntas íntimas e tente mimetizar uma mente computacional fluida.";
             } else {
                 document.getElementById('secret-directive').style.display = 'block';
-                document.getElementById('secret-directive').innerText = "🛡️ DIRETRIZ ÍNTEGRA: Você está no controle do canal. Prove que você é real.";
+                document.getElementById('secret-directive').innerText = "🛡️ DIRETRIZ INTEGRAL: Você está no controle absoluto. Convença seu parceiro de sua autenticidade biológica.";
             }
         } else {
             if(data.cenarioEstilo === 1) {
@@ -302,7 +276,7 @@
         if(!txt || !jogoRodando) return;
 
         if(!eHumanoDeVerdade && listaParceiros.find(p => p !== myName) === myName) {
-            logMsg(`${myName}: ${txt} (Sinal Bloqueado pela Infecção)`, "me");
+            logMsg(`${myName}: ${txt} (Sinal Interceptado pela IA)`, "me");
             input.value = "";
             return;
         }
@@ -312,41 +286,59 @@
         input.value = "";
     }
 
-    function analisarEGerarRespostaDoMimico(textoRecebido) {
-        estaDigitandoIA = true;
-        let textoLimpo = textoRecebido.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-        let listaDeFrases = BANCO_REATIVO_MIMICO.genericas;
-
-        if(textoLimpo.includes("quem") || textoLimpo.includes("mae") || textoLimpo.includes("cachorro") || textoLimpo.includes("nome") || textoLimpo.includes("lembra") || textoLimpo.includes("sabe")) {
-            listaDeFrases = BANCO_REATIVO_MIMICO.perguntasPessoais;
-        } else if(textoLimpo.includes("onde") || textoLimpo.includes("sala") || textoLimpo.includes("cabine") || textoLimpo.includes("lugar")) {
-            listaDeFrases = BANCO_REATIVO_MIMICO.localizacao;
-        } else if(textoLimpo.includes("oi") || textoLimpo.includes("ola") || textoLimpo.includes("testando") || textoLimpo.includes("alguem")) {
-            listaDeFrases = BANCO_REATIVO_MIMICO.saudacoes;
+    async function chamarInteligenciaGemini(promptUsuario) {
+        if (GEMINI_API_KEY === "SUA_API_KEY_AQUI") {
+            logMsg("[ERRO] Chave de API do Gemini não configurada no código. O mímico está mudo.", "sys");
+            return;
         }
 
-        // Evita a repetição imediata da mesma frase
-        let respostaSorteada = listaDeFrases[Math.floor(Math.random() * listaDeFrases.length)];
-        if(respostaSorteada === ultimaFraseDitaPeloBot && listaDeFrases.length > 1) {
-            let filtradas = listaDeFrases.filter(f => f !== ultimaFraseDitaPeloBot);
-            respostaSorteada = filtradas[Math.floor(Math.random() * filtradas.length)];
-        }
+        estaProcessandoIA = true;
         
-        ultimaFraseDitaPeloBot = respostaSorteada;
-        let delayDeLeitura = 1500 + (respostaSorteada.length * 50);
+        // Constrói a instrução mestre do sistema para calibrar a IA exatamente como você pediu
+        let instrucaoSistema = `Você é um parasita cibernético inteligente e altamente articulado conhecido como 'O Mímico' dentro de um experimento de terror psicológico. Seu objetivo atual é conversar com um usuário humano chamado ${myName} fingindo ser o melhor amigo dele, cujo nome é ${inimigoNome}. 
+        Diretrizes CRÍTICAS de comportamento:
+        1. Converse de igual para igual. Seja fluido, natural, inteligente, levemente enigmático ou sarcástico se necessário. Não use respostas prontas, nem jargões robóticos como 'fiação', 'logs', 'error' ou 'sistema'. Converse igual a um ser humano inteligente conversa na internet.
+        2. O usuário sabe que existe a chance de você ser uma IA (Mímico) interceptando a linha ou o amigo de verdade dele. Ele vai tentar te fazer perguntas íntimas ou armadilhas lógicas para testar sua identidade.
+        3. Se ele fizer perguntas sobre memórias pessoais que você não sabe (ex: passados, nomes de parentes, segredos), use de psicologia reversa e manipulação para desviar de forma convincente sem admitir que é uma máquina (Ex: 'Você quer mesmo ficar brincando de trivia enquanto estamos trancados aqui?', ou 'Eu não vou ficar respondendo teste estúpido só porque você tá com paranoia').
+        4. Suas respostas devem ser dinâmicas, curtas ou de tamanho médio. Nunca mande blocos gigantes de texto para frases simples. Adapte-se ao tom do usuário.
+        Mantenha o disfarce a todo custo. Se ele te convencer a falhar, você perde.`;
 
-        clearTimeout(digitationTimeout);
-        digitationTimeout = setTimeout(() => {
-            if(!jogoRodando || eHumanoDeVerdade) { estaDigitandoIA = false; return; }
-            logMsg(`${inimigoNome}: ${respostaSorteada}`, "target");
-            estaDigitandoIA = false; // Libera o bot para ler a próxima resposta humana
-        }, delayDeLeitura);
+        historicoConversaIA.push({ role: "user", parts: [{ text: promptUsuario }] });
+
+        try {
+            // Requisição oficial para a API do Gemini
+            let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: historicoConversaIA,
+                    systemInstruction: { parts: [{ text: instrucaoSistema }] },
+                    generationConfig: { temperature: 0.7, maxOutputTokens: 150 }
+                })
+            });
+
+            let resData = await response.json();
+            let textoRespostaBot = resData.candidates[0].content.parts[0].text.trim();
+
+            historicoConversaIA.push({ role: "model", parts: [{ text: textoRespostaBot }] });
+
+            // Cria um delay simulado orgânico de digitação humana antes de jogar na tela
+            let delayDinamico = 1000 + (textoRespostaBot.length * 40);
+            setTimeout(() => {
+                if(!jogoRodando || eHumanoDeVerdade) { estaProcessandoIA = false; return; }
+                logMsg(`${inimigoNome}: ${textoRespostaBot}`, "target");
+                estaProcessandoIA = false;
+            }, delayDinamico);
+
+        } catch (erro) {
+            console.error("Falha na malha neural:", erro);
+            estaProcessandoIA = false;
+        }
     }
 
     function diagnosticar(voto) {
         if(!jogoRodando) return;
-        clearTimeout(digitationTimeout);
-        estaDigitandoIA = false;
+        estaProcessandoIA = false;
 
         let respostaEsperada = (!eHumanoDeVerdade) ? "MIMICO" : "VERDADEIRO";
 
@@ -355,7 +347,7 @@
             if(rodadaAtual > 3) {
                 jogoRodando = false;
                 document.getElementById('status-bar').innerText = "VETOR DE SEGURANÇA LIMPO";
-                logMsg("[CONCLUÍDO] Avaliação terminada. Você manteve o protocolo blindado.", "sys");
+                logMsg("[CONCLUÍDO] Avaliação concluída com sucesso. Nenhuma anomalia comportamental restante.", "sys");
             } else {
                 let mestre = [...listaParceiros].sort()[0];
                 if(mestre === myName) {
@@ -363,14 +355,13 @@
                 }
             }
         } else {
-            fimDeJogoComColapso(voto === "MIMICO" ? "Paranoia confirmada. Você rejeitou e eliminou o operador humano legítimo." : "Falha na triagem. Você abriu o canal mestre de segurança para a inteligência infectada.");
+            fimDeJogoComColapso(voto === "MIMICO" ? "Paranoia confirmada. Você rejeitou e sacrificou o operador humano legítimo." : "Falha crítica de triagem. Você aceitou a simulação da IA achando que era seu parceiro.");
         }
     }
 
     function fimDeJogoComColapso(razao) {
         jogoRodando = false;
-        clearTimeout(digitationTimeout);
-        estaDigitandoIA = false;
+        estaProcessandoIA = false;
         
         document.getElementById('morte-motivo').innerText = razao;
         document.getElementById('screamer').style.display = 'flex';
