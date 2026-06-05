@@ -3,174 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>O HOSPEDEIRO</title>
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <title>MIMIC MIND PROTOCOL</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
-
-        body {
-            background-color: #050202;
-            color: #b5b5b5;
-            display: flex; flex-direction: column; align-items: center;
-            height: 100vh; height: -webkit-fill-available;
-            padding: 6px; overscroll-behavior: none; overflow: hidden;
+        
+        body { 
+            background: #050505; 
+            color: #b52b2b; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            overflow: hidden; 
+            user-select: none; 
         }
 
         body::before {
             content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.4) 50%);
+            background: linear-gradient(rgba(15, 10, 10, 0) 50%, rgba(0, 0, 0, 0.45) 50%);
             z-index: 9999; background-size: 100% 3px; pointer-events: none;
         }
 
-        #login-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; display: flex; justify-content: center;
-            align-items: center; z-index: 1000;
+        #game-panel { 
+            width: 100%; 
+            max-width: 600px; 
+            padding: 20px; 
+            background: #000;
+            border: 1px solid #221111;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.08);
         }
-        .login-box {
-            background: #0a0505; padding: 25px; border: 1px solid #551111;
-            width: 100%; max-width: 380px; text-align: center;
-            box-shadow: 0 0 25px rgba(255, 0, 0, 0.15);
+
+        #canvas-container {
+            width: 100%;
+            height: 380px;
+            background: #080808;
+            border: 1px solid #1a0d0d;
+            margin-bottom: 15px;
+            position: relative;
         }
-        .login-box h2 { color: #ff3333; margin-bottom: 15px; font-size: 20px; letter-spacing: 3px; }
-        .login-box p { color: #555; font-size: 11px; margin-bottom: 20px; line-height: 1.4; }
-        .login-box input {
-            width: 100%; padding: 10px; margin-bottom: 15px;
-            background: #000; border: 1px solid #441111;
-            outline: none; font-size: 14px; color: #ff3333; text-align: center;
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
         }
-        .login-box input:focus { border-color: #ff3333; box-shadow: 0 0 8px rgba(255,51,51,0.3); }
+
+        .btn-choice { 
+            padding: 15px; 
+            font-weight: bold; 
+            font-size: 11px; 
+            cursor: pointer; 
+            background: #0f0505;
+            color: #ff3333;
+            border: 1px solid #441111;
+            transition: all 0.2s;
+            letter-spacing: 1px;
+        }
+        .btn-choice:hover { background: #ff3333; color: #000; border-color: #ff3333; }
+        .btn-human { color: #33ff33; border-color: #114411; background: #050f05; }
+        .btn-human:hover { background: #33ff33; color: #000; border-color: #33ff33; }
+
+        .choice-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         
-        header {
-            background: #000; padding: 8px 12px; border: 1px solid #221111;
-            width: 100%; max-width: 1200px; display: flex; justify-content: space-between;
-            align-items: center; gap: 10px; flex-shrink: 0; margin-bottom: 6px;
+        #status-bar { 
+            font-size: 11px; 
+            margin-bottom: 12px; 
+            color: #ffaa00; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            text-align: center;
+            border-bottom: 1px solid #1a0d0d;
+            padding-bottom: 8px;
         }
-        h1 { font-size: 14px; letter-spacing: 2px; color: #ff3333; font-weight: 400; }
-        #sanity-display { font-size: 12px; color: #ffaa00; font-weight: bold; }
-
-        #main-container {
-            display: flex; width: 100%; max-width: 1200px; flex: 1; gap: 6px; overflow: hidden; min-height: 0;
-        }
-
-        #sidebar {
-            flex: 0 0 180px; background: #000; border: 1px solid #221111; padding: 8px;
-            display: flex; flex-direction: column; overflow: hidden;
-        }
-        #sidebar h3 { font-size: 11px; border-bottom: 1px dashed #441111; padding-bottom: 4px; margin-bottom: 6px; color: #666; letter-spacing: 1px; }
-        #players-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
-        
-        .player-node {
-            background: #090404; padding: 6px; border: 1px solid #331111; font-size: 11px; color: #aaa;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .player-node.dead { border-color: #ff0000; color: #ff3333 !important; text-decoration: line-through; background: #1a0000; }
-        .player-node.infected { border-left: 3px solid #ff0000; }
-
-        #center-panel {
-            flex: 1; display: flex; flex-direction: column; gap: 6px; overflow: hidden; min-width: 0;
-        }
-
-        #terminal-display {
-            flex: 1; background: #000; border: 1px solid #221111; padding: 12px;
-            overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
-            font-size: 12px; line-height: 1.5; color: #888;
-        }
-        
-        .log-row { word-break: break-all; }
-        .log-sys { color: #555; }
-        .log-warn { color: #ffaa00; }
-        .log-crit { color: #ff3333; font-weight: bold; background: #150000; padding: 3px; border-left: 2px solid #ff0000; }
-        .log-hosp { color: #ff0055; font-style: italic; background: #100005; padding: 4px; border: 1px dashed #ff0055; }
-
-        #action-bar {
-            background: #000; border: 1px solid #221111; padding: 8px;
-            display: flex; flex-direction: column; gap: 6px; flex-shrink: 0;
-        }
-        
-        #directive-display {
-            background: #0a0303; padding: 8px; border: 1px dashed #441111;
-            font-size: 12px; color: #ffaa00; width: 100%; text-align: center;
-            line-height: 1.4;
-        }
-
-        .input-row { display: flex; gap: 6px; width: 100%; }
-        .term-input {
-            flex: 1; background: #050202; border: 1px solid #331111; padding: 8px;
-            color: #ff3333; font-size: 13px; outline: none;
-        }
-        .term-input:focus { border-color: #661111; box-shadow: 0 0 5px rgba(255,0,0,0.2); }
-        .term-btn { background: #150505; color: #ff3333; border: 1px solid #441111; padding: 8px 14px; cursor: pointer; font-size: 11px; font-weight: bold; }
-        .term-btn:hover { background: #ff3333; color: #000; border-color: #ff3333; }
-        .term-btn.hosp-action { color: #ff0055; border-color: #550011; background: #1a0005; display: none; }
-        .term-btn.hosp-action:hover { background: #ff0055; color: #000; }
-
-        #right-panel {
-            flex: 0 0 240px; display: flex; flex-direction: column; background: #000;
-            border: 1px solid #221111; overflow: hidden;
-        }
-        .chat-title { background: #090404; padding: 6px 8px; font-size: 10px; border-bottom: 1px solid #221111; letter-spacing: 1px; color: #666; }
-        #chat-area { flex: 1; padding: 6px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; background: #020101; font-size: 11px; }
-        .chat-msg { border-bottom: 1px solid #100505; padding-bottom: 3px; color: #999; line-height: 1.3; }
-        .chat-msg .user { color: #ff4444; }
 
         #screamer { 
-            position: fixed; inset: 0; background: #000; color: #ff0000; 
-            display: none; flex-direction: column; justify-content: center; 
-            align-items: center; font-size: 5px; line-height: 5px; z-index: 10000; 
+            position: fixed; 
+            inset: 0; 
+            background: #000; 
+            color: #ff0000; 
+            display: none; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            font-size: 5px; 
+            line-height: 5px; 
+            z-index: 10000; 
             text-align: center;
         }
-        .flash-red { animation: strobe 0.2s infinite; }
-        @keyframes strobe { 0%, 100% { background: #050202; } 50% { background: #2a0005; } }
+        .flash-red { animation: strobe 0.12s infinite; }
+        @keyframes strobe { 0%, 100% { background: #050505; } 50% { background: #1a0303; } }
     </style>
 </head>
 <body>
 
-<div id="login-screen">
-    <div class="login-box">
-        <h2>👁️ O HOSPEDEIRO</h2>
-        <p>Um de vocês foi consumido pela entidade. Descubram quem está mentindo antes que a contaminação seja absoluta. Mantenham o silêncio.</p>
-        <input type="text" id="input-username" placeholder="Seu Nome / Identidade" required>
-        <input type="text" id="input-room" placeholder="Código do Isolamento (Sala)" required>
-        <button class="term-btn" style="width:100%; padding:12px;" onclick="entrarNoBunker()">INICIAR CONEXÃO</button>
+<div id="game-panel">
+    <div id="status-bar">SISTEMA DE TRIAGEM: IDENTIFIQUE A MENTALIDADE DO PROJETOR...</div>
+    <div id="canvas-container">
+        <canvas id="paintCanvas"></canvas>
     </div>
-</div>
-
-<header>
-    <h1>☣️ PROTOCOLO DE TRIAGEM COMPORTAMENTAL</h1>
-    <div id="sanity-display">SANIDADE MENTAL: <span id="sanity-val">100</span>%</div>
-</header>
-
-<div id="main-container">
-    <div id="sidebar">
-        <h3>👥 Frequências</h3>
-        <div id="players-list"></div>
-    </div>
-
-    <div id="center-panel">
-        <div id="terminal-display">
-            <div class="log-row log-sys">[SISTEMA] Aguardando o acoplamento das frequências biológicas dos outros amigos...</div>
-        </div>
-
-        <div id="action-bar">
-            <div class="panel-row">
-                <div id="directive-display">AGUARDANDO ESTABILIZAÇÃO DO LINK MULTIPLAYER...</div>
-            </div>
-            <div class="panel-row input-row">
-                <input type="text" id="command-input" class="term-input" placeholder="Justifique sua acusação ou vote digitando o nome exato..." autocomplete="off">
-                <button class="term-btn" onclick="processarComandoVoto()">VOTAR</button>
-                <button id="btn-infect" class="term-btn hosp-action" onclick="executarInfeccaoHospedeiro()">☣️ CONTAMINAR ALVO</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="right-panel">
-        <div class="chat-title">🤫 SUSSURROS CELERES (PROIBIDO FALAR ALTO)</div>
-        <div id="chat-area"></div>
-        <div class="chat-input-row" style="display:flex; padding:4px; background:#000; border-top:1px solid #221111;">
-            <input type="text" id="chat-input" class="term-input" placeholder="Sussurrar no canal..." autocomplete="off" style="margin-bottom:0;">
-            <button class="term-btn" style="padding:4px 10px; margin-left:2px;" onclick="transmitirSussurro()">➤</button>
-        </div>
+    <div style="font-size:11px; color:#444; text-align:center; margin-bottom:12px; letter-spacing:1px;">AVALIE SE A INTENÇÃO DO TRAÇO VEM DE UMA CONSCIÊNCIA BIOLÓGICA:</div>
+    <div class="choice-row">
+        <button class="btn-choice btn-human" onclick="diagnosticar('HUMANO')">CONSCIÊNCIA HUMANA</button>
+        <button class="btn-choice" onclick="diagnosticar('IA')">MÍMICO CAMALEÃO (IA)</button>
     </div>
 </div>
 
@@ -182,368 +117,229 @@
  █████        ████████        ███
  █████▄      ▄████████▄      ▄███
  ███████▄▄▄██████████████▄▄▄█████
- ████████████████████████████████
   ▀████████████████████████████▀
-    M E N T E   C O N S U M I D A
+     E R R O   D E   A N Á L I S E
     </pre>
-    <div id="morte-razao" style="font-size:14px; font-family:monospace; margin-top:15px; color:#aaa;">O HOSPEDEIRO TE TOMOU.</div>
+    <div id="morte-motivo" style="font-size:13px; font-family:monospace; margin-top:15px; color:#888; padding: 0 20px;">DIAGNOSTICO INCORRETO.</div>
 </div>
 
 <script>
-    let mqttClient = null, baseTopic = "", myName = "";
-    const listaJogadores = new Set();
-    const statusMembros = {}; // { nome: 'alive' | 'dead' | 'infected' }
-    const votosRegistrados = {}; // { de_quem: para_quem }
+    let canvas, ctx;
+    let rodada = 1;
+    let ehIA_NaRodadaAtual = false;
+    let morto = false;
     
-    let souOHospedeiro = false;
-    let sanidadeMental = 100;
-    let jogoAtivo = false;
-    let rodadaAtual = 1;
-    let cooldownInfeccao = false;
+    let pontosDoDesenho = [];
+    let pontoIndiceAtual = 0;
+    let timerDesenho = null;
+    let mentalidadeSorteadaIA = "";
 
-    const FRASES_PERTURBADORAS = [
-        "Você acha que consegue ouvir os pensamentos dele, mas é apenas o eco da sua própria carne apodrecendo.",
-        "O sangue derramado não era dele. Olhe para suas mãos. O que você fez?",
-        "Ele morreu gritando seu nome, jurando que você sabia a verdade desde o início.",
-        "As paredes deste abrigo estão rindo da sua incapacidade de enxergar o óbvio.",
-        "Você sacrificou uma mente limpa. A Entidade agradece pelo banquete astral.",
-        "Feche os olhos. O próximo rosto que você lembrar será o seu último."
+    // Banco de desenhos focado estritamente em elementos anatômicos humanos
+    const BANCO_ANATOMIA = [
+        // Desenho 1: Coração Biológico Esquemático
+        [
+            {x: 250, y: 120, type: 'start'}, {x: 310, y: 80, type: 'line'}, {x: 360, y: 130, type: 'line'},
+            {x: 340, y: 220, type: 'line'}, {x: 250, y: 320, type: 'line'}, {x: 160, y: 220, type: 'line'},
+            {x: 140, y: 130, type: 'line'}, {x: 190, y: 80, type: 'line'}, {x: 250, y: 120, type: 'line'}, // Cavidade Principal
+            {x: 230, y: 120, type: 'start'}, {x: 230, y: 50, type: 'line'}, {x: 270, y: 50, type: 'line'}, {x: 270, y: 120, type: 'line'}, // Aorta
+            {x: 310, y: 100, type: 'start'}, {x: 350, y: 50, type: 'line'} // Artéria Lateral
+        ],
+        // Desenho 2: Estrutura de um Olho Humano
+        [
+            {x: 120, y: 200, type: 'start'}, {x: 250, y: 110, type: 'line'}, {x: 380, y: 200, type: 'line'}, // Pálpebra Superior
+            {x: 120, y: 200, type: 'start'}, {x: 250, y: 290, type: 'line'}, {x: 380, y: 200, type: 'line'}, // Pálpebra Inferior
+            {x: 250, y: 200, type: 'start'}, {x: 250, y: 200, radius: 45, type: 'circle'}, // Íris
+            {x: 250, y: 200, type: 'start'}, {x: 250, y: 200, radius: 18, type: 'pupil'} // Pupila
+        ],
+        // Desenho 3: Contorno Trágico de um Crânio
+        [
+            {x: 200, y: 120, type: 'start'}, {x: 250, y: 90, type: 'line'}, {x: 300, y: 120, type: 'line'},
+            {x: 320, y: 200, type: 'line'}, {x: 290, y: 260, type: 'line'}, {x: 290, y: 320, type: 'line'},
+            {x: 210, y: 320, type: 'line'}, {x: 210, y: 260, type: 'line'}, {x: 180, y: 200, type: 'line'},
+            {x: 200, y: 120, type: 'line'}, // Calota e Mandíbula
+            {x: 225, y: 180, type: 'start'}, {x: 225, y: 180, radius: 12, type: 'circle'}, // Órbita Esquerda
+            {x: 275, y: 180, type: 'start'}, {x: 275, y: 180, radius: 12, type: 'circle'}, // Órbita Direita
+            {x: 250, y: 230, type: 'start'}, {x: 240, y: 250, type: 'line'}, {x: 260, y: 250, type: 'line'}, {x: 250, y: 230, type: 'line'} // Cavidade Nasal
+        ]
     ];
 
-    function appendTerminalLog(text, classe = "sys") {
-        const display = document.getElementById('terminal-display');
-        const row = document.createElement('div');
-        row.className = `log-row log-${classe}`;
-        row.innerText = `[${new Date().toLocaleTimeString()}] ${text}`;
-        display.appendChild(row);
-        display.scrollTop = display.scrollHeight;
-    }
-
-    function entrarNoBunker() {
-        myName = document.getElementById('input-username').value.trim();
-        roomName = document.getElementById('input-room').value.trim().toLowerCase().replace(/[^a-z0-9]/g,"");
-        if (!myName || !roomName) { alert("Credenciais insuficientes para o rastreamento neural!"); return; }
-
-        document.getElementById('login-screen').style.display = 'none';
-        appendTerminalLog(`[LINK] Canal de isolamento sincronizado: ${roomName}`);
+    window.onload = function() {
+        canvas = document.getElementById('paintCanvas');
+        ctx = canvas.getContext('2d');
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
         
-        adicionarJogadorRede(myName);
-        conectarBrokerMQTT();
-    }
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        
+        executarFaseTriagemMestre();
+    };
 
-    function conectarBrokerMQTT() {
-        baseTopic = "hospedeiro_paranoia_2026/" + roomName;
-        mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
-
-        mqttClient.on('connect', () => {
-            mqttClient.subscribe(baseTopic + "/sussurros");
-            mqttClient.subscribe(baseTopic + "/status_rede");
-            mqttClient.subscribe(baseTopic + "/presenca");
-            mqttClient.subscribe(baseTopic + "/presenca/echo");
-            mqttClient.subscribe(baseTopic + "/acoes");
-            mqttClient.subscribe(baseTopic + "/sussurro_privado/" + myName);
-
-            mqttClient.publish(baseTopic + "/presenca", JSON.stringify({ name: myName }));
-            appendTerminalLog("[SISTEMA] Rastreando frequências biológicas na área do bunker...");
-            
-            setTimeout(() => { checarGatilhoDeInicio(); }, 2000);
-        });
-
-        mqttClient.on('message', (topic, message) => {
-            let data = JSON.parse(message.toString());
-
-            if (topic === baseTopic + "/presenca") {
-                if (data.name && data.name !== myName) {
-                    adicionarJogadorRede(data.name);
-                    mqttClient.publish(baseTopic + "/presenca/echo", JSON.stringify({ name: myName }));
-                    checarGatilhoDeInicio();
-                }
-            } else if (topic === baseTopic + "/presenca/echo") {
-                if (data.name && data.name !== myName) { adicionarJogadorRede(data.name); checarGatilhoDeInicio(); }
-            } else if (topic === baseTopic + "/sussurros") {
-                exibirSussurroNoCanal(data.sender, data.text);
-            } else if (topic === baseTopic + "/status_rede") {
-                processarStatusDoJogo(data);
-            } else if (topic === baseTopic + "/acoes") {
-                processarAcoesDaRede(data);
-            } else if (topic === baseTopic + "/sussurro_privado/" + myName) {
-                appendTerminalLog(`[ALERTA INTERNO] ${data.text}`, "hosp");
-            }
-        });
-    }
-
-    function adicionarJogadorRede(name) {
-        if (listaJogadores.has(name)) return;
-        listaJogadores.add(name);
-        statusMembros[name] = 'alive';
-        rebuildFrequenciasSidebar();
-    }
-
-    function rebuildFrequenciasSidebar() {
-        const list = document.getElementById('players-list');
-        list.innerHTML = "";
-        Array.from(listaJogadores).forEach(nome => {
-            const row = document.createElement('div');
-            row.className = "player-node";
-            if (statusMembros[nome] === 'dead') row.className = "player-node dead";
-            row.innerText = `📟 ${nome}`;
-            list.appendChild(row);
-        });
-    }
-
-    function checarGatilhoDeInicio() {
-        if (!jogoAtivo && listaJogadores.size >= 2) {
-            let mestreSala = Array.from(listaJogadores).sort()[0];
-            if (mestreSala === myName) {
-                // Sorteia quem é O Hospedeiro
-                let arr = Array.from(listaJogadores);
-                let sorteado = arr[Math.floor(Math.random() * arr.length)];
-                
-                mqttClient.publish(baseTopic + "/status_rede", JSON.stringify({
-                    action: "START",
-                    hospedeiro: sorteado,
-                    rodada: 1
-                }));
-            }
-        }
-    }
-
-    function processarStatusDoJogo(data) {
-        if (data.action === "START") {
-            jogoAtivo = true;
-            rodadaAtual = data.rodada;
-            sanidadeMental = 100;
-            document.getElementById('sanity-val').innerText = sanidadeMental;
-
-            if (data.hospedeiro === myName) {
-                souOHospedeiro = true;
-                statusMembros[myName] = 'infected';
-                document.getElementById('btn-infect').style.display = 'inline-flex';
-                document.getElementById('directive-display').innerText = "☣️ DIRETRIZ: VOCÊ É O HOSPEDEIRO. INFECTE OU ELIMINE OS OUTROS EM SILÊNCIO.";
-                appendTerminalLog("⚠️ ATENÇÃO: A entidade tomou seu lobo frontal. Contamine seus amigos digitando os nomes deles ou elimine-os nas votações.", "crit");
-            } else {
-                souOHospedeiro = false;
-                document.getElementById('directive-display').innerText = "👁️ DIRETRIZ: OBSERVE O COMPORTAMENTO DELES. SUSSURRE SUAS SUSPEITAS.";
-                appendTerminalLog("[SISTEMA] Monitoramento psicométrico ativo. Ache o hospedeiro antes que sua mente colapse.", "sys");
-            }
-            startCicloDeRodada();
-        } else if (data.action === "MUTACAO_SINAL") {
-            statusMembros[data.alvo] = 'dead';
-            rebuildFrequenciasSidebar();
-            appendTerminalLog(`📢 MONITOR: O sinal vital de ${data.alvo} cessou abruptamente.`, "crit");
-            
-            if (data.eraOHospedeiro) {
-                declararFimDeJogo(true, `O hospedeiro (${data.alvo}) foi ejetado do bunker com sucesso! A quarentena funcionou.`);
-            } else {
-                // HUMANO INOCENTE MORREU: Mostra a frase perturbadora do mestre do jogo
-                appendTerminalLog(`[MENTE DO MESTRE SUSSURRA]: ${data.fraseMaldita}`, "warn");
-                verificarCondicoesDeFim();
-                if (jogoAtivo) avancarRodadaMecanica();
-            }
-        } else if (data.action === "INFECTADO_CONFIRMADO") {
-            statusMembros[data.alvo] = 'infected';
-            appendTerminalLog(`[AVISO INTERNO] A contaminação se espalhou silenciosamente pela rede de frequências.`, "sys");
-        }
-    }
-
-    function startCicloDeRodada() {
-        for (const key in votosRegistrados) delete votosRegistrados[key];
+    function executarFaseTriagemMestre() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         document.body.className = "";
-        document.getElementById('command-input').value = "";
-        document.getElementById('status-bar').innerText = `RODADA DE ACUSAÇÃO SUSSURRADA: ${rodadaAtual}`;
-    }
+        pontoIndiceAtual = 0;
+        clearInterval(timerDesenho);
 
-    function processarComandoVoto() {
-        const input = document.getElementById('command-input');
-        const text = input.value.trim();
-        if (!text || !jogoAtivo || statusMembros[myName] === 'dead') return;
-
-        // Procura se o texto digitado coincide com o nome de algum jogador vivo para computar o voto secreto
-        let alvoVoto = null;
-        Array.from(listaJogadores).forEach(p => {
-            if (p.toLowerCase() === text.toLowerCase() && statusMembros[p] !== 'dead') {
-                alvoVoto = p;
-            }
-        });
-
-        if (alvoVoto) {
-            if (alvoVoto === myName) { alert("Você não pode acusar seu próprio córtex frontal."); return; }
-            votosRegistrados[myName] = alvoVoto;
-            appendTerminalLog(`[VOTO REGISTRADO] Você depositou sua cédula secreta contra: ${alvoVoto}`, "warn");
-            mqttClient.publish(baseTopic + "/acoes", JSON.stringify({ tipo: "VOTO", de: myName, para: alvoVoto }));
-            input.value = "";
-            
-            checarResolucaoVotosLocais();
-        } else {
-            // Se não digitou um nome, assume que é uma justificativa aberta no chat sussurrado
-            transmitirAcusacaoComJustificativa(text);
-            input.value = "";
-        }
-    }
-
-    function transmitirAcusacaoComJustificativa(textoJustificativa) {
-        appendTerminalLog(`[VOCÊ SUSSURROU UMA ACUSAÇÃO]: ${textoJustificativa}`, "warn");
-        mqttClient.publish(baseTopic + "/sussurros", JSON.stringify({ sender: myName, text: `*sussurra acusando*: ${textoJustificativa}` }));
+        // Sorteio cego: 50% de chance de ser humano real ou a IA fingindo
+        ehIA_NaRodadaAtual = Math.random() > 0.5;
         
-        // Punição de sanidade por levantar falso testemunho em público (Mecânica de Medo)
-        // Como o sistema não sabe quem é o culpado de forma autônoma na discussão, o hospedeiro pode usar isso para minar a mente dos outros.
-        sanidadeMental = Math.max(0, sanidadeMental - 10);
-        document.getElementById('sanity-val').innerText = sanidadeMental;
-        if (sanidadeMental <= 30) {
-            document.body.className = "flash-red";
-            appendTerminalLog("⚠️ ALERTA DE INSANIDADE: Seu lobo temporal está falhando. Você está vulnerável à Entidade.", "crit");
-        }
-    }
-
-    function executarInfeccaoHospedeiro() {
-        const input = document.getElementById('command-input');
-        const alvo = input.value.trim();
-        if (!jogoAtivo || !souOHospedeiro || cooldownInfeccao) return;
-
-        let alvoValido = null;
-        Array.from(listaJogadores).forEach(p => {
-            if (p.toLowerCase() === alvo.toLowerCase() && statusMembros[p] === 'alive') {
-                alvoValido = p;
-            }
-        });
-
-        if (alvoValido) {
-            cooldownInfeccao = true;
-            document.getElementById('btn-infect').innerText = "☣️ RECARREGANDO...";
-            
-            mqttClient.publish(baseTopic + "/acoes", JSON.stringify({ tipo: "INFECTAR", alvo: alvoValido }));
-            mqttClient.publish(baseTopic + `/sussurro_privado/${alvoValido}`, JSON.stringify({ text: "Você sentiu um calafrio na espinha. Sua mente não pertence mais apenas a você. Você foi infectado pelo Hospedeiro." }));
-            
-            input.value = "";
-            setTimeout(() => {
-                cooldownInfeccao = false;
-                document.getElementById('btn-infect').innerText = "☣️ CONTAMINAR ALVO";
-            }, 15000);
+        if (ehIA_NaRodadaAtual) {
+            // Sorteia uma das 4 personalidades comportamentais para a IA incorporar nessa rodada
+            let mentes = ["HESITANTE", "IMPULSIVO", "CALCULISTA", "ERRATICO"];
+            mentalidadeSorteadaIA = mentes[Math.floor(Math.random() * mentes.length)];
         } else {
-            alert("Nome do alvo biológico inválido ou já eliminado.");
+            mentalidadeSorteadaIA = "HUMANO_REAL";
         }
+
+        document.getElementById('status-bar').innerText = `ANALISANDO FLUXO DE LINHAS ASTRAL - AMOSTRA ${rodada}/3`;
+
+        let esqueletoDesenho = BANCO_ANATOMIA[Math.floor(Math.random() * BANCO_ANATOMIA.length)];
+        pontosDoDesenho = processarGeracaoDeTracosPsicologicos(esqueletoDesenho);
+        
+        rodarAnimacaoDeTracoDinamico();
     }
 
-    function processarAcoesDaRede(data) {
-        if (data.tipo === "VOTO") {
-            votosRegistrados[data.de] = data.para;
-            checarResolucaoVotosLocais();
-        } else if (data.tipo === "INFECTAR") {
-            statusMembros[data.alvo] = 'infected';
-            if (data.alvo === myName) {
-                appendTerminalLog("☣️ FALHA CRÍTICA: Você foi infectado. Ajude o Hospedeiro original a eliminar os humanos restantes nas discussões.", "crit");
-            }
-        }
-    }
-
-    function checarResolucaoVotosLocais() {
-        let vivos = Array.from(listaJogadores).filter(p => statusMembros[p] !== 'dead');
-        let totalVotosExigidos = vivos.length;
-
-        if (Object.keys(votosRegistrados).length >= totalVotosExigidos) {
-            // Contabiliza cédulas de papel virtual secretas
-            let contagem = {};
-            for (const [vovador, alvo] of Object.entries(votosRegistrados)) {
-                contagem[alvo] = (contagem[alvo] || 0) + 1;
-            }
-
-            let maisVotado = null;
-            let maiorQuantidade = 0;
-            let empate = false;
-
-            for (const [alvo, qtd] of Object.entries(contagem)) {
-                if (qtd > maiorQuantidade) {
-                    maiorQuantidade = qtd;
-                    maisVotado = alvo;
-                    empate = false;
-                } else if (qtd === maiorQuantidade) {
-                    empate = true;
-                }
-            }
-
-            if (maisVotado && !empate && maiorQuantidade >= Math.ceil(totalVotosExigidos / 2)) {
-                let mestre = Array.from(listaJogadores).sort()[0];
-                if (mestre === myName) {
-                    let eraOHospedeiroReal = (maisVotado === currentHospedeiroNomeGlobal() || (souOHospedeiro && maisVotado === myName));
-                    let fraseSorteada = FRASES_PERTURBADORAS[Math.floor(Math.random() * FRASES_PERTURBADORAS.length)];
+    function processarGeracaoDeTracosPsicologicos(esqueleto) {
+        let trajetoriaCompleta = [];
+        
+        for (let i = 0; i < esqueleto.length; i++) {
+            let p = esqueleto[i];
+            
+            if (p.type === 'start') {
+                trajetoriaCompleta.push({ x: p.x, y: p.y, action: 'start' });
+            } else if (p.type === 'circle' || p.type === 'pupil') {
+                // Quebra círculos anatômicos em traços angulares para simular desenho livre
+                trajetoriaCompleta.push({ x: p.x + p.radius, y: p.y, action: 'start' });
+                for (let a = 0; a <= Math.PI * 2; a += 0.15) {
+                    let rx = p.x + Math.cos(a) * p.radius;
+                    let ry = p.y + Math.sin(a) * p.radius;
                     
-                    mqttClient.publish(baseTopic + "/status_rede", JSON.stringify({
-                        action: "MUTACAO_SINAL",
-                        alvo: maisVotado,
-                        eraOHospedeiro: eraOHospedeiroReal,
-                        fraseMaldita: fraseSorteada
-                    }));
+                    // Se for humano ou IA ansiosa, adiciona tremores nas curvas circulares
+                    if (mentalidadeSorteadaIA === "HUMANO_REAL" || mentalidadeSorteadaIA === "HESITANTE") {
+                        rx += (Math.random() * 2.8) - 1.4;
+                        ry += (Math.random() * 2.8) - 1.4;
+                    }
+                    trajetoriaCompleta.push({ x: rx, y: ry, action: 'line' });
                 }
             } else {
-                appendTerminalLog("[MONITOR] Cédulas inconclusivas ou empate detectado. O silêncio continua na sala.", "sys");
-                avancarRodadaMecanica();
+                let pAnterior = esqueleto[i - 1];
+                let passos = 20;
+
+                if (mentalidadeSorteadaIA === "IMPULSIVO") passos = 10; // IA veloz quebra em menos pontos lineares
+                if (mentalidadeSorteadaIA === "HESITANTE") passos = 35; // IA ansiosa divide em muitos micropassos
+                
+                for (let j = 1; j <= passos; j++) {
+                    let t = j / passos;
+                    let rx = pAnterior.x + (p.x - pAnterior.x) * t;
+                    let ry = pAnterior.y + (p.y - pAnterior.y) * t;
+                    
+                    // APLICANDO AS NUANCES DA MENTALIDADE DO AUTOR
+                    if (mentalidadeSorteadaIA === "HUMANO_REAL") {
+                        rx += (Math.random() * 2.6) - 1.3;
+                        ry += (Math.random() * 2.6) - 1.3;
+                        if (Math.random() > 0.97) { rx += (Math.random() * 8) - 4; } // Erro de mouse humano
+                    } else if (mentalidadeSorteadaIA === "HESITANTE") {
+                        rx += (Math.random() * 3.2) - 1.6; // Tremores simulados intencionalmente pela IA
+                        ry += (Math.random() * 3.2) - 1.6;
+                    } else if (mentalidadeSorteadaIA === "ERRATICO") {
+                        if (j === Math.floor(passos/2) && Math.random() > 0.5) {
+                            rx += (Math.random() * 12) - 6; // IA errática simula uma guinada errada de propósito
+                        }
+                    }
+                    
+                    trajetoriaCompleta.push({ x: rx, y: ry, action: 'line' });
+                }
             }
         }
+        return trajetoriaCompleta;
     }
 
-    function currentHospedeiroNomeGlobal() {
-        // Retorna referência estática tratada localmente
-        return "";
+    function rodarAnimacaoDeTracoDinamico() {
+        let delayTickBase = 20;
+
+        // Calibrando a velocidade do motor baseado na personalidade sorteada
+        if (mentalidadeSorteadaIA === "IMPULSIVO") delayTickBase = 10;
+        if (mentalidadeSorteadaIA === "HESITANTE") delayTickBase = 35;
+        if (mentalidadeSorteadaIA === "CALCULISTA") delayTickBase = 22;
+
+        timerDesenho = setInterval(() => {
+            if (pontoIndiceAtual >= pontosDoDesenho.length) {
+                clearInterval(timerDesenho);
+                document.getElementById('status-bar').innerText = `AVALIAÇÃO PRONTA. EMITA SEU LAUDO CRÍTICO`;
+                return;
+            }
+
+            let p = pontosDoDesenho[pontoIndiceAtual];
+            ctx.lineWidth = (mentalidadeSorteadaIA === "HESITANTE" || mentalidadeSorteadaIA === "HUMANO_REAL") ? 3.2 : 2.2;
+            ctx.strokeStyle = ehIA_NaRodadaAtual ? "#9e1b1b" : "#cccccc";
+
+            if (p.action === 'start') {
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.y);
+            } else if (p.action === 'line') {
+                ctx.lineTo(p.x, p.y);
+                ctx.stroke();
+            }
+
+            pontoIndiceAtual++;
+
+            // DINÂMICA DE FLUTUAÇÃO DE VELOCIDADE ALEATÓRIA (FALTA DE FLUIDEZ HUMANA)
+            if (mentalidadeSorteadaIA === "HUMANO_REAL" && Math.random() > 0.94) {
+                clearInterval(timerDesenho);
+                setTimeout(rodarAnimacaoDeTracoDinamico, 150); // Pausa humana espontânea
+            } else if (mentalidadeSorteadaIA === "HESITANTE" && Math.random() > 0.96) {
+                clearInterval(timerDesenho);
+                setTimeout(rodarAnimacaoDeTracoDinamico, 250); // IA fingindo hesitação profunda
+            } else if (mentalidadeSorteadaIA === "ERRATICO" && Math.random() > 0.92) {
+                clearInterval(timerDesenho);
+                // IA errática alterna velocidade bruscamente entre rápida e lenta
+                velocidadePulso = Math.random() > 0.5 ? 8 : 40; 
+                setTimeout(rodarAnimacaoDeTracoDinamico, Math.random() * 200);
+            }
+
+        }, delayTickBase);
     }
 
-    function avancarRodadaMecanica() {
-        rodadaAtual++;
-        startCicloDeRodada();
-    }
+    function diagnosticar(votoJogador) {
+        if(morto) return;
+        clearInterval(timerDesenho);
 
-    function verificarCondicoesDeFim() {
-        let vivos = Array.from(listaJogadores).filter(p => statusMembros[p] !== 'dead');
-        let humanosVivos = vivos.filter(p => statusMembros[p] === 'alive');
-        let infectadosVivos = vivos.filter(p => statusMembros[p] === 'infected');
+        let respostaCerta = ehIA_NaRodadaAtual ? "IA" : "HUMANO";
 
-        if (infectadosVivos.length >= humanosVivos.length) {
-            declararFimDeJogo(false, "O Hospedeiro infectou mentes suficientes para dominar o bunker por completo. Desconfiança absoluta.");
-        } else if (infectadosVivos.length === 0) {
-            declararFimDeJogo(true, "A infecção foi contida e todos os parasitas mentais foram expurgados.");
-        }
-    }
-
-    function declararFimDeJogo(humanosGanharam, razao) {
-        jogoAtivo = false;
-        document.getElementById('directive-display').innerText = "📟 CONEXÃO ENCERRADA";
-        document.getElementById('btn-infect').style.display = 'none';
-        
-        if (humanosGanharam) {
-            appendTerminalLog(`\n🏆 PROTOCOLO DE CONCESSÃO CONCLUÍDO:\n${razao}`, "sys");
+        if(votoJogador === respostaCerta) {
+            rodada++;
+            if(rodada > 3) {
+                document.getElementById('status-bar').innerText = "VETOR COMPORTAMENTAL SEGURO.";
+                alert(`Protocolo concluído. Você identificou com sucesso o mímico sob a estratégia de perfil: ${mentalidadeSorteadaIA}.`);
+                window.location.reload();
+            } else {
+                gerarFaseTriagemMestre();
+            }
         } else {
-            document.getElementById('morte-razao').innerText = razao;
+            morto = true;
+            document.body.className = "flash-red";
+            
+            let justificativaFalha = "";
+            if (ehIA_NaRodadaAtual) {
+                justificativaFalha = `Você falhou. O Mímico operava sob a mentalidade [${mentalidadeSorteadaIA}] e conseguiu mimetizar perfeitamente as falhas biológicas para enganar seu julgamento.`;
+            } else {
+                justificativaFalha = `Você falhou. Sua paranoia fez você classificar a flutuação natural de uma mão biológica inocente como uma farsa algorítmica da máquina.`;
+            }
+            
+            document.getElementById('morte-motivo').innerText = justificativaFalha;
             document.getElementById('screamer').style.display = 'flex';
-            appendTerminalLog(`\n☣️ O HOSPEDEIRO DOMINOU A REDE:\n${razao}`, "crit");
+            
+            let c = 0;
+            let t = setInterval(() => {
+                document.getElementById('screamer').style.color = c % 2 === 0 ? '#ff0000' : '#333';
+                if(c++ > 20) { 
+                    clearInterval(t); 
+                    window.onclick = () => { window.location.reload(); };
+                }
+            }, 50);
         }
     }
-
-    function transmitirSussurro() {
-        const input = document.getElementById('chat-input');
-        const text = input.value.trim();
-        if (!text || !mqttClient || statusMembros[myName] === 'dead') return;
-
-        mqttClient.publish(baseTopic + "/sussurros", JSON.stringify({ sender: myName, text: text }));
-        input.value = "";
-    }
-
-    function exibirSussurroNoCanal(sender, text) {
-        const area = document.getElementById('chat-area');
-        const row = document.createElement('div');
-        row.className = "chat-msg";
-        
-        const userSpan = document.createElement('span');
-        userSpan.className = "user";
-        userSpan.innerText = `[${sender}]: `;
-        
-        row.appendChild(userSpan);
-        row.appendChild(document.createTextNode(text));
-        
-        area.appendChild(row);
-        area.scrollTop = area.scrollHeight;
-    }
-
-    document.getElementById('command-input').addEventListener('keypress', function(e) { if (e.key === 'Enter') processarComandoVoto(); });
-    document.getElementById('chat-input').addEventListener('keypress', function(e) { if (e.key === 'Enter') transmitirSussurro(); });
 </script>
 </body>
 </html>
