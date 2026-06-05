@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gartic Clone Realtime</title>
+    <title>Gartic Obsession - Realtime Horror</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
 
         body {
-            background-color: #ffd43b;
+            background-color: #050505;
+            color: #b0b0b0;
             display: flex; flex-direction: column; align-items: center;
             height: 100vh; height: -webkit-fill-available;
             padding: 8px; overscroll-behavior: none; overflow: hidden;
@@ -17,69 +18,73 @@
 
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #ffd43b; display: flex; justify-content: center;
+            background: #000000; display: flex; justify-content: center;
             align-items: center; z-index: 1000;
+            background-image: radial-gradient(circle, #1a0505 0%, #000000 100%);
         }
         .login-box {
-            background: white; padding: 30px; border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            background: #0d0d0d; padding: 30px; border-radius: 4px;
+            box-shadow: 0 0 30px rgba(239, 71, 111, 0.1);
             width: 100%; max-width: 400px; text-align: center;
+            border: 1px solid #330a0a;
         }
-        .login-box h2 { color: #118ab2; margin-bottom: 20px; }
+        .login-box h2 { color: #ef476f; margin-bottom: 20px; font-size: 24px; text-shadow: 0 0 8px rgba(239, 71, 111, 0.6); letter-spacing: 2px; }
         .login-box input {
             width: 100%; padding: 12px; margin-bottom: 15px;
-            border: 2px solid #ced4da; border-radius: 8px;
-            outline: none; font-size: 16px;
+            background: #141414; border: 1px solid #441111; border-radius: 4px;
+            outline: none; font-size: 16px; color: #fff;
         }
-        .login-box input:focus { border-color: #118ab2; }
+        .login-box input:focus { border-color: #ef476f; box-shadow: 0 0 5px rgba(239, 71, 111, 0.5); }
         .login-box textarea {
             width: 100%; padding: 12px; margin-bottom: 15px;
-            border: 2px solid #ced4da; border-radius: 8px;
+            background: #141414; border: 1px solid #441111; border-radius: 4px;
             outline: none; font-size: 14px; resize: vertical;
-            min-height: 70px; color: #333;
+            min-height: 70px; color: #bbb;
         }
-        .login-box textarea:focus { border-color: #118ab2; }
-        .login-box .hint { font-size: 11px; color: #888; margin-top: -10px; margin-bottom: 15px; text-align: left; }
+        .login-box textarea:focus { border-color: #ef476f; }
+        .login-box .hint { font-size: 11px; color: #666; margin-top: -10px; margin-bottom: 15px; text-align: left; }
 
         header {
-            text-align: center; margin-bottom: 6px; background: white;
-            padding: 8px 16px; border-radius: 50px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center; margin-bottom: 6px; background: #0d0d0d;
+            padding: 8px 16px; border-radius: 4px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
             width: 100%; max-width: 1400px;
             display: flex; justify-content: space-between; align-items: center;
             gap: 10px; flex-shrink: 0; position: relative;
+            border: 1px solid #222;
         }
-        h1 { color: #118ab2; font-size: 20px; flex-shrink: 0; }
+        h1 { color: #ef476f; font-size: 20px; flex-shrink: 0; letter-spacing: 3px; text-shadow: 0 0 5px rgba(239, 71, 111, 0.4); }
         #word-display {
-            font-weight: bold; font-size: 16px; color: #ef476f;
-            background: #f8f9fa; padding: 4px 14px; border-radius: 20px;
-            border: 2px dashed #ef476f; text-align: center; word-break: break-word; flex: 1;
+            font-weight: bold; font-size: 16px; color: #ff3333;
+            background: #050505; padding: 4px 14px; border-radius: 4px;
+            border: 1px dashed #551111; text-align: center; word-break: break-word; flex: 1;
+            letter-spacing: 1px;
         }
         #room-display {
-            font-weight: bold; color: #666; font-size: 12px;
+            font-weight: bold; color: #888; font-size: 12px;
             display: flex; flex-direction: column; align-items: flex-end;
             gap: 2px; flex-shrink: 0;
         }
-        #timer-display { font-weight: bold; color: #ef476f; font-size: 14px; }
+        #timer-display { font-weight: bold; color: #ff3333; font-size: 14px; text-shadow: 0 0 3px rgba(255,51,51,0.5); }
 
         .btn-words-toggle {
-            background: #118ab2; color: white; border: none; padding: 6px 12px;
-            border-radius: 20px; font-weight: bold; font-size: 12px; cursor: pointer;
-            display: flex; align-items: center; gap: 4px; transition: background 0.2s;
+            background: #222; color: #aaa; border: 1px solid #444; padding: 6px 12px;
+            border-radius: 4px; font-weight: bold; font-size: 12px; cursor: pointer;
+            display: flex; align-items: center; gap: 4px; transition: all 0.2s;
         }
-        .btn-words-toggle:hover { background: #0f7495; }
+        .btn-words-toggle:hover { background: #330a0a; color: #ef476f; border-color: #ef476f; }
         #words-management-panel {
-            position: absolute; top: 55px; left: 16px; background: white;
-            padding: 12px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            border: 2px solid #118ab2; z-index: 600; width: 280px; display: none;
+            position: absolute; top: 55px; left: 16px; background: #0d0d0d;
+            padding: 12px; border-radius: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.9);
+            border: 1px solid #ef476f; z-index: 600; width: 280px; display: none;
             flex-direction: column; gap: 8px; text-align: left;
         }
-        #words-management-panel label { font-size: 11px; font-weight: bold; color: #333; }
+        #words-management-panel label { font-size: 11px; font-weight: bold; color: #888; }
         #words-management-panel textarea {
-            width: 100%; height: 60px; padding: 6px; font-size: 12px;
-            border: 1px solid #ced4da; border-radius: 6px; resize: none; outline: none;
+            width: 100%; height: 60px; padding: 6px; font-size: 12px; background: #151515; color: #fff;
+            border: 1px solid #444; border-radius: 4px; resize: none; outline: none;
         }
-        #words-management-panel textarea:focus { border-color: #118ab2; }
+        #words-management-panel textarea:focus { border-color: #ef476f; }
         #words-management-panel .panel-actions { display: flex; justify-content: flex-end; gap: 6px; }
 
         #main-container {
@@ -88,55 +93,56 @@
         }
 
         #scoreboard {
-            flex: 0 0 150px; background: white; border-radius: 12px; padding: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            flex: 0 0 160px; background: #0d0d0d; border-radius: 4px; padding: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
             display: flex; flex-direction: column; overflow: hidden;
+            border: 1px solid #222;
         }
-        #scoreboard h3 { color: #555; padding-bottom: 5px; border-bottom: 2px solid #f1f3f5; font-size: 14px; }
+        #scoreboard h3 { color: #888; padding-bottom: 5px; border-bottom: 1px solid #222; font-size: 13px; letter-spacing: 1px; }
         #players-list {
             margin-top: 8px; overflow-y: auto; flex: 1;
             display: flex; flex-direction: column; gap: 5px;
         }
         .player-item {
-            background: #f8f9fa; padding: 7px 8px; border-radius: 6px;
-            font-weight: bold; color: #333; font-size: 11px;
-            border-left: 4px solid #118ab2;
+            background: #141414; padding: 7px 8px; border-radius: 4px;
+            font-weight: bold; color: #aaa; font-size: 11px;
+            border-left: 4px solid #444; border-top: 1px solid #1a1a1a;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .player-item.drawing { border-left-color: #ef476f; background: #ffe3e8; }
+        .player-item.drawing { border-left-color: #ef476f; background: #260f13; color: #ff859f; }
         .player-info { display: flex; flex-direction: column; gap: 1px; overflow: hidden; }
-        .player-rank { font-size: 9px; color: #777; font-weight: normal; }
+        .player-rank { font-size: 9px; color: #666; font-weight: normal; }
         .player-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .player-score {
-            background: #118ab2; color: white; border-radius: 10px;
+            background: #252525; color: #ccc; border-radius: 4px;
             padding: 1px 7px; font-size: 11px; font-weight: bold;
-            min-width: 32px; text-align: center;
+            min-width: 32px; text-align: center; border: 1px solid #333;
             transition: transform 0.2s, background 0.3s;
             flex-shrink: 0;
         }
-        .player-item.drawing .player-score { background: #ef476f; }
-        .player-score.bump { transform: scale(1.4); background: #06d6a0 !important; }
+        .player-item.drawing .player-score { background: #ef476f; color: #fff; border-color: #ff859f; }
+        .player-score.bump { transform: scale(1.3); background: #941b34 !important; color: #fff !important; border-color: #ff3333 !important; }
 
         .score-popup {
             position: fixed; pointer-events: none;
-            font-size: 20px; font-weight: bold; color: #06d6a0;
-            text-shadow: 0 2px 6px rgba(0,0,0,0.25);
+            font-size: 18px; font-weight: bold; color: #ff3333;
+            text-shadow: 0 0 8px #ff0000;
             animation: floatUp 1.4s ease-out forwards; z-index: 9999;
         }
         @keyframes floatUp {
             0%   { opacity: 1; transform: translateY(0) scale(1); }
-            60%  { opacity: 1; transform: translateY(-40px) scale(1.15); }
-            100% { opacity: 0; transform: translateY(-70px) scale(0.9); }
+            60%  { opacity: 1; transform: translateY(-40px) scale(1.1); }
+            100% { opacity: 0; transform: translateY(-70px) scale(0.8); }
         }
 
         #canvas-container {
-            flex: 1; background: white; border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            flex: 1; background: #000; border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.8);
             display: flex; flex-direction: column; overflow: hidden; position: relative;
-            min-width: 0;
+            min-width: 0; border: 1px solid #222;
         }
         canvas {
-            flex: 1; background: #ffffff; cursor: crosshair;
+            flex: 1; background: #111111; cursor: crosshair;
             touch-action: none;
             width: 100%; height: 100%; display: block;
             -webkit-user-select: none; user-select: none;
@@ -146,173 +152,180 @@
 
         #round-announcement {
             position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%) scale(0.5);
-            background: rgba(26, 26, 46, 0.95); color: white;
-            padding: 18px 30px; border-radius: 16px; font-weight: bold; text-align: center;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4); border: 3px solid #ffd43b;
+            background: rgba(10, 3, 3, 0.95); color: #fff;
+            padding: 18px 30px; border-radius: 4px; font-weight: bold; text-align: center;
+            box-shadow: 0 0 40px rgba(0,0,0,0.9); border: 1px solid #ef476f;
             z-index: 500; pointer-events: none; display: none; opacity: 0;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             max-width: 85%; width: max-content;
         }
         #round-announcement.show { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
-        #round-announcement h2 { font-size: 22px; color: #ffd43b; margin-bottom: 4px; }
-        #round-announcement p { font-size: 14px; color: #e6e6e6; font-weight: normal; }
+        #round-announcement h2 { font-size: 20px; color: #ef476f; margin-bottom: 4px; letter-spacing: 2px; text-shadow: 0 0 10px #ff0000; }
+        #round-announcement p { font-size: 13px; color: #aaa; font-weight: normal; }
 
         #tools {
-            background: #1a1a2e;
+            background: #090909;
             display: flex; flex-direction: column;
             padding: 8px; gap: 6px;
-            border-right: 3px solid #ffd43b;
+            border-right: 1px solid #222;
             flex-shrink: 0; overflow-y: auto;
             width: 56px;
         }
 
         .tool-section-label {
-            font-size: 8px; color: #888; text-transform: uppercase;
+            font-size: 8px; color: #555; text-transform: uppercase;
             letter-spacing: 0.5px; text-align: center; margin-top: 2px;
         }
 
         .tool-btn {
-            width: 38px; height: 38px; border-radius: 8px;
-            border: 2px solid transparent; cursor: pointer;
+            width: 38px; height: 38px; border-radius: 4px;
+            border: 1px solid #333; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            font-size: 16px; background: #2a2a3e;
-            color: white; transition: all 0.15s;
+            font-size: 15px; background: #141414;
+            color: #888; transition: all 0.15s;
             flex-shrink: 0;
             -webkit-tap-highlight-color: transparent;
         }
-        .tool-btn:hover { background: #3a3a5e; border-color: #ffd43b; }
-        .tool-btn.active { background: #ffd43b; color: #1a1a2e; border-color: #ffa500; }
+        .tool-btn:hover { background: #221111; border-color: #ef476f; color: #fff; }
+        .tool-btn.active { background: #ef476f; color: #000; border-color: #ff859f; box-shadow: 0 0 8px rgba(239,71,111,0.4); }
 
         .brush-sizes {
             display: flex; flex-direction: column; gap: 4px; align-items: center;
         }
         .size-btn {
-            cursor: pointer; border-radius: 50%; background: white;
-            border: 2px solid #555; transition: border-color 0.15s, transform 0.1s;
+            cursor: pointer; border-radius: 50%; background: #aaa;
+            border: 1px solid #333; transition: all 0.1s;
             flex-shrink: 0;
             -webkit-tap-highlight-color: transparent;
         }
-        .size-btn:hover { border-color: #ffd43b; transform: scale(1.15); }
-        .size-btn.active { border-color: #ffd43b; box-shadow: 0 0 0 2px rgba(255,212,59,0.5); }
+        .size-btn:hover { background: #fff; border-color: #ef476f; transform: scale(1.15); }
+        .size-btn.active { background: #ef476f; border-color: #fff; box-shadow: 0 0 5px #ef476f; }
 
-        .tool-separator { height: 1px; background: #333; margin: 3px 0; }
+        .tool-separator { height: 1px; background: #222; margin: 3px 0; }
 
         #palette-container {
-            flex: 0 0 46px; background: #1a1a2e; border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            flex: 0 0 46px; background: #090909; border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
             display: flex; flex-direction: column; overflow: hidden;
-            padding: 6px 4px; gap: 4px;
+            padding: 6px 4px; gap: 4px; border: 1px solid #222;
         }
-        #palette-label { font-size: 8px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
+        #palette-label { font-size: 8px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
         #palette-grid {
             display: grid; grid-template-columns: repeat(2, 1fr);
             gap: 4px; overflow-y: auto; flex: 1;
         }
         #palette-grid::-webkit-scrollbar { width: 3px; }
         #palette-grid::-webkit-scrollbar-track { background: transparent; }
-        #palette-grid::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+        #palette-grid::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
 
         .color-swatch {
-            width: 18px; height: 18px; border-radius: 4px;
-            cursor: pointer; border: 2px solid transparent;
-            transition: transform 0.1s, border-color 0.1s;
+            width: 18px; height: 18px; border-radius: 2px;
+            cursor: pointer; border: 1px solid rgba(0,0,0,0.5);
+            transition: transform 0.1s;
             flex-shrink: 0;
             -webkit-tap-highlight-color: transparent;
         }
-        .color-swatch:hover { transform: scale(1.2); border-color: white; }
-        .color-swatch.active { border-color: white; transform: scale(1.15); box-shadow: 0 0 0 1px #ffd43b; }
+        .color-swatch:hover { transform: scale(1.2); border-color: #fff; }
+        .color-swatch.active { border-color: #fff; transform: scale(1.1); box-shadow: 0 0 4px #ef476f; }
 
-        #color-custom { width: 100%; height: 22px; border: none; border-radius: 4px; cursor: pointer; padding: 0; flex-shrink: 0; }
+        #color-custom { width: 100%; height: 22px; border: 1px solid #333; background: #141414; cursor: pointer; padding: 0; flex-shrink: 0; }
         #current-color-display {
-            width: 36px; height: 36px; border-radius: 8px;
-            border: 3px solid white; flex-shrink: 0;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3); align-self: center;
+            width: 36px; height: 36px; border-radius: 4px;
+            border: 2px solid #333; flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.8); align-self: center;
         }
 
         #bottom-actions {
             display: flex; gap: 6px; padding: 4px 8px;
-            background: #1a1a2e; border-top: 2px solid #2a2a3e;
+            background: #090909; border-top: 1px solid #222;
             align-items: center; flex-shrink: 0;
         }
-        .btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
-        .btn-clear { background: #ef476f; color: white; }
-        .btn-skip { background: #f4a261; color: white; display: none; }
+        .btn { padding: 6px 12px; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; background: #141414; color: #aaa; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
+        .btn:hover { background: #222; color: #fff; }
+        .btn-clear { background: #2d0a0a; color: #ff5555; border-color: #551111; }
+        .btn-clear:hover { background: #441111; color: #fff; }
+        .btn-skip { background: #2a1a08; color: #ffaa44; border-color: #553311; display: none; }
+        .btn-skip:hover { background: #442a11; color: #fff; }
         
         .action-interact-btn {
-            color: white; font-size: 13px; padding: 5px 10px; border-radius: 7px; border: none; cursor: pointer; font-weight: bold; flex-shrink: 0; display: none; transition: transform 0.1s, background 0.2s; box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            color: #fff; font-size: 12px; padding: 5px 10px; border-radius: 4px; border: 1px solid #444; cursor: pointer; font-weight: bold; flex-shrink: 0; display: none; transition: all 0.1s; background: #141414;
             -webkit-tap-highlight-color: transparent;
         }
-        #btn-egg { background: #f4a261; }
-        #btn-egg:active { transform: scale(0.92); background: #e76f51; }
-        #btn-flower { background: #2a9d8f; }
-        #btn-flower:active { transform: scale(0.92); background: #1e7167; }
-        .action-interact-btn.cooldown { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+        #btn-egg { background: #3a0d15; color: #ff6b8b; border-color: #611322; }
+        #btn-egg:active { transform: scale(0.95); background: #54111d; }
+        #btn-flower { background: #0d2d2d; color: #4ee0e0; border-color: #134545; }
+        #btn-flower:active { transform: scale(0.95); background: #143d3d; }
+        .action-interact-btn.cooldown { opacity: 0.2; cursor: not-allowed; pointer-events: none; border-color: #222; color: #555; background: #0a0a0a; }
 
         .egg-fly, .flower-fly {
-            position: fixed; font-size: 36px; pointer-events: none; z-index: 9999;
+            position: fixed; font-size: 30px; pointer-events: none; z-index: 9999;
+            filter: drop-shadow(0 0 5px rgba(0,0,0,0.8));
             animation: itemFly var(--duration, 0.9s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
         @keyframes itemFly {
             0%   { opacity: 1; transform: translate(0,0) rotate(0deg) scale(1); }
             70%  { opacity: 1; transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.1); }
-            85%  { opacity: 1; transform: translate(var(--tx2), var(--ty2)) rotate(var(--rot)) scale(1.3); }
-            100% { opacity: 0; transform: translate(var(--tx2), var(--ty2)) rotate(var(--rot)) scale(0.5); }
+            85%  { opacity: 1; transform: translate(var(--tx2), var(--ty2)) rotate(var(--rot)) scale(1.2); }
+            100% { opacity: 0; transform: translate(var(--tx2), var(--ty2)) rotate(var(--rot)) scale(0.4); }
         }
-        .egg-splash, .flower-splash { position: fixed; font-size: 48px; pointer-events: none; z-index: 9999; animation: itemSplash 0.8s ease-out forwards; }
+        .egg-splash, .flower-splash { position: fixed; font-size: 40px; pointer-events: none; z-index: 9999; animation: itemSplash 0.8s ease-out forwards; }
         @keyframes itemSplash {
-            0%   { opacity: 1; transform: scale(0.5); }
-            40%  { opacity: 1; transform: scale(1.6); }
-            100% { opacity: 0; transform: scale(2.2); }
+            0%   { opacity: 1; transform: scale(0.5); filter: blur(0px); }
+            40%  { opacity: 1; transform: scale(1.5); filter: blur(2px); }
+            100% { opacity: 0; transform: scale(2.0); filter: blur(8px); }
         }
         @keyframes screenShake {
             0%  { transform: translate(0,0); }
-            15% { transform: translate(-6px, 3px); }
-            30% { transform: translate(6px, -3px); }
-            45% { transform: translate(-4px, 4px); }
-            60% { transform: translate(4px, -2px); }
-            75% { transform: translate(-2px, 2px); }
+            15% { transform: translate(-8px, 4px); }
+            30% { transform: translate(8px, -4px); }
+            45% { transform: translate(-5px, 5px); }
+            60% { transform: translate(5px, -3px); }
+            75% { transform: translate(-3px, 3px); }
             100%{ transform: translate(0,0); }
         }
         .shake { animation: screenShake 0.45s ease; }
-        #egg-overlay { position: fixed; inset: 0; pointer-events: none; background: rgba(255, 200, 0, 0.45); opacity: 0; z-index: 9998; transition: opacity 0.1s; }
+        #egg-overlay { position: fixed; inset: 0; pointer-events: none; background: rgba(139, 0, 0, 0.5); opacity: 0; z-index: 9998; transition: opacity 0.1s; }
         #egg-overlay.splat { animation: splatFade 1.2s ease-out forwards; }
-        @keyframes splatFade { 0% { opacity: 0.7; } 100% { opacity: 0; } }
-        .petal-particle { position: fixed; pointer-events: none; font-size: 18px; z-index: 9997; animation: petalFall var(--fall-duration, 2s) linear forwards; }
+        @keyframes splatFade { 0% { opacity: 0.8; filter: blur(2px); } 100% { opacity: 0; filter: blur(0px); } }
+        .petal-particle { position: fixed; pointer-events: none; font-size: 16px; z-index: 9997; opacity: 0.7; animation: petalFall var(--fall-duration, 2s) linear forwards; }
         @keyframes petalFall {
-            0% { transform: translateY(-20px) translateX(0) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(105vh) translateX(var(--drift, 50px)) rotate(360deg); opacity: 0; }
+            0% { transform: translateY(-20px) translateX(0) rotate(0deg); opacity: 0.8; }
+            100% { transform: translateY(105vh) translateX(var(--drift, 50px)) rotate(180deg); opacity: 0; }
         }
 
         #right-chats-wrapper {
-            flex: 0 0 240px; display: flex; flex-direction: column; gap: 8px; overflow: hidden;
+            flex: 0 0 250px; display: flex; flex-direction: column; gap: 8px; overflow: hidden;
         }
         .chat-box-container {
-            flex: 1; background: white; border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            flex: 1; background: #0d0d0d; border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
             display: flex; flex-direction: column; overflow: hidden;
+            border: 1px solid #222;
         }
-        .chat-title-bar { background: #1a1a2e; color: white; padding: 4px 8px; font-size: 11px; font-weight: bold; text-transform: uppercase; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-        .chat-messages-area { flex: 1; padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
-        .msg { padding: 4px 6px; border-radius: 5px; font-size: 11px; word-break: break-all; line-height: 1.3; }
-        .msg-system  { background: #e2f0d9; color: #385723; font-weight: bold; }
-        .msg-success { background: #d1e7dd; color: #0f5132; font-weight: bold; border: 1px solid #badbcc; }
-        .msg-wrong   { background: #ffe3e8; color: #c92a2a; }
-        .msg-normal  { background: #f1f3f5; color: #333; }
-        .msg-normal .username { font-weight: bold; color: #118ab2; }
-        .msg-egg     { background: #fff3cd; color: #856404; font-weight: bold; border: 1px solid #ffc107; }
-        .msg-flower  { background: #e3fafc; color: #0b7285; font-weight: bold; border: 1px solid #99e9f2; }
-        .chat-input-row { display: flex; padding: 5px; border-top: 1px solid #dee2e6; background: #f8f9fa; flex-shrink: 0; }
-        .chat-input-field { flex: 1; padding: 6px; border: 2px solid #ced4da; border-radius: 5px; outline: none; font-size: 12px; }
-        .chat-send-btn { background: #118ab2; color: white; margin-left: 4px; font-size: 11px; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .chat-title-bar { background: #141414; color: #888; padding: 4px 8px; font-size: 10px; font-weight: bold; text-transform: uppercase; display: flex; align-items: center; gap: 4px; flex-shrink: 0; border-bottom: 1px solid #222; letter-spacing: 1px; }
+        .chat-messages-area { flex: 1; padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; background: #080808; }
+        .msg { padding: 4px 6px; border-radius: 2px; font-size: 11px; word-break: break-all; line-height: 1.3; }
+        .msg-system  { background: #1c1111; color: #ff5555; border-left: 2px solid #991111; font-weight: bold; }
+        .msg-success { background: #112415; color: #4ee082; font-weight: bold; border: 1px solid #1f4427; }
+        .msg-wrong   { background: #141414; color: #777; border-left: 2px solid #333; }
+        .msg-normal  { background: #0f0f0f; color: #aaa; border-bottom: 1px solid #161616; }
+        .msg-normal .username { font-weight: bold; color: #ef476f; }
+        .msg-egg     { background: #26080d; color: #ff527b; font-weight: bold; border: 1px solid #4a101a; }
+        .msg-flower  { background: #082121; color: #3cd1d1; font-weight: bold; border: 1px solid #124545; }
+        .chat-input-row { display: flex; padding: 5px; border-top: 1px solid #222; background: #0d0d0d; flex-shrink: 0; }
+        .chat-input-field { flex: 1; padding: 6px; border: 1px solid #333; background: #141414; color: #fff; border-radius: 4px; outline: none; font-size: 12px; }
+        .chat-input-field:focus { border-color: #ef476f; }
+        .chat-send-btn { background: #222; color: #aaa; margin-left: 4px; font-size: 11px; padding: 4px 10px; border: 1px solid #333; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .chat-send-btn:hover { background: #330a0a; color: #ef476f; border-color: #ef476f; }
 
         @media (max-width: 768px) {
             body { padding: 4px; overflow: hidden; }
 
             header {
                 padding: 5px 8px; margin-bottom: 0;
-                height: 44px; border-radius: 8px; flex-shrink: 0;
+                height: 44px; border-radius: 4px; flex-shrink: 0;
             }
-            h1 { font-size: 11px; }
+            h1 { font-size: 11px; letter-spacing: 1px; }
             #word-display { font-size: 10px; padding: 2px 6px; }
             #room-display { font-size: 9px; }
             #timer-display { font-size: 10px; }
@@ -333,7 +346,7 @@
                 flex: 0 0 36px !important;
                 width: 100%;
                 padding: 3px 6px;
-                border-radius: 6px;
+                border-radius: 4px;
                 flex-direction: row;
                 align-items: center;
             }
@@ -385,7 +398,7 @@
                 flex-direction: row;
                 overflow-x: auto; overflow-y: hidden;
                 border-right: none;
-                border-top: 2px solid #ffd43b;
+                border-top: 1px solid #222;
                 height: 50px;
                 min-height: 50px;
                 padding: 6px 10px;
@@ -394,9 +407,9 @@
                 flex-shrink: 0 !important;
             }
             .tool-section-label { display: none; }
-            .tool-separator { width: 1px; height: 32px; background: #444; margin: 0 2px; flex-shrink: 0; }
+            .tool-separator { width: 1px; height: 32px; background: #222; margin: 0 2px; flex-shrink: 0; }
             .brush-sizes { flex-direction: row; gap: 6px; align-items: center; }
-            .tool-btn { width: 38px; height: 38px; font-size: 17px; flex-shrink: 0; }
+            .tool-btn { width: 38px; height: 38px; font-size: 15px; flex-shrink: 0; }
             .size-btn { flex-shrink: 0; }
 
             #palette-container {
@@ -406,7 +419,7 @@
                 flex-direction: row !important;
                 padding: 5px 8px;
                 gap: 6px;
-                border-radius: 8px;
+                border-radius: 4px;
                 align-items: center;
                 flex-shrink: 0 !important;
             }
@@ -418,9 +431,9 @@
                 gap: 3px;
                 flex: 1;
             }
-            .color-swatch { width: 22px; height: 22px; border-radius: 4px; }
+            .color-swatch { width: 22px; height: 22px; border-radius: 2px; }
             #current-color-display { width: 28px; height: 28px; flex-shrink: 0; }
-            #color-custom { width: 26px; height: 26px; border-radius: 4px; flex-shrink: 0; }
+            #color-custom { width: 26px; height: 26px; border-radius: 2px; flex-shrink: 0; }
 
             #bottom-actions { padding: 3px 6px; flex-wrap: wrap; gap: 4px; }
 
@@ -447,9 +460,9 @@
         #fill-status {
             display: none;
             position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.7); color: white;
-            padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;
-            pointer-events: none; z-index: 10;
+            background: rgba(139,0,0,0.8); color: white;
+            padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: bold;
+            pointer-events: none; z-index: 10; border: 1px solid #ff3333;
         }
     </style>
 </head>
@@ -459,107 +472,107 @@
 
 <div id="login-screen">
     <div class="login-box">
-        <h2>🎨 Gartic Clone</h2>
-        <input type="text" id="input-username" placeholder="👤 Seu Nome / Apelido" required>
-        <input type="text" id="input-room" placeholder="🔑 Nome da Sala (ex: sala123)" required>
-        <textarea id="input-custom-words" placeholder="📝 Palavras iniciais (opcional)&#10;Ex: Geladeira, Fusca, Professor, Saudade..."></textarea>
-        <p class="hint">Separe as palavras por vírgula. Se deixar vazio, usa o banco padrão.</p>
-        <button class="btn" style="width:100%;padding:12px;font-size:16px;background:#118ab2;color:white;" onclick="connectToGame()">🚀 ENTRAR NO JOGO</button>
+        <h2>👁️ OBSESSION</h2>
+        <input type="text" id="input-username" placeholder="👤 Nome da Vítima / Apelido" required>
+        <input type="text" id="input-room" placeholder="🔑 ID do Limbo (ex: sala123)" required>
+        <textarea id="input-custom-words" placeholder="📝 Visões customizadas (opcional)&#10;Ex: Fantasma, Necrotério, Foice, Sangue..."></textarea>
+        <p class="hint">Separe por vírgulas. Deixe em branco para invocar as visões padrão.</p>
+        <button class="btn" style="width:100%;padding:12px;font-size:16px;background:#ef476f;color:black;border:none;" onclick="connectToGame()">🚀 INICIAR RITUAL</button>
     </div>
 </div>
 
 <header>
-    <h1>🎨 GARTIC</h1>
-    <button class="btn-words-toggle" onclick="toggleWordsPanel()">📝 Palavras</button>
+    <h1>👁️ OBSESSION</h1>
+    <button class="btn-words-toggle" onclick="toggleWordsPanel()">📝 Visões</button>
     <div id="words-management-panel">
-        <label>➕ Adicionar Palavras na Sala:</label>
-        <textarea id="runtime-new-words" placeholder="Ex: Avô, Pastel, Tubarão... (separe por vírgula)"></textarea>
+        <label>➕ Manifestar Visões no Limbo:</label>
+        <textarea id="runtime-new-words" placeholder="Ex: Demoníaco, Caixão, Corvo... (separe por vírgula)"></textarea>
         <div class="panel-actions">
-            <button class="btn" style="background:#ef476f; color:white; padding:4px 8px; font-size:11px;" onclick="toggleWordsPanel()">Fechar</button>
-            <button class="btn" style="background:#06d6a0; color:white; padding:4px 8px; font-size:11px;" onclick="submitRuntimeWords()">Adicionar</button>
+            <button class="btn" style="background:#222; color:#aaa; padding:4px 8px; font-size:11px;" onclick="toggleWordsPanel()">Fechar</button>
+            <button class="btn" style="background:#ef476f; color:black; padding:4px 8px; font-size:11px; border:none;" onclick="submitRuntimeWords()">Injetar</button>
         </div>
     </div>
-    <div id="word-display">⏳ Aguardando jogadores...</div>
+    <div id="word-display">⏳ Aguardando mentes perdidas...</div>
     <div id="room-display">
-        <span id="room-id">Sala: —</span>
-        <span id="timer-display">⏱️ Tempo: --</span>
+        <span id="room-id">Limbo: —</span>
+        <span id="timer-display">⏱️ Sanidade: --</span>
     </div>
 </header>
 
 <div id="main-container">
     <div id="scoreboard">
-        <h3>🏆 Pódio</h3>
+        <h3>🏆 Consciências</h3>
         <div id="players-list"></div>
     </div>
 
     <div id="canvas-wrapper">
         <div id="drawing-area">
             <div id="tools">
-                <span class="tool-section-label">Modo</span>
-                <div class="tool-btn active" id="tool-brush" title="Pincel Livre" onclick="setTool('brush')">✏️</div>
-                <div class="tool-btn" id="tool-eraser" title="Borracha" onclick="setTool('eraser')">🧹</div>
-                <div class="tool-btn" id="tool-fill" title="Preencher" onclick="setTool('fill')">🪣</div>
+                <span class="tool-section-label">Fluido</span>
+                <div class="tool-btn active" id="tool-brush" title="Traço Macabro" onclick="setTool('brush')">✏️</div>
+                <div class="tool-btn" id="tool-eraser" title="Queimar Evidência" onclick="setTool('eraser')">🧹</div>
+                <div class="tool-btn" id="tool-fill" title="Inundar Cor" onclick="setTool('fill')">🪣</div>
 
                 <div class="tool-separator"></div>
-                <span class="tool-section-label">Forma</span>
+                <span class="tool-section-label">Geometria</span>
                 <div class="tool-btn active" id="shape-free" title="Desenho Livre" onclick="setShape('free')">〰️</div>
-                <div class="tool-btn" id="shape-circle" title="Arrastar Círculo" onclick="setShape('circle')">⭕</div>
-                <div class="tool-btn" id="shape-square" title="Arrastar Quadrado" onclick="setShape('square')">⬜</div>
-                <div class="tool-btn" id="shape-triangle" title="Arrastar Triângulo" onclick="setShape('triangle')">🔺</div>
-                <div class="tool-btn" id="shape-spray" title="Efeito Spray" onclick="setShape('spray')">💨</div>
+                <div class="tool-btn" id="shape-circle" title="Pentagrama Circular" onclick="setShape('circle')">⭕</div>
+                <div class="tool-btn" id="shape-square" title="Caixa Selada" onclick="setShape('square')">⬜</div>
+                <div class="tool-btn" id="shape-triangle" title="Tríade Obscura" onclick="setShape('triangle')">🔺</div>
+                <div class="tool-btn" id="shape-spray" title="Cinzas Voláteis" onclick="setShape('spray')">💨</div>
 
                 <div class="tool-separator"></div>
-                <span class="tool-section-label">Tam.</span>
+                <span class="tool-section-label">Calibre</span>
                 <div class="brush-sizes">
                     <div class="size-btn active" id="size-2" style="width:8px;height:8px;" title="Fino" onclick="setBrushSize(2,this)"></div>
                     <div class="size-btn" id="size-5" style="width:12px;height:12px;" title="Médio" onclick="setBrushSize(5,this)"></div>
                     <div class="size-btn" id="size-10" style="width:18px;height:18px;" title="Grosso" onclick="setBrushSize(10,this)"></div>
-                    <div class="size-btn" id="size-20" style="width:24px;height:24px;" title="Extra grosso" onclick="setBrushSize(20,this)"></div>
-                    <div class="size-btn" id="size-40" style="width:32px;height:32px;" title="Super grosso" onclick="setBrushSize(40,this)"></div>
+                    <div class="size-btn" id="size-20" style="width:24px;height:24px;" title="Profundo" onclick="setBrushSize(20,this)"></div>
+                    <div class="size-btn" id="size-40" style="width:32px;height:32px;" title="Absoluto" onclick="setBrushSize(40,this)"></div>
                 </div>
 
                 <div class="tool-separator"></div>
-                <div id="current-color-display" style="background:#000000;" title="Cor atual"></div>
+                <div id="current-color-display" style="background:#ef476f;" title="Matiz atual"></div>
             </div>
 
             <div id="canvas-container">
                 <div id="round-announcement">
-                    <h2 id="announcement-title">FIM DE RODADA</h2>
-                    <p id="announcement-desc">Descrição do que rolou</p>
+                    <h2 id="announcement-title">A VISÃO DESVANACEU</h2>
+                    <p id="announcement-desc">Algo deu errado no plano astral</p>
                 </div>
                 <canvas id="canvas"></canvas>
-                <div id="fill-status">🪣 Modo Preenchimento</div>
+                <div id="fill-status">🪣 Modo Inundação Astral</div>
             </div>
         </div>
         <div id="bottom-actions">
-            <button class="btn btn-clear" onclick="sendClear()">🗑️ Limpar</button>
-            <button id="btn-skip" class="btn btn-skip" onclick="skipRound()">⏭️ Pular Vez</button>
-            <button id="btn-egg" class="action-interact-btn" onclick="throwInteractItem('egg')">🥚 Jogar Ovo!</button>
-            <button id="btn-flower" class="action-interact-btn" onclick="throwInteractItem('flower')">🌹 Dar Flor!</button>
+            <button class="btn btn-clear" onclick="sendClear()">🗑️ Expurgar</button>
+            <button id="btn-skip" class="btn btn-skip" onclick="skipRound()">⏭️ Abandonar Vez</button>
+            <button id="btn-egg" class="action-interact-btn" onclick="throwInteractItem('egg')">💀 Gritar Pânico!</button>
+            <button id="btn-flower" class="action-interact-btn" onclick="throwInteractItem('flower')">👁️ Dar Sanidade</button>
         </div>
     </div>
 
     <div id="palette-container">
-        <span id="palette-label">🎨 Cores</span>
+        <span id="palette-label">🎨 Matizes</span>
         <div id="palette-grid"></div>
-        <input type="color" id="color-custom" value="#000000" title="Cor personalizada" onchange="pickCustomColor(this)">
-        <div id="current-color-display-palette" style="width:30px;height:30px;border-radius:6px;border:2px solid white;flex-shrink:0;background:#000000;"></div>
+        <input type="color" id="color-custom" value="#ef476f" title="Injetar pigmento customizado" onchange="pickCustomColor(this)">
+        <div id="current-color-display-palette" style="width:30px;height:30px;border-radius:4px;border:1px solid #333;flex-shrink:0;background:#ef476f;"></div>
     </div>
 
     <div id="right-chats-wrapper">
         <div class="chat-box-container">
-            <div class="chat-title-bar">🎯 Palpites</div>
+            <div class="chat-title-bar">🎯 Decifrar Presságio</div>
             <div id="guess-messages" class="chat-messages-area"></div>
             <div class="chat-input-row">
-                <input type="text" id="guess-input" class="chat-input-field" placeholder="Chute a palavra..." autocomplete="off">
+                <input type="text" id="guess-input" class="chat-input-field" placeholder="Escreva o presságio..." autocomplete="off">
                 <button class="chat-send-btn" onclick="sendGuessMessage()">➤</button>
             </div>
         </div>
         <div class="chat-box-container">
-            <div class="chat-title-bar">💬 Conversa</div>
+            <div class="chat-title-bar">💬 Ecos do Além</div>
             <div id="chat-messages" class="chat-messages-area"></div>
             <div class="chat-input-row">
-                <input type="text" id="chat-input" class="chat-input-field" placeholder="Conversar na sala..." autocomplete="off">
+                <input type="text" id="chat-input" class="chat-input-field" placeholder="Sussurrar na sala..." autocomplete="off">
                 <button class="chat-send-btn" onclick="sendChatMessage()">➤</button>
             </div>
         </div>
@@ -568,10 +581,10 @@
 
 <script>
     const FULL_PALETTE = [
-        "#000000","#ffffff","#808080","#ff0000",
-        "#ff6600","#ffff00","#00ff00","#009900",
-        "#00ffff","#0000ff","#aa33ff","#ff00ff",
-        "#ff99cc","#663300"
+        "#050505","#ffffff","#3a3a3a","#7f0000",
+        "#ff3333","#ffaa00","#2a4d1a","#113300",
+        "#004d4d","#001155","#4a0066","#550033",
+        "#ff9999","#2b1d0c"
     ];
 
     let username = "", roomName = "", mqttClient = null, baseTopic = "";
@@ -584,9 +597,9 @@
     let eggCooldown = false, flowerCooldown = false;
     let customWords = [];
     let gameEnded = false;
-    const PONTUACAO_MAXIMA = 1000;
+    const PONTUACAO_MAXIMA = 666;
     
-    const PALAVRAS_PADRAO = ["Cachorro","Gato","Carro","Aviao","Banana","Maca","Casa","Arvore","Bola","Computador","Celular","Caneta","Chave","Livro","Relogio","Cadeira","Garfo","Sapato","Oculos","Sol","Lua","Flor","Peixe","Passaro"];
+    const PALAVRAS_PADRAO = ["Fantasma","Demonio","Cemiterio","Caixao","Foice","Sangue","Vampiro","Zumbi","Corvo","Asilo","Cadeira Eletrica","Possessao","Esqueleto","Espelho Quebrado","Corrente","Abobora","Morcego","Bruxa","Maldicao","Grito","Sombra","Necroterio","Monstro","Pesadelo"];
     function getPalavras() { return customWords.length > 0 ? customWords : PALAVRAS_PADRAO; }
 
     async function salvarPalavras() {
@@ -602,7 +615,7 @@
                 const salvas = JSON.parse(result.value);
                 if (Array.isArray(salvas) && salvas.length > 0) {
                     salvas.forEach(w => { if (!customWords.includes(w)) customWords.push(w); });
-                    addSystemMessage("💾 " + customWords.length + " palavras carregadas da memória da sala!");
+                    addSystemMessage("💾 " + customWords.length + " visões malditas invocadas da memória do limbo!");
                 }
             }
         } catch(e) { }
@@ -610,7 +623,7 @@
 
     let currentTool = 'brush';
     let currentShape = 'free';
-    let currentColor = '#000000';
+    let currentColor = '#ef476f';
     let currentBrushSize = 2;
     let startX = 0, startY = 0;
     let snapshot = null;
@@ -772,7 +785,7 @@
     function onStartDrag(x, y) {
         drawing = true;
         startX = x; startY = y;
-        const col = currentTool === 'eraser' ? '#ffffff' : currentColor;
+        const col = currentTool === 'eraser' ? '#111111' : currentColor;
         ctx.fillStyle = col; ctx.strokeStyle = col; ctx.lineWidth = currentBrushSize;
         if (currentShape === 'free') {
             ctx.beginPath(); ctx.moveTo(x, y);
@@ -784,7 +797,7 @@
 
     function onMoveDrag(x, y) {
         if (!drawing) return;
-        const col = currentTool === 'eraser' ? '#ffffff' : currentColor;
+        const col = currentTool === 'eraser' ? '#111111' : currentColor;
         ctx.lineWidth = currentBrushSize;
         if (currentShape === 'free') {
             ctx.lineTo(x, y); ctx.stroke();
@@ -804,8 +817,8 @@
         if (currentShape !== 'free' && currentShape !== 'spray') {
             const lastEvent = lastFormCoordinates;
             if (lastEvent) {
-                const col = currentTool === 'eraser' ? '#ffffff' : currentColor;
-                sendDrawData('final_shape', lastEvent.sX, lastEvent.sY, col, currentBrushSize, currentShape, lastEvent.cX, lastEvent.cY);
+                const col = currentTool === 'eraser' ? '#111111' : currentColor;
+                sendDrawData('final_shape', lastEvent.sX, lastEvent.sY, col, currentBrushSize, lastEvent.shape, lastEvent.cX, lastEvent.cY);
             }
         }
         snapshot = null; lastFormCoordinates = null;
@@ -915,9 +928,9 @@
         sortedPlayers.forEach((nome, index) => {
             const rank = index + 1;
             let rankLabel = rank + "º";
-            if (rank === 1) rankLabel = "🥇 1º";
-            else if (rank === 2) rankLabel = "🥈 2º";
-            else if (rank === 3) rankLabel = "🥉 3º";
+            if (rank === 1) rankLabel = "👁️ 1º";
+            else if (rank === 2) rankLabel = "💀 2º";
+            else if (rank === 3) rankLabel = "🩸 3º";
             const item = document.createElement('div');
             item.className = "player-item";
             item.id = "p-" + nome.replace(/\s+/g,'-');
@@ -952,11 +965,11 @@
         document.getElementById('btn-flower').style.display = 'none';
         document.getElementById('btn-skip').style.display = 'none';
         
-        document.getElementById('word-display').innerText = `🏆 FIM DE JOGO! O CAMPEÃO É ${vencedor.toUpperCase()}!`;
-        document.getElementById('timer-display').innerText = "⏱️ Fim";
+        document.getElementById('word-display').innerText = `👑 RITUAL COMPLETO! ASSRETIU A MENTE DE ${vencedor.toUpperCase()}!`;
+        document.getElementById('timer-display').innerText = "⏱️ Consumido";
         
-        showGarticAnnouncement("👑 TEMOS UM CAMPEÃO!", `${vencedor} atingiu a marca de ${scores[vencedor]} pontos e venceu a partida! 🎉`);
-        addSystemMessage(`👑 FIM DE JOGO! O grande vencedor desta sala é: ${vencedor} com ${scores[vencedor]} pontos!`);
+        showGarticAnnouncement("👑 RITUAL SUPREMO!", `${vencedor} dominou as visões e transcendeu o limbo! 🎉`);
+        addSystemMessage(`👑 FIM DO RITUAL! O soberano deste pesadelo é: ${vencedor} com ${scores[vencedor]} pontos de pura obsessão!`);
         createPetalShower();
     }
 
@@ -986,7 +999,7 @@
         const rect = playerEl.getBoundingClientRect();
         const popup = document.createElement('div');
         popup.className = 'score-popup';
-        popup.textContent = '+' + pts + ' pts';
+        popup.textContent = '+' + pts + ' vis';
         popup.style.left = (rect.left + rect.width/2 - 30) + 'px';
         popup.style.top  = (rect.top - 10) + 'px';
         document.body.appendChild(popup);
@@ -999,16 +1012,16 @@
             if (eggCooldown) return;
             eggCooldown = true;
             const btn = document.getElementById('btn-egg');
-            btn.classList.add('cooldown'); btn.textContent = '🥚 Espere...';
+            btn.classList.add('cooldown'); btn.textContent = '💀 Recuperando...';
             mqttClient.publish(baseTopic + "/interact", JSON.stringify({ thrower: username, target: currentDrawerName, type: 'egg' }));
-            setTimeout(() => { eggCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '🥚 Jogar Ovo!'; }, 8000);
+            setTimeout(() => { eggCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '💀 Gritar Pânico!'; }, 8000);
         } else if (itemType === 'flower') {
             if (flowerCooldown) return;
             flowerCooldown = true;
             const btn = document.getElementById('btn-flower');
-            btn.classList.add('cooldown'); btn.textContent = '🌹 Espere...';
+            btn.classList.add('cooldown'); btn.textContent = '👁️ Concentrando...';
             mqttClient.publish(baseTopic + "/interact", JSON.stringify({ thrower: username, target: currentDrawerName, type: 'flower' }));
-            setTimeout(() => { flowerCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '🌹 Dar Flor!'; }, 5000);
+            setTimeout(() => { flowerCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '👁️ Dar Sanidade'; }, 5000);
         }
     }
 
@@ -1021,7 +1034,7 @@
         const targetY = canvasRect.top + canvasRect.height/2 + (Math.random()-0.5)*100;
         const element = document.createElement('div');
         element.className = type === 'egg' ? 'egg-fly' : 'flower-fly';
-        element.textContent = type === 'egg' ? '🥚' : '🌹';
+        element.textContent = type === 'egg' ? '💀' : '👁️';
         const dx = targetX - sx, dy = targetY - sy;
         const dist = Math.sqrt(dx*dx + dy*dy);
         const duration = Math.max(0.5, Math.min(1.0, dist/900));
@@ -1034,7 +1047,7 @@
             element.remove();
             const splash = document.createElement('div');
             splash.className = type === 'egg' ? 'egg-splash' : 'flower-splash';
-            splash.textContent = type === 'egg' ? '💥' : '✨';
+            splash.textContent = type === 'egg' ? '🩸' : '✨';
             splash.style.left = (targetX-24)+'px'; splash.style.top = (targetY-24)+'px';
             document.body.appendChild(splash);
             setTimeout(() => splash.remove(), 900);
@@ -1054,7 +1067,7 @@
             setTimeout(() => {
                 const petal = document.createElement('div');
                 petal.className = 'petal-particle';
-                petal.textContent = ['🌸','🌹','🍃'][Math.floor(Math.random() * 3)];
+                petal.textContent = ['🩸','👁️','🪶'][Math.floor(Math.random() * 3)];
                 petal.style.left = Math.random() * window.innerWidth + 'px';
                 petal.style.setProperty('--drift', (Math.random() * 160 - 80) + 'px');
                 petal.style.setProperty('--fall-duration', (Math.random() * 1.5 + 1.5) + 's');
@@ -1073,16 +1086,16 @@
         username = document.getElementById('input-username').value.trim();
         roomName = document.getElementById('input-room').value.trim().toLowerCase().replace(/[^a-z0-9]/g,"");
         const customInput = document.getElementById('input-custom-words').value.trim();
-        if (!username || !roomName) { alert("Por favor, digite seu nome e o nome da sala!"); return; }
+        if (!username || !roomName) { alert("Sua alma precisa de uma identidade e o limbo de uma chave!"); return; }
         if (customInput) { customWords = customInput.split(',').map(w => w.trim()).filter(w => w.length > 0); }
         document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('room-id').innerText = "Sala: " + roomName;
+        document.getElementById('room-id').innerText = "Abismo: " + roomName;
         adicionarJogadorLista(username);
         initMqtt();
     }
 
     function initMqtt() {
-        baseTopic = "gartic_clone_free_2026/" + roomName;
+        baseTopic = "gartic_obsession_horror_2026/" + roomName;
         mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
         mqttClient.on('connect', async () => {
             mqttClient.subscribe(baseTopic + "/chat");
@@ -1096,7 +1109,7 @@
             mqttClient.subscribe(baseTopic + "/customwords");
             mqttClient.subscribe(baseTopic + "/customwords/add");
             
-            const identityPayload = JSON.stringify({ sender: "Sistema", text: `📢 ${username} entrou na sala.`, name: username, type: "system" });
+            const identityPayload = JSON.stringify({ sender: "Sistema", text: `📢 ${username} manifestou sua consciência no abismo.`, name: username, type: "system" });
             mqttClient.publish(baseTopic + "/chat", identityPayload);
             mqttClient.publish(baseTopic + "/presence", identityPayload);
             
@@ -1122,7 +1135,7 @@
                         
                         if (checkEndGameConditions()) return;
                         
-                        showGarticAnnouncement("🎯 PALAVRA DESCOBERTA!", `${data.sender} acertou a palavra secreta: ${currentWord.toUpperCase()}!`);
+                        showGarticAnnouncement("🎯 ENIGMA DECIFRADO!", `${data.sender} rompeu a névoa e desvendou: ${currentWord.toUpperCase()}!`);
                         handleRoundEndAutomatically();
                     } else { renderWrongGuessMessage(data.sender, data.text); }
                 } else if (data.type === "talk") { renderNormalMessage(data.sender, data.text); }
@@ -1140,8 +1153,8 @@
             } else if (topic === baseTopic + "/gameflow" && !gameEnded) {
                 handleGameFlow(data);
             } else if (topic === baseTopic + "/gameflow/skip" && !gameEnded) {
-                showGarticAnnouncement("⏭️ VEZ PULADA!", `${data.drawer} decidiu passar a vez! A palavra era: ${data.word.toUpperCase()}`);
-                addSystemMessage(`⏭️ Vez pulada por ${data.drawer}. A palavra era: ${data.word.toUpperCase()}`);
+                showGarticAnnouncement("⏭️ VEZ ABANDONADA!", `${data.drawer} sucumbiu ao terror. A visão era: ${data.word.toUpperCase()}`);
+                addSystemMessage(`⏭️ Projeção abortada por ${data.drawer}. A palavra esquecida era: ${data.word.toUpperCase()}`);
                 handleRoundEndAutomatically();
             } else if (topic === baseTopic + "/scores") {
                 if (data.scores) { 
@@ -1158,13 +1171,13 @@
             } else if (topic === baseTopic + "/customwords") {
                 if (data.words && data.words.length > 0 && customWords.length === 0) {
                     customWords = data.words;
-                    addSystemMessage(`📝 Palavras de ${data.sender} carregadas! (${data.words.length})`);
+                    addSystemMessage(`📝 Visões de ${data.sender} injetadas! (${data.words.length})`);
                     salvarPalavras();
                 }
             } else if (topic === baseTopic + "/customwords/add") {
                 if (data.words && data.words.length > 0) {
                     data.words.forEach(w => { if(!customWords.includes(w)) customWords.push(w); });
-                    addSystemMessage(`📝 ${data.sender} adicionou +${data.words.length} novas palavras à lista da sala!`);
+                    addSystemMessage(`📝 ${data.sender} invocou +${data.words.length} novas manifestações ao limbo!`);
                     salvarPalavras();
                 }
             }
@@ -1206,15 +1219,15 @@
         if (currentDrawerName === username) {
             isDrawer = true; eggBtn.style.display = 'none'; flowerBtn.style.display = 'none';
             skipBtn.style.display = 'inline-flex';
-            document.getElementById('word-display').innerText = "✏️ Sua Palavra: " + currentWord.toUpperCase();
-            addSystemMessage(`✏️ Sua vez! Palavra: ${currentWord.toUpperCase()}`);
+            document.getElementById('word-display').innerText = "✏️ Seu Alvo Astral: " + currentWord.toUpperCase();
+            addSystemMessage(`✏️ Sua mente está possuída! Projete: ${currentWord.toUpperCase()}`);
         } else {
             isDrawer = false; skipBtn.style.display = 'none';
-            eggBtn.style.display = 'inline-flex'; eggBtn.classList.remove('cooldown'); eggBtn.textContent = '🥚 Jogar Ovo!';
-            flowerBtn.style.display = 'inline-flex'; flowerBtn.classList.remove('cooldown'); flowerBtn.textContent = '🌹 Dar Flor!';
+            eggBtn.style.display = 'inline-flex'; eggBtn.classList.remove('cooldown'); eggBtn.textContent = '💀 Gritar Pânico!';
+            flowerBtn.style.display = 'inline-flex'; flowerBtn.classList.remove('cooldown'); flowerBtn.textContent = '👁️ Dar Sanidade';
             const u = "_ ".repeat(currentWord.length).trim();
-            document.getElementById('word-display').innerText = `🎨 Desenho de ${currentDrawerName} (${u})`;
-            addSystemMessage(`🎨 ${currentDrawerName} está desenhando...`);
+            document.getElementById('word-display').innerText = `🎨 Possessão de ${currentDrawerName} (${u})`;
+            addSystemMessage(`🎨 ${currentDrawerName} está transmitindo delírios...`);
         }
         startLocalTimer(TEMPO_RODADA);
     }
@@ -1222,21 +1235,21 @@
     function startLocalTimer(seconds) {
         if (gameEnded) return;
         currentTimeLeft = seconds;
-        document.getElementById('timer-display').innerText = "⏱️ Tempo: " + currentTimeLeft + "s";
+        document.getElementById('timer-display').innerText = "⏱️ Sanidade: " + currentTimeLeft + "s";
         countdownInterval = setInterval(() => {
             if (gameEnded) { clearInterval(countdownInterval); return; }
             currentTimeLeft--;
             if (currentTimeLeft <= 0) {
                 clearInterval(countdownInterval);
-                document.getElementById('timer-display').innerText = "⏱️ Tempo: 0s";
-                addSystemMessage(`🛑 Tempo esgotado! A palavra era: ${currentWord.toUpperCase()}`);
-                showGarticAnnouncement("⏳ TEMPO ESGOTADO!", `Ninguém acertou a palavra secreta! Ela era: ${currentWord.toUpperCase()}`);
+                document.getElementById('timer-display').innerText = "⏱️ Sanidade: 0s";
+                addSystemMessage(`🛑 Mente consumida! A palavra perdida era: ${currentWord.toUpperCase()}`);
+                showGarticAnnouncement("⏳ TEMPO ESGOTADO!", `A loucura venceu! O enigma oculto era: ${currentWord.toUpperCase()}`);
                 document.getElementById('btn-egg').style.display = 'none';
                 document.getElementById('btn-flower').style.display = 'none';
                 document.getElementById('btn-skip').style.display = 'none';
                 handleRoundEndAutomatically();
             } else {
-                document.getElementById('timer-display').innerText = "⏱️ Tempo: " + currentTimeLeft + "s";
+                document.getElementById('timer-display').innerText = "⏱️ Sanidade: " + currentTimeLeft + "s";
             }
         }, 1000);
     }
@@ -1275,7 +1288,7 @@
         const respostaLimpa = currentWord.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
         if (palpiteLimpo === respostaLimpa) {
             const pts = calcPoints(currentTimeLeft);
-            mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: `Acertou: ${currentWord.toUpperCase()}! 🎯`, isCorrect: true, pts, type: "guess" }));
+            mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: `Expurgou o enigma: ${currentWord.toUpperCase()}! 🎯`, isCorrect: true, pts, type: "guess" }));
         } else {
             mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: msgText, isCorrect: false, type: "guess" }));
         }
@@ -1297,7 +1310,7 @@
     }
     function addSuccessMessage(sender, text) {
         const c = document.getElementById('guess-messages'); const m = document.createElement('div'); m.className = "msg msg-success"; m.innerText = `🎯 ${sender} ${text}`; c.appendChild(m); c.scrollTop = c.scrollHeight;
-        if (!gameEnded) document.getElementById('word-display').innerText = "🎉 Adivinhado! Próxima rodada...";
+        if (!gameEnded) document.getElementById('word-display').innerText = "🎉 Consciência purificada! Mudando espectro...";
     }
     function renderWrongGuessMessage(sender, text) {
         const c = document.getElementById('guess-messages'); const m = document.createElement('div'); m.className = "msg msg-wrong"; m.innerText = `${sender}: ${text}`; c.appendChild(m); c.scrollTop = m.scrollHeight;
@@ -1307,13 +1320,13 @@
         m.appendChild(s); m.appendChild(document.createTextNode(text)); c.appendChild(m); c.scrollTop = c.scrollHeight;
     }
     function addEggMessage(thrower, target) {
-        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-egg"; m.innerText = `🥚 ${thrower} jogou um ovo em ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
+        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-egg"; m.innerText = `💀 ${thrower} disparou um eco de PÂNICO na mente de ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
     }
     function addFlowerMessage(thrower, target) {
-        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-flower"; m.innerText = `🌹 ${thrower} enviou uma flor de apoio para ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
+        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-flower"; m.innerText = `👁️ ${thrower} estabilizou a sanidade de ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
     }
 
-    setActiveColor('#000000');
+    setActiveColor('#ef476f');
 </script>
 </body>
 </html>
