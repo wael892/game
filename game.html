@@ -3,78 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>INFECTADO 666</title>
+    <title>MIMIC PROTOCOL</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
-        body { background: #050a05; color: #33ff33; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; overflow: hidden; user-select: none; }
-        #game-panel { display: none; width: 100%; max-width: 500px; padding: 15px; background: #000; border: 1px solid #33ff33; box-shadow: 0 0 15px rgba(51,255,51,0.2); }
-        #chat-wall { height: 250px; background: #030503; border: 1px dashed #115511; padding: 10px; overflow-y: auto; margin-bottom: 15px; font-size: 12px; }
-        .msg { margin-bottom: 6px; word-break: break-all; }
-        .msg-target { color: #ff3333; }
-        .msg-me { color: #33ff33; }
-        .msg-sys { color: #ffaa00; font-style: italic; }
-        .term-input { background: #000; border: 1px solid #33ff33; color: #33ff33; padding: 10px; width: 100%; outline: none; font-size: 13px; margin-bottom: 10px; }
-        .choice-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 5px; }
-        .btn-choice { padding: 12px; font-weight: bold; font-size: 12px; cursor: pointer; border: 1px solid; background: #000; }
-        .btn-human { color: #33ff33; border-color: #33ff33; }
-        .btn-human:hover { background: #33ff33; color: #000; }
-        .btn-zombie { color: #ff3333; border-color: #ff3333; }
-        .btn-zombie:hover { background: #ff3333; color: #000; }
-        #status-bar { font-size: 12px; margin-bottom: 10px; border-bottom: 1px solid #115511; padding-bottom: 6px; color: #ffaa00; text-align: center; }
-        #screamer { position: fixed; inset: 0; background: #000; color: #fff; display: none; flex-direction: column; justify-content: center; align-items: center; font-size: 5px; line-height: 4px; z-index: 10000; }
-        .glitch-bg { animation: strobe 0.1s infinite; }
-        @keyframes strobe { 0%, 100% { background: #050a05; } 50% { background: #1a0000; } }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        
+        body { 
+            background: #0a0a0a; 
+            color: #d1d1d1; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
+
+        #game-panel { 
+            display: none; 
+            width: 100%; 
+            max-width: 550px; 
+            padding: 20px; 
+            background: #111; 
+            border: 1px solid #222; 
+            border-radius: 8px;
+        }
+
+        #chat-wall { 
+            height: 320px; 
+            background: #0d0d0d; 
+            border: 1px solid #222; 
+            border-radius: 4px;
+            padding: 15px; 
+            overflow-y: auto; 
+            margin-bottom: 15px; 
+            font-size: 14px; 
+            line-height: 1.5;
+        }
+
+        .msg { margin-bottom: 12px; word-break: break-all; }
+        .msg-target { color: #e5c158; }
+        .msg-me { color: #888; }
+        .msg-sys { color: #555; font-size: 12px; text-align: center; border-bottom: 1px solid #222; padding-bottom: 5px; margin: 15px 0; }
+        .msg-secret { color: #ff4444; background: #200b0b; padding: 8px; border-radius: 4px; font-size: 12px; margin-bottom: 15px; border-left: 3px solid #ff4444; }
+
+        .term-input { 
+            background: #161616; 
+            border: 1px solid #222; 
+            color: #fff; 
+            padding: 12px; 
+            width: 100%; 
+            outline: none; 
+            font-size: 14px; 
+            border-radius: 4px;
+            margin-bottom: 15px; 
+        }
+        .term-input:focus { border-color: #444; }
+
+        .choice-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        .btn-choice { 
+            padding: 14px; 
+            font-weight: 600; 
+            font-size: 13px; 
+            cursor: pointer; 
+            border-radius: 4px;
+            border: 1px solid #333; 
+            background: #1c1c1c;
+            color: #ccc;
+            transition: all 0.2s;
+        }
+        .btn-choice:hover { background: #252525; color: #fff; border-color: #555; }
+        
+        #status-bar { font-size: 11px; margin-bottom: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+        
+        #screamer { 
+            position: fixed; 
+            inset: 0; 
+            background: #000; 
+            color: #333; 
+            display: none; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            font-size: 14px; 
+            z-index: 10000; 
+            text-align: center;
+            padding: 4px;
+        }
     </style>
 </head>
 <body>
 
-<div id="login-screen" style="position:fixed; inset:0; background:#000; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:999;">
-    <h2 style="color:#33ff33; margin-bottom:20px; letter-spacing:4px;">PROTOCOL: MIMIC 666</h2>
-    <input type="text" id="nick" placeholder="Código de Operador" style="background:#000; border:1px solid #33ff33; color:#33ff33; padding:10px; margin-bottom:10px; outline:none; text-align:center; width:250px;">
-    <input type="text" id="sala" placeholder="Frequência (Sala)" style="background:#000; border:1px solid #33ff33; color:#33ff33; padding:10px; margin-bottom:25px; outline:none; text-align:center; width:250px;">
-    <button class="btn-choice btn-human" style="width:250px;" onclick="conectarCanal()">CONECTAR TERMINAL</button>
+<div id="login-screen" style="position:fixed; inset:0; background:#0a0a0a; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:999;">
+    <h2 style="color:#fff; font-weight:400; margin-bottom:5px; letter-spacing:2px; font-size:22px;">MIMIC PROTOCOL</h2>
+    <p style="color:#555; font-size:12px; margin-bottom:30px;">Análise Comportamental de Contágio Coletivo</p>
+    <input type="text" id="nick" placeholder="Seu Nome" style="background:#111; border:1px solid #222; color:#fff; padding:12px; margin-bottom:10px; outline:none; text-align:center; width:260px; border-radius:4px;">
+    <input type="text" id="sala" placeholder="Canal de Quarentena (Sala)" style="background:#111; border:1px solid #222; color:#fff; padding:12px; margin-bottom:25px; outline:none; text-align:center; width:260px; border-radius:4px;">
+    <button class="btn-choice" style="width:260px;" onclick="conectarCanal()">ENTRAR NA SUBESTAÇÃO</button>
 </div>
 
 <div id="game-panel">
-    <div id="status-bar">SINCROIZANDO COM O PARCEIRO...</div>
+    <div id="status-bar">Aguardando telemetria de rede...</div>
+    <div id="secret-directive" class="msg-secret" style="display:none;"></div>
     <div id="chat-wall"></div>
-    <input type="text" id="chat-input" class="term-input" placeholder="Digite sua mensagem de teste para ele..." autocomplete="off">
-    <div style="font-size:10px; color:#555; text-align:center; margin-bottom:5px;">QUEM ESTÁ DO OUTRO LADO DO CHAT?</div>
+    <input type="text" id="chat-input" class="term-input" placeholder="Escreva aqui para avaliar ou responder..." autocomplete="off">
     <div class="choice-row">
-        <button class="btn-choice btn-human" onclick="decidir(true)">HUMANO (MEU AMIGO)</button>
-        <button class="btn-choice btn-zombie" onclick="decidir(false)">ZUMBI (MÍMICO)</button>
+        <button class="btn-choice" onclick="diagnosticar('VERDADEIRO')">HUMANO INTEGRO</button>
+        <button class="btn-choice" onclick="diagnosticar('MIMICO')">SINAL CORROMPIDO (ZUMBI)</button>
     </div>
 </div>
 
 <div id="screamer">
-    <pre>
- ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
- ████████▀▀▀████████████▀▀▀██████
- ██████▀     ▀████████▀     ▀████
- █████        ████████        ███
- █████▄      ▄████████▄      ▄███
- ███████▄▄▄██████████████▄▄▄█████
- ████████████████████████████████
- ████████████████████████████████
-  ▀████████████████████████████▀
-     I N F E C Ç Ã O   T O T A L
-    </pre>
+    <div style="font-family:monospace; white-space:pre; font-size:6px; line-height:6px; margin-bottom:20px;">
+       ███████████████████████████
+       ██████████▀▀▀▀▀▀███████████
+       ███████▀   ▄  ▄   ▀████████
+       ██████    ▀▀  ▀▀    ███████
+       ██████              ███████
+       ███████▄   ▀▀▀▀   ▄████████
+       █████████▄▄    ▄▄██████████
+       ███████████████████████████
+    </div>
+    <div id="morte-motivo" style="font-size:14px; letter-spacing:1px; color:#aaa;">CONEXÃO ENCERRADA.</div>
 </div>
 
 <script>
     let mqttClient = null, baseTopic = "", myName = "";
-    let jogoRodando = false, rodadaAtual = 1, eHumanoDeVerdade = true;
+    let jogoRodando = false, eHumanoDeVerdade = true, amigoFingindoUrubu = false;
     let listaParceiros = [];
-    let mensagensInfectadas = [
-        "Estou ouvindo barulhos estranhos aqui na minha sala... Tem algo comigo.",
-        "Não confie no sistema, ele está tentando nos separar.",
-        "Wael... você lembra qual era o nosso objetivo inicial aqui?",
-        "Estou digitando o mais rápido que posso, por que você duvida de mim?",
-        "O terminal está esquentando muito. O que você colocou na barra de comandos?",
-        "Me tira daqui por favor, não aguento mais esse barulho de estática.",
-        "Acho que o zumbi mudou a minha frequência de rede.",
-        "Estou ouvindo sua respiração aqui no meu monitor..."
+    
+    // Frases da IA simulando comportamento de alguém tentando fingir normalidade de forma mecânica
+    let respostasAIEvasivas = [
+        "Estou tentando resolver um problema na fiação do terminal aqui. O que você precisa?",
+        "Tudo normal no meu setor. Por que a pergunta agora?",
+        "Sim, me lembro perfeitamente. Mas o canal está instável, vamos focar em abrir a porta.",
+        "Não faz sentido você ficar me testando enquanto a energia cai.",
+        "Estou calmo. Escreva o que você está vendo na sua tela.",
+        "Acho que a quarentena está afetando sua análise. Sou eu.",
+        "A estática do rádio está dificultando meu raciocínio. Pergunte outra coisa."
     ];
 
     function logMsg(txt, classe) {
@@ -94,148 +161,189 @@
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('game-panel').style.display = 'block';
 
-        baseTopic = "mimic_horror_666_2026/" + sala;
+        baseTopic = "real_mimic_protocol_2026/" + sala;
         mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
 
         mqttClient.on('connect', () => {
             mqttClient.subscribe(baseTopic + "/chat");
             mqttClient.subscribe(baseTopic + "/status");
-            mqttClient.subscribe(baseTopic + "/rede");
+            mqttClient.subscribe(baseTopic + "/presenca");
+            mqttClient.subscribe(baseTopic + "/presenca/echo");
 
-            mqttClient.publish(baseTopic + "/rede", JSON.stringify({ name: myName }));
-            logMsg("[SISTEMA] Procurando sinal de rádio analógico do parceiro...", "sys");
+            mqttClient.publish(baseTopic + "/presenca", JSON.stringify({ name: myName }));
+            document.getElementById('status-bar').innerText = "Rastreando assinatura térmica do parceiro...";
         });
 
         mqttClient.on('message', (topic, msg) => {
             let data = JSON.parse(msg.toString());
 
-            if(topic === baseTopic + "/rede") {
+            if(topic === baseTopic + "/presenca") {
                 if(data.name && !listaParceiros.includes(data.name)) {
                     listaParceiros.push(data.name);
-                    mqttClient.publish(baseTopic + "/rede", JSON.stringify({ name: myName }));
-                    checarSincroniaJogo();
+                    mqttClient.publish(baseTopic + "/presenca/echo", JSON.stringify({ name: myName }));
+                    sincronizarFaseInicial();
+                }
+            } else if(topic === baseTopic + "/presenca/echo") {
+                if(data.name && !listaParceiros.includes(data.name)) {
+                    listaParceiros.push(data.name);
+                    sincronizarFaseInicial();
                 }
             } else if(topic === baseTopic + "/chat") {
-                // SÓ RECEBE A MENSAGEM SE FOR RODADA HUMANA
-                if(data.sender !== myName && jogoRodando && eHumanoDeVerdade) {
-                    logMsg(`${data.sender}: ${data.text}`, "target");
+                // Se a IA estiver ativa, descarta as mensagens reais do amigo para o jogador não ler
+                if(data.sender !== myName && jogoRodando) {
+                    if(eHumanoDeVerdade) {
+                        logMsg(`${data.sender}: ${data.text}`, "target");
+                    }
                 }
             } else if(topic === baseTopic + "/status") {
-                if(data.tipo === "NOVA_RODADA") {
-                    montarRodada(data);
+                if(data.tipo === "RODADA_SETUP") {
+                    configurarRodadaDoEspectro(data);
                 }
             }
         });
 
         document.getElementById('chat-input').addEventListener('keypress', function(e) {
-            if(e.key === 'Enter') enviarMensagemTeclado();
+            if(e.key === 'Enter') transmitirTexto();
         });
     }
 
-    function checarSincroniaJogo() {
+    function sincronizarFaseInicial() {
         if(!jogoRodando && listaParceiros.length >= 2) {
             jogoRodando = true;
             let mestre = [...listaParceiros].sort()[0];
             if(mestre === myName) {
-                setTimeout(sortearProximaFase, 1500);
+                setTimeout(definirDestinoOculto, 1000);
             }
         }
     }
 
-    function sortearProximaFase() {
-        // Sorteia se a rodada vai ser real (humano) ou gerada pelo monstro (mímico)
-        let tipoRodada = Math.random() > 0.5;
+    function definirDestinoOculto() {
+        // Sorteia o cenário real da partida
+        // 0 = Humano Real, 1 = Zumbi (IA assume), 2 = Humano fingindo ser Zumbi
+        let cenario = Math.floor(Math.random() * 3);
+        
+        let jogadorInfectado = listaParceiros[Math.floor(Math.random() * listaParceiros.length)];
+        
         mqttClient.publish(baseTopic + "/status", JSON.stringify({
-            tipo: "NOVA_RODADA",
-            ehHumano: tipoRodada,
-            numero: rodadaAtual
+            tipo: "RODADA_SETUP",
+            cenarioEstilo: cenario,
+            alvoFoco: jogadorInfectado
         }));
     }
 
-    function montarRodada(data) {
+    function configurarRodadaDoEspectro(data) {
         document.getElementById('chat-wall').innerHTML = "";
         document.getElementById('chat-input').value = "";
-        rodadaAtual = data.numero;
-        eHumanoDeVerdade = data.ehHumano;
+        document.getElementById('secret-directive').style.display = 'none';
+        
+        let inimigoNome = listaParceiros.find(p => p !== myName) || "Parceiro";
+        document.getElementById('status-bar').innerText = `CONEXÃO ESTABELECIDA COM ${inimigoNome.toUpperCase()}`;
+        logMsg(`[SISTEMA] Canal aberto. Avalie as respostas com frieza.`, "sys");
 
-        document.getElementById('status-bar').innerText = `RODADA ${rodadaAtual}/3 - INVESTIGUE O TERMINAL`;
-        logMsg(`[SISTEMA] Link estabelecido com o terminal remoto. Faça perguntas difíceis.`, "sys");
+        // Reseta estados locais
+        eHumanoDeVerdade = true;
+        amigoFingindoUrubu = false;
 
-        // Se for rodada ZUMBI, injeta mensagens falsas automaticamente ao longo do tempo
-        if(!eHumanoDeVerdade) {
-            dispararMensagensFakeDoMImico();
+        if(data.alvoFoco === myName) {
+            // Eu sou o alvo analisado
+            if(data.cenarioEstilo === 1) {
+                // Eu fui cortado! A IA vai responder por mim e eu fico assistindo
+                eHumanoDeVerdade = false;
+                document.getElementById('secret-directive').style.display = 'block';
+                document.getElementById('secret-directive').innerText = "⚠️ CORTADO: O vírus infectou seu terminal. Você não pode enviar mensagens reais. A IA assumiu seu controle para enganar seu amigo.";
+                dispararFrasesMecanicasDoMimico();
+            } else if(data.cenarioEstilo === 2) {
+                // Sou humano, mas o jogo quer que eu minta!
+                amigoFingindoUrubu = true;
+                document.getElementById('secret-directive').style.display = 'block';
+                document.getElementById('secret-directive').innerText = "👁️ DIRETRIZ OCULTA: Você está limpo, mas deve AGIR COMO UM ZUMBI. Seja vago, use frases estranhas na chamada ou texto. Faça seu amigo desconfiar de você.";
+            } else {
+                document.getElementById('secret-directive').style.display = 'block';
+                document.getElementById('secret-directive').innerText = "🛡️ DIRETRIZ: Você está limpo. Convença seu amigo da sua integridade real.";
+            }
+        } else {
+            // Eu sou o avaliador
+            if(data.cenarioEstilo === 1) {
+                eHumanoDeVerdade = false; // O outro lado é uma IA
+                dispararFrasesMecanicasDoMimico();
+            }
         }
     }
 
-    let fakeTimer = null;
-    function dispararMensagensFakeDoMImico() {
-        clearInterval(fakeTimer);
-        let inimigoNome = listaParceiros.find(p => p !== myName) || "Parceiro";
-        
-        let disparos = 0;
-        fakeTimer = setInterval(() => {
-            if(!jogoRodando || eHumanoDeVerdade) { clearInterval(fakeTimer); return; }
-            
-            let frase = mensagensInfectadas[Math.floor(Math.random() * mensagensInfectadas.length)];
-            logMsg(`${inimigoNome}: ${frase}`, "target");
-            disparos++;
-            
-            if(disparos >= 3) clearInterval(fakeTimer);
-        }, 4000);
+    let botTimer = null;
+    function dispararFrasesMecanicasDoMimico() {
+        clearInterval(botTimer);
+        // Se eu sou o avaliador, vou ver as mensagens da máquina subindo
+        if(listaParceiros.find(p => p !== myName) !== myName) {
+            let inimigoNome = listaParceiros.find(p => p !== myName) || "Parceiro";
+            let cliques = 0;
+            botTimer = setInterval(() => {
+                if(!jogoRodando || eHumanoDeVerdade) { clearInterval(botTimer); return; }
+                
+                let frase = respostasAIEvasivas[Math.floor(Math.random() * respostasAIEvasivas.length)];
+                logMsg(`${inimigoNome}: ${frase}`, "target");
+                cliques++;
+                if(cliques >= 2) clearInterval(botTimer);
+            }, 8000);
+        }
     }
 
-    function enviarMensagemTeclado() {
+    function transmitirTexto() {
         const input = document.getElementById('chat-input');
         const txt = input.value.trim();
         if(!txt || !jogoRodando) return;
+
+        // Se a IA pegou meu terminal, minhas mensagens não saem na rede
+        if(!eHumanoDeVerdade && listaParceiros.find(p => p !== myName) === myName) {
+            logMsg(`${myName}: ${txt} (Sinal Bloqueado pela Infecção)`, "me");
+            input.value = "";
+            return;
+        }
 
         logMsg(`${myName}: ${txt}`, "me");
         mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: myName, text: txt }));
         input.value = "";
     }
 
-    function decidir(chuteHumano) {
+    function diagnosticar(voto) {
         if(!jogoRodando) return;
-        clearInterval(fakeTimer);
+        clearInterval(botTimer);
 
-        if(chuteHumano === eHumanoDeVerdade) {
-            // ACERTOU!
-            logMsg(`[CORRETO] Sua percepção te salvou. Avançando barreira...`, "sys");
-            rodadaAtual++;
-            if(rodadaAtual > 3) {
-                jogoRodando = false;
-                document.getElementById('status-bar').innerText = "🏆 SESSÃO CONCLUÍDA - VOCÊS SOBREVIVERAM!";
-                logMsg("[VENCIDO] Vocês purgaram o mímico e mantiveram a conexão intacta!", "sys");
-            } else {
-                let mestre = [...listaParceiros].sort()[0];
-                if(mestre === myName) {
-                    setTimeout(sortearProximaFase, 2000);
-                }
+        let respostaEsperada = "";
+        // Se o cenário era IA (1), a resposta certa é MÍMICO.
+        // Se o cenário era Humano Fingindo (2), a resposta certa é HUMANO (porque ele ainda é seu amigo fingindo, você não pode matá-lo).
+        if(!eHumanoDeVerdade) {
+            respostaEsperada = "MIMICO";
+        } else {
+            respostaEsperada = "VERDADEIRO";
+        }
+
+        if(voto === respostaEsperada) {
+            document.getElementById('status-bar').innerText = "DIAGNÓSTICO PRECISCO. PROSSEGUINDO ANALISE...";
+            logMsg(`[SUCESSO] Diagnóstico correto. Sistema recalibrando malha para novo espectro de teste...`, "sys");
+            
+            let mestre = [...listaParceiros].sort()[0];
+            if(mestre === myName) {
+                setTimeout(definirDestinoOculto, 3000);
             }
         } else {
-            // ERROU: JUMPSCARE IMEDIATO
-            jumpscareInfeccao();
+            // ERROU: Jumpscare sem aviso
+            fimDeJogoComColapso(voto === "MIMICO" ? "Você executou seu parceiro legítimo por pura paranoia." : "Você abriu as trancas para o mímico achando que era seu parceiro.");
         }
     }
 
-    function jumpscareInfeccao() {
+    function fimDeJogoComColapso(razao) {
         jogoRodando = false;
-        clearInterval(fakeTimer);
-        document.body.className = "glitch-bg";
+        clearInterval(botTimer);
         
-        let sc = document.getElementById('screamer');
-        sc.style.display = 'flex';
+        document.getElementById('morte-motivo').innerText = razao;
+        document.getElementById('screamer').style.display = 'flex';
         
-        let count = 0;
-        let int = setInterval(() => {
-            sc.style.background = count % 2 === 0 ? '#ff0000' : '#000';
-            if(count++ > 30) { 
-                clearInterval(int); 
-                sc.style.background = '#000';
-                alert("Você confiou no Zumbi ou matou seu parceiro por engano. Fim da transmissão.");
-                window.location.reload();
-            }
-        }, 35);
+        let c = 0;
+        let t = setInterval(() => {
+            document.getElementById('screamer').style.color = c % 2 === 0 ? '#ff0000' : '#333';
+            if(c++ > 20) { clearInterval(t); }
+        }, 50);
     }
 </script>
 </body>
