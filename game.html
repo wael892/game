@@ -52,9 +52,9 @@
 </div>
 
 <script>
-    let mqttClient, baseTopic, myName;
+    let mqttClient = null, baseTopic = "", myName = "";
     let olhosFechados = false, folego = 100, monstroPresente = false, morto = false;
-    let folegoInterval;
+    let folegoInterval, predadorInterval;
 
     function conectar() {
         myName = document.getElementById('nick').value.trim();
@@ -69,15 +69,18 @@
         mqttClient.on('connect', () => {
             mqttClient.subscribe(baseTopic + "/ataque");
             
-            // Configura os eventos de segurar o botão (Desktop e Mobile)
             const btn = document.getElementById('panic-btn');
+            
+            // Eventos para mouse (Desktop)
             btn.addEventListener('mousedown', fecharOlhos);
             btn.addEventListener('mouseup', abrirOlhos);
+            btn.addEventListener('mouseleave', abrirOlhos);
+            
+            // Eventos para toque (Mobile)
             btn.addEventListener('touchstart', (e) => { e.preventDefault(); fecharOlhos(); });
             btn.addEventListener('touchend', (e) => { e.preventDefault(); abrirOlhos(); });
 
-            // Ciclo do Monstro controlado pelo primeiro que entrar
-            setInterval(loopDoPredador, 7000);
+            predadorInterval = setInterval(loopDoPredador, 7000);
             folegoInterval = setInterval(gerenciarFolego, 100);
         });
 
@@ -98,65 +101,71 @@
     }
 
     function fecharOlhos() {
-        if(morto) return;
+        if(morto || !mqttClient) return;
         olhosFechados = true;
         document.getElementById('ascii-eyes').innerText = "\n   ▆▆▆▆       ▆▆▆▆   \n";
         document.getElementById('ascii-eyes').style.color = "#333";
     }
 
     function abrirOlhos() {
-        if(morto) return;
+        if(morto || !olhosFechados || !mqttClient) return;
         olhosFechados = false;
         document.getElementById('ascii-eyes').innerText = "   👁️       👁️\n (  •  )   (  •  )";
         document.getElementById('ascii-eyes').style.color = "#ff3333";
         
-        // Se abrir o olho com o monstro na sala: JUMPSCARE
-        if(monstroPresente) final Fatal();
+        if(monstroPresente) finalFatal();
     }
 
     function gerenciarFolego() {
-        if(!gameActive() || morto) return;
+        if(!mqttClient || morto) return;
         let display = document.getElementById('folego-display');
 
         if(olhosFechados) {
-            folego = Math.max(0, folego - 2.5); // Gasta fôlego ao fechar o olho/prender a respiração
+            folego = Math.max(0, folego - 2.5);
             if(folego <= 0) {
-                abrirOlhos(); // Abre o olho a força por falta de ar
+                abrirOlhos();
             }
         } else {
-            folego = Math.min(100, folego + 4); // Recupera ar com olho aberto
+            folego = Math.min(100, folego + 4);
         }
         display.innerText = `FÔLEGO: ${Math.floor(folego)}%`;
     }
 
     function loopDoPredador() {
-        if(morto) return;
-        // Sincroniza o ataque para todos na sala simultaneamente
+        if(morto || !mqttClient) return;
+        
         if(Math.random() > 0.5 && !monstroPresente) {
             mqttClient.publish(baseTopic + "/ataque", JSON.stringify({tipo: "ALERTA"}));
             
-            // O monstro vai embora após um tempo aleatório (entre 2.5 e 4.5 segundos)
             setTimeout(() => {
-                mqttClient.publish(baseTopic + "/ataque", JSON.stringify({tipo: "FIM"}));
+                if(mqttClient && !morto) {
+                    mqttClient.publish(baseTopic + "/ataque", JSON.stringify({tipo: "FIM"}));
+                }
             }, 2500 + Math.random() * 2000);
         }
     }
 
     function finalFatal() {
         morto = true;
+        olhosFechados = false;
         clearInterval(folegoInterval);
+        clearInterval(predadorInterval);
+        
+        document.body.className = "";
+        document.getElementById('status-msg').innerText = "VOCÊ ABRIU OS OLHOS.";
+        
         let sc = document.getElementById('screamer');
         sc.style.display = 'flex';
         
-        // Efeito de flash estroboscópico na morte
         let count = 0;
         let int = setInterval(() => {
             sc.style.background = sc.style.background === 'rgb(0, 0, 0)' ? '#ff0000' : '#000';
-            if(count++ > 25) { clearInterval(int); sc.style.background = '#000'; }
+            if(count++ > 25) { 
+                clearInterval(int); 
+                sc.style.background = '#000'; 
+            }
         }, 40);
     }
-
-    function gameActive() { return mqttClient != null; }
 </script>
 </body>
 </html>
