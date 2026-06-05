@@ -3,448 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CONTENÇÃO 666: PROTOCOLO DE ISOLAMENTO</title>
+    <title>ECLIPSE</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
-
-        body {
-            background-color: #080202;
-            color: #ff3333;
-            display: flex; flex-direction: column; align-items: center;
-            height: 100vh; height: -webkit-fill-available;
-            padding: 6px; overscroll-behavior: none; overflow: hidden;
-        }
-
-        body::before {
-            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.05));
-            z-index: 9999; background-size: 100% 3px, 3px 100%; pointer-events: none;
-        }
-
-        #login-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; display: flex; justify-content: center;
-            align-items: center; z-index: 1000;
-        }
-        .login-box {
-            background: #100505; padding: 25px; border: 1px solid #ff3333;
-            width: 100%; max-width: 380px; text-align: center;
-            box-shadow: 0 0 20px rgba(255, 51, 51, 0.2);
-        }
-        .login-box h2 { color: #ff3333; margin-bottom: 20px; font-size: 18px; letter-spacing: 2px; }
-        .login-box input {
-            width: 100%; padding: 10px; margin-bottom: 15px;
-            background: #000; border: 1px solid #ff3333;
-            outline: none; font-size: 14px; color: #ff3333;
-        }
-        .login-box input:focus { box-shadow: 0 0 8px #ff3333; }
-        
-        header {
-            background: #000; padding: 6px 12px; border: 1px solid #ff3333;
-            width: 100%; max-width: 1200px; display: flex; justify-content: space-between;
-            align-items: center; gap: 10px; flex-shrink: 0; margin-bottom: 6px;
-        }
-        h1 { font-size: 13px; letter-spacing: 1px; color: #ff3333; }
-        #system-status { font-size: 12px; color: #ff3333; font-weight: bold; animation: blink 1.5s infinite; }
-
-        #main-container {
-            display: flex; width: 100%; max-width: 1200px; flex: 1; gap: 6px; overflow: hidden; min-height: 0;
-        }
-
-        #sidebar {
-            flex: 0 0 180px; background: #000; border: 1px solid #ff3333; padding: 8px;
-            display: flex; flex-direction: column; overflow: hidden;
-        }
-        #sidebar h3 { font-size: 11px; border-bottom: 1px dashed #ff3333; padding-bottom: 4px; margin-bottom: 6px; color: #ff3333; letter-spacing: 1px; }
-        #players-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
-        
-        .player-node {
-            background: #0f0505; padding: 6px; border: 1px solid #551111; font-size: 11px; color: #ff8888;
-        }
-        .player-node.ready { border-color: #33ff33; color: #33ff33; }
-
-        #center-panel {
-            flex: 1; display: flex; flex-direction: column; gap: 6px; overflow: hidden; min-width: 0;
-        }
-
-        #terminal-display {
-            flex: 1; background: #000; border: 1px solid #ff3333; padding: 10px;
-            overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
-            font-size: 12px; line-height: 1.4; color: #ff6666;
-        }
-        
-        .log-row { word-break: break-all; }
-        .log-sys { color: #ffaa00; }
-        .log-warn { color: #ff3333; font-weight: bold; }
-        .log-crit { color: #ff0000; font-weight: bold; background: #220000; padding: 2px; animation: flashRed 0.5s infinite; }
-        .log-success { color: #33ff33; }
-
-        @keyframes flashRed { 0%, 100% { background: #220000; } 50% { background: #550000; } }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
-        #action-bar {
-            background: #000; border: 1px solid #ff3333; padding: 6px;
-            display: flex; flex-direction: column; gap: 6px; flex-shrink: 0;
-        }
-        .panel-row { display: flex; gap: 6px; align-items: center; width: 100%; }
-        
-        #instruction-display {
-            background: #150000; padding: 10px; border: 1px dashed #ff3333;
-            font-size: 13px; color: #ffff00; width: 100%; text-align: center;
-            line-height: 1.4;
-        }
-
-        .term-input {
-            flex: 1; background: #000; border: 1px solid #ff3333; padding: 8px;
-            color: #ff3333; font-size: 14px; outline: none; letter-spacing: 1px;
-        }
-        .term-input:focus { box-shadow: 0 0 5px #ff3333; }
-        .term-btn { background: #100000; color: #ff3333; border: 1px solid #ff3333; padding: 8px 16px; font-weight: bold; cursor: pointer; font-size: 12px; }
-        .term-btn:hover { background: #ff3333; color: #000; }
-
-        #right-panel {
-            flex: 0 0 240px; display: flex; flex-direction: column; background: #000;
-            border: 1px solid #ff3333; overflow: hidden;
-        }
-        .chat-title { background: #100505; padding: 4px 8px; font-size: 10px; border-bottom: 1px solid #ff3333; letter-spacing: 1px; color: #ffaa00; }
-        #chat-area { flex: 1; padding: 6px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; background: #050000; font-size: 11px; }
-        .chat-msg { border-bottom: 1px solid #1a0000; padding-bottom: 2px; color: #ff8888; }
-        .chat-msg .user { color: #ff3333; font-weight: bold; }
-
-        @media (max-width: 768px) {
-            #main-container { flex-direction: column; }
-            #sidebar { flex: 0 0 60px; flex-direction: row; width: 100%; }
-            #players-list { flex-direction: row; overflow-x: auto; }
-            .player-node { height: 40px; white-space: nowrap; }
-            #right-panel { flex: 0 0 130px; }
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: monospace; }
+        body { background: #000; color: #aaa; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; overflow: hidden; user-select: none; }
+        #radar { width: 100%; height: 60%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; font-size: 14px; cursor: pointer; }
+        .btn { background: #000; color: #ff3333; border: 1px solid #ff3333; padding: 10px 20px; margin: 10px; cursor: pointer; font-size: 12px; }
+        #controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 180px; margin-top: 20px; }
+        #screamer { position: fixed; inset: 0; background: #000; color: #fff; display: none; flex-direction: column; justify-content: center; align-items: center; font-size: 8px; line-height: 8px; z-index: 10000; }
+        @keyframes flash { 0%, 100% { background: #000; } 50% { background: #1a0000; } }
+        .panic { animation: flash 0.4s infinite; color: #ff0000; }
     </style>
 </head>
 <body>
 
-<div id="login-screen">
-    <div class="login-box">
-        <h2>📟 CONTENÇÃO ASTRAL v6.66</h2>
-        <input type="text" id="input-username" placeholder="Identificação do Técnico" required>
-        <input type="text" id="input-room" placeholder="Código da Subestação (Sala)" required>
-        <button class="term-btn" style="width:100%; padding:10px;" onclick="connectToSubstation()">SINCROIZAR INTEGRAL</button>
-    </div>
+<div id="login-screen" style="position:fixed; inset:0; background:#000; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:999;">
+    <h2 style="color:#ff3333; margin-bottom:20px; letter-spacing:4px;">ECLIPSE</h2>
+    <input type="text" id="nick" placeholder="Seu Nome" style="background:#000; border:1px solid #333; color:#fff; padding:10px; margin-bottom:10px; outline:none; text-align:center;">
+    <input type="text" id="sala" placeholder="Código da Sala" style="background:#000; border:1px solid #333; color:#fff; padding:10px; margin-bottom:20px; outline:none; text-align:center;">
+    <button class="btn" onclick="entrar()">ENTRAR NA ESCURIDÃO</button>
 </div>
 
-<header>
-    <h1>🔒 SUBESTAÇÃO DE LOCKDOWN - NODE_OVERRIDE</h1>
-    <div id="system-status">PORTA BLINDADA: <span id="door-val">100</span>%</div>
-</header>
+<div id="radar">SALA ESCURA. SEU PARCEIRO ESTÁ PERDIDO. ENCONTRE-O.</div>
 
-<div id="main-container">
-    <div id="sidebar">
-        <h3>📡 Conexões Locais</h3>
-        <div id="players-list"></div>
-    </div>
+<div id="controls">
+    <div></div><button class="btn" onclick="andar(0,-1)">▲</button><div></div>
+    <button class="btn" onclick="andar(-1,0)">◀</button><div></div><button class="btn" onclick="andar(1,0)">▶</button>
+    <div></div><button class="btn" onclick="andar(0,1)">▼</button><div></div>
+</div>
 
-    <div id="center-panel">
-        <div id="terminal-display">
-            <div class="log-row log-sys">[SISTEMA] Aguardando acoplamento de outros técnicos na malha hidráulica...</div>
-            <div class="log-row log-sys">[SISTEMA] Protocolo de segurança exige comunicação coordenada via canal de voz ou texto.</div>
-        </div>
-
-        <div id="action-bar">
-            <div class="panel-row">
-                <div id="instruction-display">AGUARDANDO ESTABILIZAÇÃO DE REDE MULTIPLAYER...</div>
-            </div>
-            <div class="panel-row">
-                <input type="text" id="command-input" class="term-input" placeholder="Insira o código recebido por outro terminal..." autocomplete="off">
-                <button class="term-btn" onclick="executeContainmentCode()">IGNITAR</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="right-panel">
-        <div class="chat-title">📡 SENSOR DE RÁDIO INTERNO</div>
-        <div id="chat-area"></div>
-        <div class="chat-input-row" style="display:flex; padding:4px; background:#000; border-top:1px solid #ff3333;">
-            <input type="text" id="chat-input" class="term-input" placeholder="Gritar na frequência..." autocomplete="off">
-            <button class="term-btn" style="padding:4px 8px; margin-left:2px;" onclick="sendRadioSpeech()">➤</button>
-        </div>
-    </div>
+<div id="screamer">
+    <pre>
+   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+ ▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓
+▓▓▓▓▒▒░░░░░░░░░░░░▒▒▓▓▓▓
+▓▓▒▒░░  ●      ●  ░░▒▓▓
+▓▓▒░░     ▄██▄     ░░▒▓▓
+▓▓▒░░    ██████    ░░▒▓▓
+ ▓▓▒░░    ▀██▀    ░░▒▓▓
+   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+    E L I M I N A D O
+    </pre>
 </div>
 
 <script>
-    let username = "", roomName = "", mqttClient = null, baseTopic = "";
-    const activeNodes = new Set();
-    
-    let doorIntegrity = 100;
-    let gameActive = false;
-    let mainLoopInterval = null;
-    
-    let targetForMyCode = "";  // Para quem eu tenho que ditar
-    let codeIHold = "";        // O código que eu possuo na tela (para o outro digitar)
-    let codeINeed = "";        // O código que eu preciso que alguém me dite
+    let mqttClient, baseTopic, myName;
+    let px = Math.floor(Math.random() * 20), py = Math.floor(Math.random() * 20);
+    let mx = 10, my = 10; // Posição do Monstro
+    let players = {};
 
-    function appendLog(text, type = "sys") {
-        const display = document.getElementById('terminal-display');
-        const row = document.createElement('div');
-        row.className = `log-row log-${type}`;
-        row.innerText = `[${new Date().toLocaleTimeString()}] ${text}`;
-        display.appendChild(row);
-        display.scrollTop = display.scrollHeight;
-    }
-
-    function connectToSubstation() {
-        username = document.getElementById('input-username').value.trim();
-        roomName = document.getElementById('input-room').value.trim().toLowerCase().replace(/[^a-z0-9]/g,"");
-        if (!username || !roomName) { alert("Credenciais insuficientes!"); return; }
-
+    function entrar() {
+        myName = document.getElementById('nick').value.trim();
+        let sala = document.getElementById('sala').value.trim().toLowerCase();
+        if(!myName || !sala) return;
         document.getElementById('login-screen').style.display = 'none';
-        appendLog(`[LINK] Terminal plugado no setor: ${roomName}`);
         
-        registerNode(username);
-        initMqttNetwork();
-    }
-
-    function initMqttNetwork() {
-        baseTopic = "containment_666_coop_2026/" + roomName;
+        baseTopic = "eclipse_horror_2026/" + sala;
         mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
-
+        
         mqttClient.on('connect', () => {
-            mqttClient.subscribe(baseTopic + "/radio");
-            mqttClient.subscribe(baseTopic + "/grid_status");
-            mqttClient.subscribe(baseTopic + "/presence");
-            mqttClient.subscribe(baseTopic + "/presence/echo");
-            mqttClient.subscribe(baseTopic + "/pulses");
-
-            mqttClient.publish(baseTopic + "/presence", JSON.stringify({ name: username }));
-            appendLog("[INFO] Rastreando frequências de outros terminais na área...");
-            
-            setTimeout(() => { tryAutoStartRoutine(); }, 2000);
+            mqttClient.subscribe(baseTopic + "/pos");
+            mqttClient.subscribe(baseTopic + "/eventos");
+            setInterval(loopMonstro, 4000);
         });
 
-        mqttClient.on('message', (topic, message) => {
-            const data = JSON.parse(message.toString());
-
-            if (topic === baseTopic + "/presence") {
-                if (data.name && data.name !== username) {
-                    registerNode(data.name);
-                    mqttClient.publish(baseTopic + "/presence/echo", JSON.stringify({ name: username }));
-                    tryAutoStartRoutine();
-                }
-            } else if (topic === baseTopic + "/presence/echo") {
-                if (data.name && data.name !== username) { registerNode(data.name); tryAutoStartRoutine(); }
-            } else if (topic === baseTopic + "/radio") {
-                renderRadioText(data.sender, data.text);
-            } else if (topic === baseTopic + "/grid_status") {
-                handleGridStatusUpdate(data);
-            } else if (topic === baseTopic + "/pulses") {
-                handleIncomingNetworkPulses(data);
+        mqttClient.on('message', (topic, msg) => {
+            let data = JSON.parse(msg.toString());
+            if(topic === baseTopic + "/pos" && data.name !== myName) {
+                players[data.name] = {x: data.x, y: data.y};
+                checarProximidadeParceiro(data.name, data.x, data.y);
+            }
+            if(topic === baseTopic + "/eventos" && data.type === "morte" && data.target === myName) {
+                jumpscare();
             }
         });
     }
 
-    function registerNode(name) {
-        if (activeNodes.has(name)) return;
-        activeNodes.add(name);
-        rebuildSidebarNodes();
+    function andar(dx, dy) {
+        px += dx; py += dy;
+        document.getElementById('radar').innerText = "*você caminha pela vegetação seca*";
+        mqttClient.publish(baseTopic + "/pos", JSON.stringify({name: myName, x: px, y: py}));
+        checarMonstro();
     }
 
-    function rebuildSidebarNodes() {
-        const list = document.getElementById('players-list');
-        list.innerHTML = "";
-        Array.from(activeNodes).forEach(nome => {
-            const row = document.createElement('div');
-            row.className = "player-node";
-            if (gameActive) row.classList.add('ready');
-            row.innerText = `📟 TERMINAL: ${nome}`;
-            list.appendChild(row);
-        });
+    function checarProximidadeParceiro(nome, ox, oy) {
+        let dist = Math.abs(px - ox) + Math.abs(py - oy);
+        if(dist === 0) document.getElementById('radar').innerText = `*Você sentiu a mão de ${nome} no escuro! Vocês se acharam! FUGAM!*`;
+        else if(dist < 3) document.getElementById('radar').innerText = `*Sussurro próximo: "${nome}.. é você?"*`;
     }
 
-    function tryAutoStartRoutine() {
-        if (!gameActive && activeNodes.size >= 2) {
-            const sorted = Array.from(activeNodes).sort();
-            // O primeiro nó assume a coordenação da distribuição de malha
-            if (sorted[0] === username) {
-                triggerNextAsymmetricSequenceGeneration();
-            }
-        }
-    }
-
-    function generateRandomSecureCode() {
-        const tokens = "01234567899876543210#*";
-        let c = "";
-        for(let i=0; i<5; i++) {
-            c += tokens.charAt(Math.floor(Math.random() * tokens.tokens ? tokens.length : 15));
-        }
-        return c;
-    }
-
-    function triggerNextAsymmetricSequenceGeneration() {
-        const nodeList = Array.from(activeNodes);
-        if (nodeList.length < 2) return;
-
-        const dynamicAssignments = {};
-        
-        // Gera rota circular de asimetria: A ajuda B, B ajuda C, C ajuda A
-        for (let i = 0; i < nodeList.length; i++) {
-            const currentGamer = nodeList[i];
-            const targetGamer = nodeList[(i + 1) % nodeList.length]; 
-            const generatedCode = generateRandomSecureCode();
-
-            dynamicAssignments[currentGamer] = {
-                dictateTo: targetGamer,
-                codeToGive: generatedCode
-            };
-        }
-
-        mqttClient.publish(baseTopic + "/grid_status", JSON.stringify({
-            action: "dispatch_codes",
-            assignments: dynamicAssignments,
-            currentIntegrity: doorIntegrity
-        }));
-    }
-
-    function handleGridStatusUpdate(data) {
-        if (data.action === "dispatch_codes") {
-            gameActive = true;
-            rebuildSidebarNodes();
-            
-            const myConfig = data.assignments[username];
-            if (myConfig) {
-                targetForMyCode = myConfig.dictateTo;
-                codeIHold = myConfig.codeToGive;
-                
-                // Descobre quem vai mandar o código para mim para avisar na tela
-                let whoHasMyCode = "Alguém";
-                for (const [tecnico, cfg] of Object.entries(data.assignments)) {
-                    if (cfg.dictateTo === username) {
-                        whoHasMyCode = tecnico;
-                        codeINeed = cfg.codeToGive; // Guarda internamente qual valida o meu
-                        break;
-                    }
-                }
-
-                document.getElementById('instruction-display').innerHTML = `⚠️ DITE O CÓDIGO <b style="color:#ff3333; font-size:16px;">${codeIHold}</b> PARA <b style="color:#fff;">${targetForMyCode}</b>!<br>📢 ESCUTE DE <b style="color:#33ff33;">${whoHasMyCode}</b> O SEU CÓDIGO DE IGNICAO!`;
-                appendLog(`[FLUXO] Nova barreira de contenção erguida. Dite o código para seu parceiro!`, "sys");
-            }
-
-            // Centraliza o loop de dano no mestre da sala
-            if (username === Array.from(activeNodes).sort()[0]) {
-                startDoorDegradationLoop();
-            }
-        } else if (data.action === "sync_door") {
-            doorIntegrity = data.integrity;
-            document.getElementById('door-val').innerText = doorIntegrity;
-            
-            if (doorIntegrity <= 40) {
-                appendLog("[CRÍTICO] A entidade está forçando as trancas! Trancamento falhando!", "crit");
-            }
-            if (doorIntegrity <= 0) {
-                executeContainmentFailure();
-            }
-        } else if (data.action === "victory_clear") {
-            executeContainmentSuccess();
-        }
-    }
-
-    function startDoorDegradationLoop() {
-        if (mainLoopInterval) clearInterval(mainLoopInterval);
-        
-        let tickCounter = 0;
-        mainLoopInterval = setInterval(() => {
-            if (!gameActive) { clearInterval(mainLoopInterval); return; }
-            
-            // A velocidade do dano aumenta com o passar do tempo
-            tickCounter++;
-            let decay = 3;
-            if (tickCounter > 30) decay = 5;
-            if (tickCounter > 60) decay = 8;
-
-            doorIntegrity = Math.max(0, doorIntegrity - decay);
-            mqttClient.publish(baseTopic + "/grid_status", JSON.stringify({ action: "sync_door", integrity: doorIntegrity }));
-        }, 12000); // Dano a cada 1.2s
-    }
-
-    function executeContainmentCode() {
-        const input = document.getElementById('command-input');
-        const codeInputted = input.value.trim();
-        if (!codeInputted || !gameActive) return;
-
-        if (codeInputted === codeINeed) {
-            appendLog(`[SUCESSO] Código de ignição correto! Amortecedores hidráulicos pressurizados! +15%`, "success");
-            input.value = "";
-            
-            // Reporta sucesso para o mestre atualizar a porta
-            mqttClient.publish(baseTopic + "/pulses", JSON.stringify({ type: "success_pulse", value: 15 }));
-            
-            // Solicita nova rodada de códigos imediatamente para manter o ritmo rápido
-            if (username === Array.from(activeNodes).sort()[0]) {
-                doorIntegrity = Math.min(100, doorIntegrity + 15);
-                triggerNextAsymmetricSequenceGeneration();
-            } else {
-                mqttClient.publish(baseTopic + "/pulses", JSON.stringify({ type: "request_next_cycle" }));
-            }
+    function loopMonstro() {
+        // O Monstro caça o jogador mais ativo
+        if(Math.random() > 0.3) {
+            mx += (px > mx) ? 1 : -1;
+            my += (py > my) ? 1 : -1;
         } else {
-            appendLog(`[FALHA] Código inválido! Curto-circuito no painel local! Punição de integridade!`, "warn");
-            input.value = "";
-            mqttClient.publish(baseTopic + "/pulses", JSON.stringify({ type: "damage_pulse", value: 10 }));
+            mx += Math.floor(Math.random() * 3) - 1;
+            my += Math.floor(Math.random() * 3) - 1;
+        }
+        checarMonstro();
+    }
+
+    function checarMonstro() {
+        let dist = Math.abs(px - mx) + Math.abs(py - my);
+        let radar = document.getElementById('radar');
+        let body = document.body;
+
+        if(dist === 0) {
+            mqttClient.publish(baseTopic + "/eventos", JSON.stringify({type: "morte", target: myName}));
+            jumpscare();
+        } else if(dist <= 2) {
+            body.className = "panic";
+            radar.innerText = "!!! ALGO ESTÁ ATRÁS DE VOCÊ. NÃO SE MEVA !!!";
+        } else if(dist <= 4) {
+            body.className = "";
+            radar.innerText = "*som de respiração pesada e garras arrastando perto...*";
+        } else {
+            body.className = "";
         }
     }
 
-    function handleIncomingNetworkPulses(data) {
-        if (username === Array.from(activeNodes).sort()[0]) {
-            if (data.type === "success_pulse") {
-                doorIntegrity = Math.min(100, doorIntegrity + data.value);
-                mqttClient.publish(baseTopic + "/grid_status", JSON.stringify({ action: "sync_door", integrity: doorIntegrity }));
-            } else if (data.type === "damage_pulse") {
-                doorIntegrity = Math.max(0, doorIntegrity - data.value);
-                mqttClient.publish(baseTopic + "/grid_status", JSON.stringify({ action: "sync_door", integrity: doorIntegrity }));
-            } else if (data.type === "request_next_cycle") {
-                triggerNextAsymmetricSequenceGeneration();
-            }
-        }
+    function jumpscare() {
+        let sc = document.getElementById('screamer');
+        sc.style.display = 'flex';
+        // Simulação básica de tremor e flash de luz
+        let count = 0;
+        let int = setInterval(() => {
+            sc.style.background = sc.style.background === 'rgb(0, 0, 0)' ? '#ff0000' : '#000';
+            if(count++ > 15) { clearInterval(int); }
+        }, 50);
     }
-
-    function executeContainmentFailure() {
-        gameActive = false;
-        clearInterval(mainLoopInterval);
-        document.getElementById('instruction-display').innerHTML = `<span style="color:#ff0000; font-size:16px; font-weight:bold;">❌ FALHA DE ISOLAMENTO ABSOLUTA</span>`;
-        appendLog("\n[FALHA MATRIZ] A porta colapsou. A criatura invadiu o centro de controle. Conexões interrompidas forçadamente...", "crit");
-    }
-
-    function executeContainmentSuccess() {
-        gameActive = false;
-        clearInterval(mainLoopInterval);
-        document.getElementById('instruction-display').innerHTML = `<span style="color:#00ff00; font-size:16px; font-weight:bold;">🏆 ALVORECER: LOCKDOWN CONCLUÍDO</span>`;
-        appendLog("\n[VENCIDO] O gerador central completou o ciclo de purga. A entidade recuou para o vácuo astral. Vocês sobreviveram.", "success");
-    }
-
-    function sendRadioSpeech() {
-        const input = document.getElementById('chat-input');
-        const text = input.value.trim();
-        if (!text || !mqttClient) return;
-
-        mqttClient.publish(baseTopic + "/radio", JSON.stringify({ sender: username, text: text }));
-        input.value = "";
-    }
-
-    function renderRadioText(sender, text) {
-        const area = document.getElementById('chat-area');
-        const row = document.createElement('div');
-        row.className = "chat-msg";
-        
-        const userSpan = document.createElement('span');
-        userSpan.className = "user";
-        userSpan.innerText = `[${sender}]: `;
-        
-        row.appendChild(userSpan);
-        row.appendChild(document.createTextNode(text));
-        
-        area.appendChild(row);
-        area.scrollTop = area.scrollHeight;
-    }
-
-    document.getElementById('command-input').addEventListener('keypress', function(e) { if (e.key === 'Enter') executeContainmentCode(); });
-    document.getElementById('chat-input').addEventListener('keypress', function(e) { if (e.key === 'Enter') sendRadioSpeech(); });
 </script>
 </body>
 </html>
