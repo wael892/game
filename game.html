@@ -3,137 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ECLIPSE</title>
+    <title>ROULETTE 666</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: monospace; }
-        body { background: #000; color: #aaa; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; overflow: hidden; user-select: none; }
-        #radar { width: 100%; height: 60%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; font-size: 14px; cursor: pointer; }
-        .btn { background: #000; color: #ff3333; border: 1px solid #ff3333; padding: 10px 20px; margin: 10px; cursor: pointer; font-size: 12px; }
-        #controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 180px; margin-top: 20px; }
-        #screamer { position: fixed; inset: 0; background: #000; color: #fff; display: none; flex-direction: column; justify-content: center; align-items: center; font-size: 8px; line-height: 8px; z-index: 10000; }
-        @keyframes flash { 0%, 100% { background: #000; } 50% { background: #1a0000; } }
-        .panic { animation: flash 0.4s infinite; color: #ff0000; }
+        body { background: #0a0202; color: #ff3333; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; overflow: hidden; user-select: none; }
+        #game-panel { display: none; text-align: center; width: 100%; max-width: 400px; padding: 20px; }
+        #ascii-eyes { font-size: 16px; line-height: 1.2; margin: 30px 0; white-space: pre; color: #ff3333; }
+        .btn-panic { background: #220000; color: #ff0000; border: 2px solid #ff0000; width: 100%; padding: 20px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 4px; touch-action: none; }
+        .btn-panic:active { background: #ff0000; color: #000; }
+        #status-msg { font-size: 18px; margin-bottom: 20px; height: 30px; letter-spacing: 1px; }
+        #screamer { position: fixed; inset: 0; background: #000; color: #fff; display: none; flex-direction: column; justify-content: center; align-items: center; font-size: 6px; line-height: 5px; z-index: 10000; }
+        .flash-red { animation: flash 0.2s infinite; }
+        @keyframes flash { 0%, 100% { background: #0a0202; } 50% { background: #400000; } }
     </style>
 </head>
 <body>
 
 <div id="login-screen" style="position:fixed; inset:0; background:#000; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:999;">
-    <h2 style="color:#ff3333; margin-bottom:20px; letter-spacing:4px;">ECLIPSE</h2>
-    <input type="text" id="nick" placeholder="Seu Nome" style="background:#000; border:1px solid #333; color:#fff; padding:10px; margin-bottom:10px; outline:none; text-align:center;">
-    <input type="text" id="sala" placeholder="Código da Sala" style="background:#000; border:1px solid #333; color:#fff; padding:10px; margin-bottom:20px; outline:none; text-align:center;">
-    <button class="btn" onclick="entrar()">ENTRAR NA ESCURIDÃO</button>
+    <h2 style="color:#ff3333; margin-bottom:20px; letter-spacing:3px;">ROULETTE 666</h2>
+    <input type="text" id="nick" placeholder="Seu Nome" style="background:#000; border:1px solid #444; color:#fff; padding:10px; margin-bottom:10px; outline:none; text-align:center;">
+    <input type="text" id="sala" placeholder="Código da Sala" style="background:#000; border:1px solid #444; color:#fff; padding:10px; margin-bottom:20px; outline:none; text-align:center;">
+    <button class="btn-panic" style="padding:10px 20px; font-size:12px; width:auto;" onclick="conectar()">INICIAR TESTE</button>
 </div>
 
-<div id="radar">SALA ESCURA. SEU PARCEIRO ESTÁ PERDIDO. ENCONTRE-O.</div>
-
-<div id="controls">
-    <div></div><button class="btn" onclick="andar(0,-1)">▲</button><div></div>
-    <button class="btn" onclick="andar(-1,0)">◀</button><div></div><button class="btn" onclick="andar(1,0)">▶</button>
-    <div></div><button class="btn" onclick="andar(0,1)">▼</button><div></div>
+<div id="game-panel">
+    <div id="status-msg">SISTEMA ESTÁVEL... POR ENQUANTO</div>
+    <div id="folego-display">FÔLEGO: 100%</div>
+    <div id="ascii-eyes">
+   👁️       👁️
+ (  •  )   (  •  )
+    </div>
+    <button class="btn-panic" id="panic-btn">FECHAR OLHOS (SEGURE)</button>
 </div>
 
 <div id="screamer">
     <pre>
-   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
- ▓▓▓▓▓▓▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓
-▓▓▓▓▒▒░░░░░░░░░░░░▒▒▓▓▓▓
-▓▓▒▒░░  ●      ●  ░░▒▓▓
-▓▓▒░░     ▄██▄     ░░▒▓▓
-▓▓▒░░    ██████    ░░▒▓▓
- ▓▓▒░░    ▀██▀    ░░▒▓▓
-   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
-    E L I M I N A D O
+   ▄██████████████▄
+  ██▒▒▒▒▒▒▒▒▒▒▒▒▒▒██
+ ██▒▒  🕱      🕱  ▒▒██
+██▒▒▒      ██      ▒▒██
+██▒▒▒▒    ████    ▒▒▒██
+ ██▒▒▒▒▒   ██   ▒▒▒▒██
+  ██▒▒▒▒▒▒▒▒▒▒▒▒▒▒██
+   ▀██████████████▀
+     M O R T O
     </pre>
 </div>
 
 <script>
     let mqttClient, baseTopic, myName;
-    let px = Math.floor(Math.random() * 20), py = Math.floor(Math.random() * 20);
-    let mx = 10, my = 10; // Posição do Monstro
-    let players = {};
+    let olhosFechados = false, folego = 100, monstroPresente = false, morto = false;
+    let folegoInterval;
 
-    function entrar() {
+    function conectar() {
         myName = document.getElementById('nick').value.trim();
         let sala = document.getElementById('sala').value.trim().toLowerCase();
         if(!myName || !sala) return;
         document.getElementById('login-screen').style.display = 'none';
-        
-        baseTopic = "eclipse_horror_2026/" + sala;
+        document.getElementById('game-panel').style.display = 'block';
+
+        baseTopic = "roulette_666_2026/" + sala;
         mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
-        
+
         mqttClient.on('connect', () => {
-            mqttClient.subscribe(baseTopic + "/pos");
-            mqttClient.subscribe(baseTopic + "/eventos");
-            setInterval(loopMonstro, 4000);
+            mqttClient.subscribe(baseTopic + "/ataque");
+            
+            // Configura os eventos de segurar o botão (Desktop e Mobile)
+            const btn = document.getElementById('panic-btn');
+            btn.addEventListener('mousedown', fecharOlhos);
+            btn.addEventListener('mouseup', abrirOlhos);
+            btn.addEventListener('touchstart', (e) => { e.preventDefault(); fecharOlhos(); });
+            btn.addEventListener('touchend', (e) => { e.preventDefault(); abrirOlhos(); });
+
+            // Ciclo do Monstro controlado pelo primeiro que entrar
+            setInterval(loopDoPredador, 7000);
+            folegoInterval = setInterval(gerenciarFolego, 100);
         });
 
         mqttClient.on('message', (topic, msg) => {
             let data = JSON.parse(msg.toString());
-            if(topic === baseTopic + "/pos" && data.name !== myName) {
-                players[data.name] = {x: data.x, y: data.y};
-                checarProximidadeParceiro(data.name, data.x, data.y);
-            }
-            if(topic === baseTopic + "/eventos" && data.type === "morte" && data.target === myName) {
-                jumpscare();
+            if(topic === baseTopic + "/ataque") {
+                if(data.tipo === "ALERTA") {
+                    monstroPresente = true;
+                    document.body.className = "flash-red";
+                    document.getElementById('status-msg').innerText = "⚠️ [NÃO OLHE! ALGO ENTROU]";
+                } else if(data.tipo === "FIM") {
+                    monstroPresente = false;
+                    document.body.className = "";
+                    document.getElementById('status-msg').innerText = "ESCAPOU... ELE SE FOI";
+                }
             }
         });
     }
 
-    function andar(dx, dy) {
-        px += dx; py += dy;
-        document.getElementById('radar').innerText = "*você caminha pela vegetação seca*";
-        mqttClient.publish(baseTopic + "/pos", JSON.stringify({name: myName, x: px, y: py}));
-        checarMonstro();
+    function fecharOlhos() {
+        if(morto) return;
+        olhosFechados = true;
+        document.getElementById('ascii-eyes').innerText = "\n   ▆▆▆▆       ▆▆▆▆   \n";
+        document.getElementById('ascii-eyes').style.color = "#333";
     }
 
-    function checarProximidadeParceiro(nome, ox, oy) {
-        let dist = Math.abs(px - ox) + Math.abs(py - oy);
-        if(dist === 0) document.getElementById('radar').innerText = `*Você sentiu a mão de ${nome} no escuro! Vocês se acharam! FUGAM!*`;
-        else if(dist < 3) document.getElementById('radar').innerText = `*Sussurro próximo: "${nome}.. é você?"*`;
+    function abrirOlhos() {
+        if(morto) return;
+        olhosFechados = false;
+        document.getElementById('ascii-eyes').innerText = "   👁️       👁️\n (  •  )   (  •  )";
+        document.getElementById('ascii-eyes').style.color = "#ff3333";
+        
+        // Se abrir o olho com o monstro na sala: JUMPSCARE
+        if(monstroPresente) final Fatal();
     }
 
-    function loopMonstro() {
-        // O Monstro caça o jogador mais ativo
-        if(Math.random() > 0.3) {
-            mx += (px > mx) ? 1 : -1;
-            my += (py > my) ? 1 : -1;
+    function gerenciarFolego() {
+        if(!gameActive() || morto) return;
+        let display = document.getElementById('folego-display');
+
+        if(olhosFechados) {
+            folego = Math.max(0, folego - 2.5); // Gasta fôlego ao fechar o olho/prender a respiração
+            if(folego <= 0) {
+                abrirOlhos(); // Abre o olho a força por falta de ar
+            }
         } else {
-            mx += Math.floor(Math.random() * 3) - 1;
-            my += Math.floor(Math.random() * 3) - 1;
+            folego = Math.min(100, folego + 4); // Recupera ar com olho aberto
         }
-        checarMonstro();
+        display.innerText = `FÔLEGO: ${Math.floor(folego)}%`;
     }
 
-    function checarMonstro() {
-        let dist = Math.abs(px - mx) + Math.abs(py - my);
-        let radar = document.getElementById('radar');
-        let body = document.body;
-
-        if(dist === 0) {
-            mqttClient.publish(baseTopic + "/eventos", JSON.stringify({type: "morte", target: myName}));
-            jumpscare();
-        } else if(dist <= 2) {
-            body.className = "panic";
-            radar.innerText = "!!! ALGO ESTÁ ATRÁS DE VOCÊ. NÃO SE MEVA !!!";
-        } else if(dist <= 4) {
-            body.className = "";
-            radar.innerText = "*som de respiração pesada e garras arrastando perto...*";
-        } else {
-            body.className = "";
+    function loopDoPredador() {
+        if(morto) return;
+        // Sincroniza o ataque para todos na sala simultaneamente
+        if(Math.random() > 0.5 && !monstroPresente) {
+            mqttClient.publish(baseTopic + "/ataque", JSON.stringify({tipo: "ALERTA"}));
+            
+            // O monstro vai embora após um tempo aleatório (entre 2.5 e 4.5 segundos)
+            setTimeout(() => {
+                mqttClient.publish(baseTopic + "/ataque", JSON.stringify({tipo: "FIM"}));
+            }, 2500 + Math.random() * 2000);
         }
     }
 
-    function jumpscare() {
+    function finalFatal() {
+        morto = true;
+        clearInterval(folegoInterval);
         let sc = document.getElementById('screamer');
         sc.style.display = 'flex';
-        // Simulação básica de tremor e flash de luz
+        
+        // Efeito de flash estroboscópico na morte
         let count = 0;
         let int = setInterval(() => {
             sc.style.background = sc.style.background === 'rgb(0, 0, 0)' ? '#ff0000' : '#000';
-            if(count++ > 15) { clearInterval(int); }
-        }, 50);
+            if(count++ > 25) { clearInterval(int); sc.style.background = '#000'; }
+        }, 40);
     }
+
+    function gameActive() { return mqttClient != null; }
 </script>
 </body>
 </html>
