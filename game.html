@@ -6,463 +6,573 @@
     <title>MIMIC GARTIC PROTOCOL</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        
-        body { 
-            background: #0a0a0a; 
-            color: #d1d1d1; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            height: 100vh; 
-            overflow: hidden; 
-            user-select: none;
-            padding: 8px;
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
+
+        body {
+            background-color: #050505;
+            color: #b0b0b0;
+            display: flex; flex-direction: column; align-items: center;
+            height: 100vh; height: -webkit-fill-available;
+            padding: 8px; overscroll-behavior: none; overflow: hidden;
         }
 
-        header {
-            background: #111; padding: 8px 16px; border: 1px solid #222; border-radius: 6px;
-            width: 100%; max-width: 1100px; display: flex; justify-content: space-between;
-            align-items: center; gap: 10px; flex-shrink: 0; margin-bottom: 6px;
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000000; display: flex; justify-content: center;
+            align-items: center; z-index: 1000;
+            background-image: radial-gradient(circle, #1a0505 0%, #000000 100%);
         }
-        h1 { font-size: 14px; color: #ff3333; font-weight: 500; letter-spacing: 1px; }
-        #word-display { font-size: 13px; color: #ffaa00; font-weight: bold; background: #000; padding: 4px 12px; border: 1px dashed #333; border-radius: 4px; }
+        .login-box {
+            background: #0d0d0d; padding: 30px; border-radius: 4px;
+            box-shadow: 0 0 30px rgba(239, 71, 111, 0.1);
+            width: 100%; max-width: 400px; text-align: center;
+            border: 1px solid #330a0a;
+        }
+        .login-box h2 { color: #ef476f; margin-bottom: 20px; font-size: 24px; text-shadow: 0 0 8px rgba(239, 71, 111, 0.6); letter-spacing: 2px; }
+        .login-box input {
+            width: 100%; padding: 12px; margin-bottom: 15px;
+            background: #141414; border: 1px solid #441111; border-radius: 4px;
+            outline: none; font-size: 16px; color: #fff; text-align: center;
+        }
+        .login-box input:focus { border-color: #ef476f; box-shadow: 0 0 5px rgba(239, 71, 111, 0.5); }
+        
+        header {
+            text-align: center; margin-bottom: 6px; background: #0d0d0d;
+            padding: 8px 16px; border-radius: 4px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+            width: 100%; max-width: 1400px;
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 10px; flex-shrink: 0; position: relative;
+            border: 1px solid #222;
+        }
+        h1 { color: #ef476f; font-size: 20px; flex-shrink: 0; letter-spacing: 3px; }
+        #word-display {
+            font-weight: bold; font-size: 16px; color: #ff3333;
+            background: #050505; padding: 4px 14px; border-radius: 4px;
+            border: 1px dashed #551111; text-align: center; word-break: break-word; flex: 1;
+        }
+        #room-display {
+            font-weight: bold; color: #888; font-size: 12px;
+            display: flex; flex-direction: column; align-items: flex-end;
+            gap: 2px; flex-shrink: 0;
+        }
+        #timer-display { font-weight: bold; color: #ff3333; font-size: 14px; }
 
         #main-container {
-            display: flex; width: 100%; max-width: 1100px; flex: 1; gap: 6px; overflow: hidden; min-height: 0;
+            display: flex; width: 100%; max-width: 1400px;
+            flex: 1; gap: 8px; overflow: hidden; min-height: 0;
         }
+
+        #scoreboard {
+            flex: 0 0 160px; background: #0d0d0d; border-radius: 4px; padding: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            display: flex; flex-direction: column; overflow: hidden;
+            border: 1px solid #222;
+        }
+        #scoreboard h3 { color: #888; padding-bottom: 5px; border-bottom: 1px solid #222; font-size: 13px; }
+        #players-list {
+            margin-top: 8px; overflow-y: auto; flex: 1;
+            display: flex; flex-direction: column; gap: 5px;
+        }
+        .player-item {
+            background: #141414; padding: 7px 8px; border-radius: 4px;
+            font-weight: bold; color: #aaa; font-size: 11px;
+            border-left: 4px solid #444;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .player-item.drawing { border-left-color: #ef476f; background: #260f13; color: #ff859f; }
+        .player-info { display: flex; flex-direction: column; gap: 1px; overflow: hidden; }
+        .player-rank { font-size: 9px; color: #666; }
+        .player-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .player-score {
+            background: #252525; color: #ccc; border-radius: 4px;
+            padding: 1px 7px; font-size: 11px; min-width: 32px; text-align: center;
+            transition: transform 0.2s; flex-shrink: 0;
+        }
+        .player-score.bump { transform: scale(1.3); background: #941b34 !important; }
 
         #canvas-wrapper {
-            flex: 1; display: flex; flex-direction: column; background: #111; border: 1px solid #222; border-radius: 6px; overflow: hidden; position: relative;
+            flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0;
         }
-
-        #paint-area { flex: 1; position: relative; background: #0d0d0d; }
-        canvas { width: 100%; height: 100%; display: block; cursor: crosshair; touch-action: none; }
-
-        #palette {
-            background: #161616; display: flex; gap: 6px; padding: 6px; border-top: 1px solid #222; align-items: center; flex-shrink: 0; overflow-x: auto;
+        #drawing-area {
+            flex: 1; display: flex; flex-direction: row; overflow: hidden; min-height: 0;
         }
-        .color-dot { width: 20px; height: 20px; border-radius: 4px; cursor: pointer; border: 1px solid rgba(0,0,0,0.5); }
-        .color-dot.active { border-color: #fff; box-shadow: 0 0 4px #ff3333; }
-        .tool-btn { background: #222; color: #ccc; border: 1px solid #333; padding: 4px 10px; font-size: 11px; cursor: pointer; border-radius: 4px; font-weight: bold; }
-        .tool-btn.active { background: #ff3333; color: #000; border-color: #ff3333; }
+        #canvas-container { flex: 1; position: relative; min-height: 0; background: #000; border: 1px solid #222; border-radius: 4px; }
+        canvas { width: 100%; height: 100%; background: #111111; cursor: crosshair; touch-action: none; display: block; }
 
-        #right-sidebar { flex: 0 0 240px; display: flex; flex-direction: column; gap: 6px; }
-        .box-container { flex: 1; background: #111; border: 1px solid #222; border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; }
-        .box-title { background: #161616; padding: 6px; font-size: 10px; font-weight: bold; color: #666; border-bottom: 1px solid #222; letter-spacing: 0.5px; text-transform: uppercase; }
-        .msg-area { flex: 1; padding: 8px; overflow-y: auto; font-size: 12px; display: flex; flex-direction: column; gap: 4px; background: #080808; }
-        
-        .log { word-break: break-all; line-height: 1.3; }
-        .log-sys { color: #555; }
-        .log-chat { color: #aaa; }
-        .log-chat b { color: #ff3333; }
-        .log-secret { color: #ff3333; background: #1c0a0a; padding: 6px; border-left: 2px solid #ff3333; border-radius: 2px; font-size: 11px; margin-bottom: 6px; }
+        #round-announcement {
+            position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%) scale(0.5);
+            background: rgba(10, 3, 3, 0.95); color: #fff;
+            padding: 18px 30px; border-radius: 4px; font-weight: bold; text-align: center;
+            box-shadow: 0 0 40px rgba(0,0,0,0.9); border: 1px solid #ef476f;
+            z-index: 500; pointer-events: none; display: none; opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 85%; width: max-content;
+        }
+        #round-announcement.show { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        #round-announcement h2 { font-size: 20px; color: #ef476f; margin-bottom: 4px; text-shadow: 0 0 10px #ff0000; }
 
-        .input-row { display: flex; padding: 4px; background: #111; border-top: 1px solid #222; }
-        .term-input { flex: 1; background: #0d0d0d; border: 1px solid #222; color: #fff; padding: 6px; font-size: 12px; outline: none; border-radius: 4px; }
+        #tools {
+            background: #090909; display: flex; flex-direction: column;
+            padding: 8px; gap: 6px; border-right: 1px solid #222;
+            flex-shrink: 0; overflow-y: auto; width: 56px;
+        }
+        .tool-section-label { font-size: 8px; color: #555; text-transform: uppercase; text-align: center; }
+        .tool-btn {
+            width: 38px; height: 38px; border-radius: 4px; border: 1px solid #333; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-size: 15px; background: #141414; color: #888;
+        }
+        .tool-btn.active { background: #ef476f; color: #000; border-color: #ff859f; }
+        .tool-separator { height: 1px; background: #222; margin: 3px 0; }
+
+        #palette-container {
+            flex: 0 0 46px; background: #090909; border-radius: 4px; display: flex; flex-direction: column; overflow: hidden; padding: 6px 4px; gap: 4px; border: 1px solid #222;
+        }
+        #palette-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; overflow-y: auto; flex: 1; }
+        .color-swatch { width: 18px; height: 18px; border-radius: 2px; cursor: pointer; }
+        .color-swatch.active { border-color: #fff; box-shadow: 0 0 4px #ef476f; border: 1px solid white; }
+
+        #bottom-actions { display: flex; gap: 6px; padding: 4px 8px; background: #090909; border-top: 1px solid #222; align-items: center; flex-shrink: 0; }
+        .btn { padding: 6px 12px; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; background: #141414; color: #aaa; }
+        .btn-clear { background: #2d0a0a; color: #ff5555; }
+        .btn-decision { border-color: #ff3333; color: #ff3333; }
+        .action-interact-btn { color: #fff; font-size: 12px; padding: 5px 10px; border-radius: 4px; border: 1px solid #444; cursor: pointer; font-weight: bold; display: none; background: #141414; }
+        .action-interact-btn.cooldown { opacity: 0.2; cursor: not-allowed; }
+
+        #right-chats-wrapper { flex: 0 0 250px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+        .chat-box-container { flex: 1; background: #0d0d0d; border-radius: 4px; border: 1px solid #222; display: flex; flex-direction: column; overflow: hidden; }
+        .chat-title-bar { background: #141414; color: #888; padding: 4px 8px; font-size: 10px; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #222; }
+        .chat-messages-area { flex: 1; padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; background: #080808; }
         
-        .decision-box { background: #161616; padding: 10px; border-top: 1px solid #222; display: flex; flex-direction: column; gap: 6px; }
-        
-        #screamer { position: fixed; inset: 0; background: #000; color: #ff0000; display: none; flex-direction: column; justify-content: center; align-items: center; font-size: 6px; line-height: 6px; z-index: 10000; text-align: center; }
-        .panic { animation: strobe 0.1s infinite; }
-        @keyframes strobe { 0%, 100% { background: #0a0a0a; } 50% { background: #200505; } }
+        .msg { padding: 4px 6px; border-radius: 2px; font-size: 11px; word-break: break-all; }
+        .msg-system  { background: #1c1111; color: #ff5555; border-left: 2px solid #991111; font-weight: bold; }
+        .msg-success { background: #112415; color: #4ee082; font-weight: bold; }
+        .msg-wrong   { background: #141414; color: #777; }
+        .msg-normal  { background: #0f0f0f; color: #aaa; }
+        .msg-normal .username { font-weight: bold; color: #ef476f; }
+
+        .chat-input-row { display: flex; padding: 5px; border-top: 1px solid #222; background: #0d0d0d; }
+        .chat-input-field { flex: 1; padding: 6px; border: 1px solid #333; background: #141414; color: #fff; font-size: 12px; outline: none; }
+        .chat-send-btn { background: #222; color: #aaa; margin-left: 4px; font-size: 11px; border: 1px solid #333; cursor: pointer; }
+
+        #egg-overlay { position: fixed; inset: 0; pointer-events: none; background: rgba(139, 0, 0, 0.5); opacity: 0; z-index: 9998; }
+        #egg-overlay.splat { animation: splatFade 1.2s ease-out forwards; }
+        @keyframes splatFade { 0% { opacity: 0.8; } 100% { opacity: 0; } }
+
+        /* Media Query para compactação Extrema do Celular */
+        @media (max-width: 768px) {
+            body { padding: 4px; }
+            header { padding: 5px 8px; height: 44px; margin-bottom: 0; }
+            h1 { font-size: 11px; }
+            #word-display { font-size: 10px; padding: 2px 6px; }
+            #room-display { font-size: 9px; }
+            #main-container { position: absolute; top: 52px; left: 4px; right: 4px; bottom: 4px; flex-direction: column; gap: 4px; }
+            #scoreboard { flex: 0 0 36px !important; width: 100%; flex-direction: row; align-items: center; padding: 3px 6px; }
+            #scoreboard h3 { display: none; }
+            #players-list { margin-top: 0; flex-direction: row !important; overflow-x: auto; height: 100%; align-items: center; gap: 5px; }
+            .player-item { padding: 3px 6px; font-size: 10px; height: 28px; display: inline-flex; flex-shrink: 0; }
+            #canvas-wrapper { flex: 1 1 0 !important; }
+            #drawing-area { flex: 1 1 0 !important; flex-direction: column !important; }
+            #canvas-container { flex: 1 1 0 !important; }
+            #tools { width: 100%; flex-direction: row; height: 50px; min-height: 50px; padding: 6px 10px; border-right: none; border-top: 1px solid #222; }
+            .tool-section-label { display: none; }
+            .tool-separator { width: 1px; height: 32px; background: #222; margin: 0 2px; }
+            #palette-container { flex: 0 0 42px !important; width: 100% !important; height: 42px !important; flex-direction: row !important; padding: 5px 8px; }
+            #palette-grid { grid-template-columns: repeat(14, 22px); height: 28px; overflow-x: auto; }
+            #right-chats-wrapper { flex: 0 0 150px !important; width: 100% !important; flex-direction: row !important; gap: 4px; }
+        }
     </style>
 </head>
 <body>
 
-<div id="login-screen" style="position:fixed; inset:0; background:#0a0a0a; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:999;">
-    <h2 style="color:#fff; font-weight:400; margin-bottom:5px; letter-spacing:2px; font-size:20px;">MIMIC GARTIC PROTOCOL</h2>
-    <p style="color:#444; font-size:11px; margin-bottom:25px;">Avaliação Multiplayer de Traço Biológico vs Farsa Artificial</p>
-    <input type="text" id="nick" placeholder="Seu Nome de Operador" style="background:#111; border:1px solid #222; color:#fff; padding:12px; margin-bottom:10px; outline:none; text-align:center; width:260px; border-radius:4px; font-family:monospace;">
-    <input type="text" id="sala" placeholder="Código do Limbo (Sala)" style="background:#111; border:1px solid #222; color:#fff; padding:12px; margin-bottom:25px; outline:none; text-align:center; width:260px; border-radius:4px; font-family:monospace;">
-    <button class="tool-btn" style="width:260px; padding:12px;" onclick="conectarAoMundo()">LOGAR NO TERMINAL</button>
+<div id="egg-overlay"></div>
+
+<div id="login-screen">
+    <div class="login-box">
+        <h2>👁️ PROTOCOLO MÍMICO</h2>
+        <input type="text" id="input-username" placeholder="Identidade do Operador" required>
+        <input type="text" id="input-room" placeholder="Canal do Limbo (Sala)" required>
+        <button class="btn" style="width:100%; padding:12px; background:#ef476f; color:#000;" onclick="connectToGame()">INICIAR ANÁLISE</button>
+    </div>
 </div>
 
 <header>
-    <h1>👁️ EXAME DE TRIAGEM COMPORTAMENTAL</h1>
-    <div id="word-display">AGUARDANDO CONEXÕES...</div>
+    <h1>☣️ TRIAGEM COMPORTAMENTAL</h1>
+    <div id="word-display">Sincronizando operadores...</div>
+    <div id="room-display">
+        <span id="room-id">Limbo: —</span>
+        <span id="timer-display">⏱️ Sanidade: --</span>
+    </div>
 </header>
 
 <div id="main-container">
-    <div id="canvas-wrapper">
-        <div id="paint-area">
-            <canvas id="paintCanvas"></canvas>
-        </div>
-        <div id="palette">
-            <button class="tool-btn active" id="tool-brush" onclick="setMecanicaFerramenta('brush')">Pincel</button>
-            <button class="tool-btn" id="tool-eraser" onclick="setMecanicaFerramenta('eraser')">Borracha</button>
-            <div style="width:1px; height:20px; background:#333; margin:0 4px;"></div>
-            <div class="color-dot active" style="background:#ffffff;" onclick="setCorMestre('#ffffff', this)"></div>
-            <div class="color-dot" style="background:#ff3333;" onclick="setCorMestre('#ff3333', this)"></div>
-            <div class="color-dot" style="background:#33ff33;" onclick="setCorMestre('#33ff33', this)"></div>
-            <div class="color-dot" style="background:#00ffff;" onclick="setCorMestre('#00ffff', this)"></div>
-            <div class="color-dot" style="background:#ffff33;" onclick="setCorMestre('#ffff33', this)"></div>
-        </div>
+    <div id="scoreboard">
+        <h3>🏆 Sinais Vital</h3>
+        <div id="players-list"></div>
     </div>
 
-    <div id="right-sidebar">
-        <div class="box-container">
-            <div class="box-title">📊 DIRETRIZ INTEGRA</div>
-            <div id="log-panel" class="msg-area">
-                <div class="log log-sys">[SISTEMA] Aguardando acoplamento de rede...</div>
-            </div>
-            <div class="decision-box">
-                <div style="font-size:10px; color:#555; text-align:center; margin-bottom:2px;">AVALIAÇÃO DO TRAÇO DO DESENHISTA:</div>
-                <div style="display:flex; gap:4px;">
-                    <button class="tool-btn" style="flex:1; border-color:#224422; color:#33ff33;" onclick="votarTrazo('HUMANO')">HUMANO</button>
-                    <button class="tool-btn" style="flex:1; border-color:#541111; color:#ff3333;" onclick="votarTrazo('IA')">MÍMICO (IA)</button>
+    <div id="canvas-wrapper">
+        <div id="drawing-area">
+            <div id="tools">
+                <span class="tool-section-label">Fluido</span>
+                <div class="tool-btn active" id="tool-brush" title="Pincel" onclick="setTool('brush')">✏️</div>
+                <div class="tool-btn" id="tool-eraser" title="Borracha" onclick="setTool('eraser')">🧹</div>
+                <div class="tool-separator"></div>
+                <span class="tool-section-label">Calibre</span>
+                <div class="brush-sizes">
+                    <div class="size-btn active" id="size-3" style="width:8px;height:8px;" onclick="setBrushSize(3,this)"></div>
+                    <div class="size-btn" id="size-8" style="width:14px;height:14px;" onclick="setBrushSize(8,this)"></div>
                 </div>
             </div>
-        </div>
 
-        <div class="box-container" style="flex:0 0 160px;">
-            <div class="box-title">💬 CHAT DA TURMA</div>
-            <div id="chat-panel" class="msg-area"></div>
-            <div class="input-row">
-                <input type="text" id="chat-input" class="term-input" placeholder="Chute a palavra ou converse..." autocomplete="off">
+            <div id="canvas-container">
+                <div id="round-announcement">
+                    <h2 id="announcement-title">FIM DA PROJEÇÃO</h2>
+                    <p id="announcement-desc">Análise de dados concluída.</p>
+                </div>
+                <canvas id="paintCanvas"></canvas>
+            </div>
+        </div>
+        <div id="bottom-actions">
+            <button class="btn btn-clear" onclick="sendClear()">🗑️ Expurgar</button>
+            <button id="btn-egg" class="action-interact-btn" onclick="throwInteract('egg')">💀 Gritar Pânico</button>
+            <button id="btn-flower" class="action-interact-btn" onclick="throwInteract('flower')">👁️ Dar Sanidade</button>
+            <div style="flex:1;"></div>
+            <button class="btn btn-decision" onclick="votarOrigem('HUMANO')">✓ Humano</button>
+            <button class="btn btn-decision" onclick="votarOrigem('IA')">🕱 Mímico (IA)</button>
+        </div>
+    </div>
+
+    <div id="palette-container">
+        <div id="palette-grid"></div>
+    </div>
+
+    <div id="right-chats-wrapper">
+        <div class="chat-box-container">
+            <div class="chat-title-bar">🎯 Decifrar Presságio (Palpites)</div>
+            <div id="guess-messages" class="chat-messages-area"></div>
+            <div class="chat-input-row">
+                <input type="text" id="guess-input" class="chat-input-field" placeholder="Chute a palavra...">
+                <button class="chat-send-btn" onclick="sendGuessMessage()">➤</button>
+            </div>
+        </div>
+        <div class="chat-box-container">
+            <div class="chat-title-bar">💬 Ecos do Além (Conversa)</div>
+            <div id="chat-messages" class="chat-messages-area"></div>
+            <div class="chat-input-row">
+                <input type="text" id="chat-input" class="chat-input-field" placeholder="Sussurrar...">
+                <button class="chat-send-btn" onclick="sendChatMessage()">➤</button>
             </div>
         </div>
     </div>
-</div>
-
-<div id="screamer">
-    <pre>
- ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
- ████████▀▀▀████████████▀▀▀██████
- ██████▀     ▀████████▀     ▀████
- █████        ████████        ███
-  ▀████████████████████████████▀
-     M I M E T I S M O   A T I V O
-    </pre>
-    <div id="morte-motivo" style="font-size:13px; font-family:monospace; margin-top:15px; color:#777; padding:0 15px;">A IA TE ENGANOU.</div>
 </div>
 
 <script>
-    let mqttClient = null, baseTopic = "", myName = "";
-    let listaOperadores = [];
-    let jogoAtivo = false, desenhistaDaVez = "", palavraSecreta = "", eRodadaDaIA = false, euSouIA_Bloqueado = false;
+    const FULL_PALETTE = ["#ffffff","#ff3333","#33ff33","#00ffff","#ffff33","#ff33ff","#888888","#222222"];
+    let username = "", roomName = "", mqttClient = null, baseTopic = "";
+    const listaJogadores = new Set();
+    const scores = {};
     
-    let canvas, ctx, desenhando = false;
-    let corAtual = "#ffffff", ferramentaAtual = "brush";
+    let isDrawer = false, currentWord = "", currentDrawerName = "", eRodadaDaIA = false, botBloqueado = false;
+    let roundActive = false, countdownInterval = null, currentTimeLeft = 0;
+    const TEMPO_RODADA = 60;
+
+    let canvas, ctx, drawing = false;
+    let currentColor = "#ffffff", currentTool = "brush", currentBrushSize = 3;
     let botDrawInterval = null;
 
-    const BANCO_PALAVRAS = ["CORACAO", "OLHO", "CAIXAO", "ARVORE", "FANTASMA", "CRANIO", "BRUXA"];
-    
-    // Trajetórias complexas que a IA sabe desenhar simulando comportamento de apagar e refazer de propósito
-    const VETORES_IA = {
+    const PALAVRAS_PADRAO = ["CORACAO", "OLHO", "CAIXAO", "ARVORE", "FANTASMA", "CRANIO", "BRUXA", "TUMULO"];
+
+    // Trajetória simulada complexa da IA (Erra de propósito, ativa borracha, apaga e refaz o traço)
+    const VETORES_MIMICOS = {
         "OLHO": [
-            {x: 100, y: 200, type: 'start'}, {x: 250, y: 120, type: 'line'}, {x: 400, y: 200, type: 'line'},
-            {x: 100, y: 200, type: 'start'}, {x: 250, y: 280, type: 'line'}, {x: 400, y: 200, type: 'line'},
-            // SIMULAÇÃO DE ERRO HUMANO: A IA faz um risco torto para fora do olho de propósito
-            {x: 250, y: 120, type: 'start'}, {x: 290, y: 80, type: 'line'}, 
-            // CORTA PARA A BORRACHA: Ela seleciona a borracha e apaga o risco errado!
-            {type: 'tool-eraser'}, {x: 250, y: 120, type: 'start'}, {x: 290, y: 80, type: 'line'},
-            // VOLTA PRO PINCEL: Continua desenhando a íris normalmente
-            {type: 'tool-brush'}, {x: 250, y: 200, type: 'start'}, {x: 280, y: 200, type: 'line'}
+            {x: 150, y: 250, type: 'start'}, {x: 350, y: 150, type: 'line'}, {x: 550, y: 250, type: 'line'},
+            {x: 150, y: 250, type: 'start'}, {x: 350, y: 350, type: 'line'}, {x: 550, y: 250, type: 'line'},
+            // Risco errático proposital simulando falha de controle humana
+            {x: 350, y: 150, type: 'start'}, {x: 420, y: 80, type: 'line'},
+            // IA percebe o erro, muda para a borracha e limpa o traço torto
+            {type: 'tool-eraser'}, {x: 350, y: 150, type: 'start'}, {x: 420, y: 80, type: 'line'},
+            // Volta para o pincel e faz o desenho real da íris central
+            {type: 'tool-brush'}, {x: 350, y: 250, type: 'start'}, {x: 390, y: 250, type: 'line'}
         ],
         "CAIXAO": [
-            {x: 180, y: 100, type: 'start'}, {x: 320, y: 100, type: 'line'}, {x: 360, y: 180, type: 'line'},
-            {x: 300, y: 320, type: 'line'}, {x: 200, y: 320, type: 'line'}, {x: 140, y: 180, type: 'line'}, {x: 180, y: 100, type: 'line'},
-            // Erro intencional: Riscar uma linha cruzada errada no fundo do caixão
-            {x: 200, y: 320, type: 'start'}, {x: 360, y: 180, type: 'line'},
-            // Ativa borracha e limpa o erro
-            {type: 'tool-eraser'}, {x: 200, y: 320, type: 'start'}, {x: 360, y: 180, type: 'line'},
-            // Volta pro pincel e faz a cruz central correta
-            {type: 'tool-brush'}, {x: 250, y: 140, type: 'start'}, {x: 250, y: 260, type: 'line'},
-            {x: 210, y: 180, type: 'start'}, {x: 290, y: 180, type: 'line'}
+            {x: 200, y: 120, type: 'start'}, {x: 400, y: 120, type: 'line'}, {x: 450, y: 220, type: 'line'},
+            {x: 380, y: 400, type: 'line'}, {x: 220, y: 400, type: 'line'}, {x: 150, y: 220, type: 'line'}, {x: 200, y: 120, type: 'line'},
+            // Linha errada cruzando a estrutura
+            {x: 220, y: 400, type: 'start'}, {x: 450, y: 220, type: 'line'},
+            // Ativa borracha e limpa
+            {type: 'tool-eraser'}, {x: 220, y: 400, type: 'start'}, {x: 450, y: 220, type: 'line'},
+            // Retorna ao pincel comum e insere a cruz interna
+            {type: 'tool-brush'}, {x: 300, y: 180, type: 'start'}, {x: 300, y: 320, type: 'line'},
+            {x: 250, y: 220, type: 'start'}, {x: 350, y: 220, type: 'line'}
         ]
     };
 
-    function conectarAoMundo() {
-        myName = document.getElementById('nick').value.trim();
-        let sala = document.getElementById('sala').value.trim().toLowerCase().replace(/[^a-z0-9]/g,"");
-        if(!myName || !sala) return;
+    function connectToGame() {
+        username = document.getElementById('input-username').value.trim();
+        roomName = document.getElementById('input-room').value.trim().toLowerCase().replace(/[^a-z0-9]/g,"");
+        if (!username || !roomName) return;
 
         document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('room-id').innerText = "Abismo: " + roomName;
         
         canvas = document.getElementById('paintCanvas');
         ctx = canvas.getContext('2d');
-        canvas.width = canvas.parentElement.clientWidth;
-        canvas.height = canvas.parentElement.clientHeight;
-        ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = 3;
+        canvas.width = 800; canvas.height = 600;
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = currentBrushSize;
 
-        baseTopic = "mimic_gartic_core_2026/" + sala;
+        adicionarJogadorLista(username);
+        buildPalette();
+        initMqtt();
+        setupLocalPaint();
+    }
+
+    function initMqtt() {
+        baseTopic = "mimic_gartic_cll_horror_2026/" + roomName;
         mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
 
         mqttClient.on('connect', () => {
             mqttClient.subscribe(baseTopic + "/chat");
-            mqttClient.subscribe(baseTopic + "/desenho");
-            mqttClient.subscribe(baseTopic + "/status");
-            mqttClient.subscribe(baseTopic + "/presenca");
-            mqttClient.subscribe(baseTopic + "/presenca/echo");
+            mqttClient.subscribe(baseTopic + "/draw");
+            mqttClient.subscribe(baseTopic + "/presence");
+            mqttClient.subscribe(baseTopic + "/presence/echo");
+            mqttClient.subscribe(baseTopic + "/gameflow");
 
-            mqttClient.publish(baseTopic + "/presenca", JSON.stringify({ name: myName }));
-            configurarMecanicasLocaisDePintura();
+            mqttClient.publish(baseTopic + "/presence", JSON.stringify({ name: username }));
+            addSystemMessage(`[SISTEMA] Varrendo espectro da sala à procura de outras mentes...`);
+            setTimeout(() => { checkAndAutoStart(); }, 2000);
         });
 
-        mqttClient.on('message', (topic, msg) => {
-            let data = JSON.parse(msg.toString());
-
-            if(topic === baseTopic + "/presenca") {
-                if(data.name && !listaOperadores.includes(data.name)) {
-                    listaOperadores.push(data.name);
-                    mqttClient.publish(baseTopic + "/presenca/echo", JSON.stringify({ name: myName }));
-                    verificarCicloDeStart();
+        mqttClient.on('message', (topic, message) => {
+            const data = JSON.parse(message.toString());
+            
+            if (topic === baseTopic + "/chat") {
+                if (data.type === "system") {
+                    addSystemMessage(data.text);
+                    if (data.name) { adicionarJogadorLista(data.name); checkAndAutoStart(); }
+                } else if (data.type === "guess") {
+                    if (data.isCorrect) {
+                        addSuccessMessage(data.sender, `decifrou o presságio: ${currentWord}!`);
+                        addScore(data.sender, 10);
+                        showGarticAnnouncement("🎯 EQUAÇÃO RESOLVIDA", `${data.sender} desvendou a palavra secreta.`);
+                        handleRoundEndAutomatically();
+                    } else { renderWrongGuessMessage(data.sender, data.text); }
+                } else if (data.type === "talk") { renderNormalMessage(data.sender, data.text); }
+            } else if (topic === baseTopic + "/draw" && data.sender !== username) {
+                renderRemoteDraw(data);
+            } else if (topic === baseTopic + "/presence") {
+                if (data.name && data.name !== username) {
+                    adicionarJogadorLista(data.name);
+                    mqttClient.publish(baseTopic + "/presence/echo", JSON.stringify({ name: username }));
+                    checkAndAutoStart();
                 }
-            } else if(topic === baseTopic + "/presenca/echo") {
-                if(data.name && !listaOperadores.includes(data.name)) {
-                    listaOperadores.push(data.name);
-                    verificarCicloDeStart();
-                }
-            } else if(topic === baseTopic + "/chat") {
-                renderizarTextoNoChat(data.sender, data.text);
-            } else if(topic === baseTopic + "/desenho" && descanseSeForMeuTerminalRemoto(data.sender)) {
-                renderizarTracoRemoto(data);
-            } else if(topic === baseTopic + "/status") {
-                if(data.tipo === "RODADA") configurarFaseAtualGartic(data);
+            } else if (topic === baseTopic + "/presence/echo") {
+                if (data.name && data.name !== username) { adicionarJogadorLista(data.name); checkAndAutoStart(); }
+            } else if (topic === baseTopic + "/gameflow") {
+                handleGameFlow(data);
             }
         });
-
-        document.getElementById('chat-input').addEventListener('keypress', function(e) {
-            if(e.key === 'Enter') enviarMensagemDoChat();
-        });
     }
 
-    function descanseSeForMeuTerminalRemoto(sender) {
-        return sender !== myName;
-    }
+    function checkAndAutoStart() {
+        if (!roundActive && listaJogadores.size >= 2) {
+            let mestre = Array.from(listaJogadores).sort()[0];
+            if (mestre === username) {
+                let palavra = PALAVRAS_PADRAO[Math.floor(Math.random() * PALAVRAS_PADRAO.length)];
+                let proximoDesenhista = Array.from(listaJogadores)[Math.floor(Math.random() * listaJogadores.size)];
+                let rodadaIA = Math.random() > 0.5; // 50% de chance do sinal ser interceptado pela IA
 
-    function verificarCicloDeStart() {
-        if(!jogoAtivo && listaOperadores.length >= 2) {
-            jogoAtivo = true;
-            let mestre = [...listaOperadores].sort()[0];
-            if(mestre === myName) {
-                setTimeout(sortearProximoTurnoLeste, 1500);
+                mqttClient.publish(baseTopic + "/gameflow", JSON.stringify({
+                    drawer: proximoDesenhista, word: palavra, isIA: rodadaIA
+                }));
             }
         }
     }
 
-    function sortearProximoTurnoLeste() {
-        let palavra = BANCO_PALAVRAS[Math.floor(Math.random() * BANCO_PALAVRAS.length)];
-        let autor = listaOperadores[Math.floor(Math.random() * listaOperadores.length)];
-        
-        // 50% de chance do sistema interceptar a rodada e forçar a IA a desenhar no lugar do humano
-        let rodadaIA = Math.random() > 0.5;
-
-        mqttClient.publish(baseTopic + "/status", JSON.stringify({
-            tipo: "RODADA",
-            desenhista: autor,
-            palavra: palavra,
-            isIA: rodadaIA,
-            numero: rodadaAtual
-        }));
-    }
-
-    let rodadaAtual = 1;
-
-    function configurarFaseAtualGartic(data) {
+    function handleGameFlow(data) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         clearInterval(botDrawInterval);
-        desenhistaDaVez = data.desenhista;
-        palavraSecreta = data.palavra;
-        eRodadaDaIA = data.isIA;
-        euSouIA_Bloqueado = false;
+        currentDrawerName = data.drawer; currentWord = data.word; eRodadaDaIA = data.isIA;
+        roundActive = true; currentTimeLeft = TEMPO_RODADA;
+        botBloqueado = false;
 
-        const panel = document.getElementById('log-panel');
-        panel.innerHTML = "";
+        document.getElementById('btn-egg').style.display = 'inline-flex';
+        document.getElementById('btn-flower').style.display = 'inline-flex';
 
-        if(desenhistaDaVez === myName) {
-            if(eRodadaDaIA) {
-                // Eu fui interceptado! A tela bloqueia e a IA joga no meu lugar sem eu mexer
-                euSouIA_Bloqueado = true;
-                const div = document.createElement('div');
-                div.className = "log log-secret";
-                div.innerText = "⚠️ CANAL BLOQUEADO: O Mímico interceptou seu mouse. Assista a IA desenhar na sua tela tentando simular sua identidade para enganar os outros.";
-                panel.appendChild(div);
-                document.getElementById('word-display').innerText = `PROJEÇÃO AUTOMÁTICA: ${palavraSecreta}`;
-                
-                executarAlgoritmoDesenhoIA();
+        if (currentDrawerName === username) {
+            isDrawer = true;
+            if (eRodadaDaIA) {
+                botBloqueado = true; // Tela tranca e a IA assume o controle do terminal dele
+                addSystemMessage("⚠️ ADVERTÊNCIA: O Mímico clonou seu painel. Assista a máquina desenhar por você.");
+                document.getElementById('word-display').innerText = `PROJEÇÃO DA IA: ${currentWord}`;
+                executarTracoDoBotMImico();
             } else {
-                document.getElementById('word-display').innerText = `SUA PALAVRA: ${palavraSecreta}`;
-                logSistema("Sua vez de desenhar! Use o quadro livre.");
+                document.getElementById('word-display').innerText = `Sua Palavra: ${currentWord}`;
+                addSystemMessage("✏️ Sua vez! Transmita os dados no quadro livre.");
             }
         } else {
-            let mascara = "_ ".repeat(palavraSecreta.length).trim();
-            document.getElementById('word-display').innerText = `DESENHO DE ${desenhistaDaVez.toUpperCase()} (${mascara})`;
-            logSistema(`${desenhistaDaVez} está projetando na tela...`);
-            
-            // Se a IA for a desenhista real da rodada na malha, roda o motor no mestre invisível
-            if(eRodadaDaIA && [...listaOperadores].sort()[0] === myName) {
-                executarAlgoritmoDesenhoIA();
+            isDrawer = false;
+            let u = "_ ".repeat(currentWord.length).trim();
+            document.getElementById('word-display').innerText = `Sinal de ${currentDrawerName} (${u})`;
+            addSystemMessage(`🎨 Canal aberto. Recebendo traços de ${currentDrawerName}...`);
+
+            if (eRodadaDaIA && Array.from(listaJogadores).sort()[0] === username) {
+                executarTracoDoBotMImico(); // Roda o motor invisível no nó mestre da sala
             }
         }
+        startLocalTimer();
     }
 
-    function executarAlgoritmoDesenhoIA() {
-        // Pega os traços do banco de dados ou gera linhas reativas baseadas na palavra
-        let comandosTrajeto = VETORES_IA[palavraSecreta] || VETORES_IA["OLHO"];
+    function ejecutarTracoDoBotMImico() {
+        let comandos = VETORES_MIMICOS[currentWord] || VETORES_MIMICOS["OLHO"];
         let idx = 0;
+        let ferramentaBot = "brush";
 
         botDrawInterval = setInterval(() => {
-            if(!jogoAtivo || idx >= comandosTrajeto.length) { clearInterval(botDrawInterval); return; }
+            if (!roundActive || idx >= comandos.length) { clearInterval(botDrawInterval); return; }
 
-            let cmd = comandosTrajeto[idx];
-            
-            if(cmd.type === 'tool-eraser') {
-                ferramentaAtual = "eraser";
-            } else if(cmd.type === 'tool-brush') {
-                ferramentaAtual = "brush";
-            } else {
-                let rCor = ferramentaAtual === "eraser" ? "#0d0d0d" : "#ffffff";
-                let rTam = ferramentaAtual === "eraser" ? 20 : 3;
+            let cmd = comandos[idx];
 
-                // Envia as coordenadas pela rede MQTT imitando o tráfego de um jogador real mexendo o mouse
-                mqttClient.publish(baseTopic + "/desenho", JSON.stringify({
-                    sender: desenhistaDaVez,
-                    action: cmd.type,
-                    x: cmd.x,
-                    y: cmd.y,
-                    color: rCor,
-                    size: rTam
+            if (cmd.type === 'tool-eraser') { ferramentaBot = "eraser"; }
+            else if (cmd.type === 'tool-brush') { ferramentaBot = "brush"; }
+            else {
+                let rCor = ferramentaBot === "eraser" ? "#111111" : "#ffffff";
+                let rTam = ferramentaBot === "eraser" ? 25 : 3;
+
+                mqttClient.publish(baseTopic + "/draw", JSON.stringify({
+                    sender: currentDrawerName, action: cmd.type, x: cmd.x, y: cmd.y, color: rCor, size: rTam
                 }));
 
-                // Renderiza localmente na tela para o desenhista mutado assistir
-                localDrawIA(cmd.type, cmd.x, cmd.y, rCor, rTam);
+                localDrawBot(cmd.type, cmd.x, cmd.y, rCor, rTam);
             }
-
             idx++;
-        }, 150 + Math.random() * 100); // Flutuação orgânica de velocidade de clique humana!
+        }, 160 + Math.random() * 120); // Intervalo variável idêntico ao clique de um dedo humano
     }
 
-    function localDrawIA(action, x, y, cor, tam) {
-        ctx.strokeStyle = cor;
-        ctx.lineWidth = tam;
-        if(action === 'start') {
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-        } else {
-            ctx.lineTo(x, y);
-            ctx.stroke();
-        }
+    function localDrawBot(action, x, y, cor, size) {
+        ctx.strokeStyle = cor; ctx.lineWidth = size;
+        if (action === 'start') { ctx.beginPath(); ctx.moveTo(x, y); }
+        else { ctx.lineTo(x, y); ctx.stroke(); }
     }
 
-    function configurarMecanicasLocaisDePintura() {
+    function setupLocalPaint() {
         canvas.addEventListener('mousedown', (e) => {
-            if(desenhistaDaVez !== myName || euSouIA_Bloqueado || !jogoAtivo) return;
-            desenhando = true;
-            enviarTracoMouse('start', e.clientX, e.clientY);
+            if (!isDrawer || botBloqueado || !roundActive) return;
+            desenharTracoLocal('start', e.clientX, e.clientY);
+            drawing = true;
         });
-
         canvas.addEventListener('mousemove', (e) => {
-            if(!desenhando || euSouIA_Bloqueado) return;
-            enviarTracoMouse('line', e.clientX, e.clientY);
+            if (!drawing || botBloqueado) return;
+            desenharTracoLocal('draw', e.clientX, e.clientY);
         });
+        window.addEventListener('mouseup', () => drawing = false);
 
-        canvas.addEventListener('mouseup', () => desearMarcarFimTraco());
-        canvas.addEventListener('mouseleave', () => desearMarcarFimTraco());
+        // Suporte Mobile para Celular
+        canvas.addEventListener('touchstart', (e) => {
+            if (!isDrawer || botBloqueado || !roundActive || e.touches.length !== 1) return;
+            desenharTracoLocal('start', e.touches[0].clientX, e.touches[0].clientY);
+            drawing = true;
+        }, { passive: false });
+        canvas.addEventListener('touchmove', (e) => {
+            if (!drawing || botBloqueado || e.touches.length !== 1) return;
+            desenharTracoLocal('draw', e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: false });
+        window.addEventListener('touchend', () => drawing = false);
     }
 
-    function desearMarcarFimTraco() { desenhando = false; }
-
-    function enviarTracoMouse(acao, cx, cy) {
+    function desenharTracoLocal(action, cx, cy) {
         const rect = canvas.getBoundingClientRect();
         let lx = ((cx - rect.left) / rect.width) * canvas.width;
         let ly = ((cy - rect.top) / rect.height) * canvas.height;
 
-        let corEmissao = ferramentaAtual === "eraser" ? "#0d0d0d" : corAtual;
-        let tamEmissao = ferramentaAtual === "eraser" ? 20 : 3;
+        let rCor = currentTool === "eraser" ? "#111111" : currentColor;
+        let rTam = currentTool === "eraser" ? 25 : currentBrushSize;
 
-        ctx.strokeStyle = corEmissao;
-        ctx.lineWidth = tamEmissao;
+        ctx.strokeStyle = rCor; ctx.lineWidth = rTam;
+        if (action === 'start') { ctx.beginPath(); ctx.moveTo(lx, ly); }
+        else { ctx.lineTo(lx, ly); ctx.stroke(); }
 
-        if(acao === 'start') {
-            ctx.beginPath(); ctx.moveTo(lx, ly);
-        } else {
-            ctx.lineTo(lx, ly); ctx.stroke();
-        }
-
-        mqttClient.publish(baseTopic + "/desenho", JSON.stringify({
-            sender: myName, action: acao, x: lx, y: ly, color: corEmissao, size: tamEmissao
+        mqttClient.publish(baseTopic + "/draw", JSON.stringify({
+            sender: username, action, x: lx, y: ly, color: rCor, size: rTam
         }));
     }
 
-    function renderizarTracoRemoto(data) {
-        ctx.strokeStyle = data.color;
-        ctx.lineWidth = data.size;
-        if(data.action === 'start') {
-            ctx.beginPath();
-            ctx.moveTo(data.x, data.y);
-        } else {
-            ctx.lineTo(data.x, data.y);
-            ctx.stroke();
-        }
+    function renderRemoteDraw(data) {
+        ctx.strokeStyle = data.color; ctx.lineWidth = data.size;
+        if (data.action === 'start') { ctx.beginPath(); ctx.moveTo(data.x, data.y); }
+        else { ctx.lineTo(data.x, data.y); ctx.stroke(); }
     }
 
-    function setMecanicaFerramenta(tipo) {
-        ferramentaAtual = tipo;
-        document.querySelectorAll('#palette .tool-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('tool-' + tipo).classList.add('active');
-    }
-
-    function setCorMestre(hex, el) {
-        corAtual = hex;
-        setMecanicaFerramenta('brush');
-        document.querySelectorAll('#palette .color-dot').forEach(d => d.classList.remove('active'));
-        el.classList.add('active');
-    }
-
-    function enviarMensagemDoChat() {
-        const input = document.getElementById('chat-input');
-        const txt = input.value.trim();
-        if(!txt || !mqttClient) return;
-
-        mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: myName, text: txt }));
-        input.value = "";
-    }
-
-    function renderizarTextoNoChat(remetente, texto) {
-        const area = document.getElementById('chat-panel');
-        const r = document.createElement('div');
-        r.className = "log log-chat";
-        r.innerHTML = `<b>${remetente}:</b> ${texto}`;
-        area.appendChild(r);
-        area.scrollTop = area.scrollHeight;
-    }
-
-    function logSistema(txt) {
-        const area = document.getElementById('log-panel');
-        const r = document.createElement('div');
-        r.className = "log log-sys";
-        r.innerText = `[SISTEMA] ${txt}`;
-        area.appendChild(r);
-        area.scrollTop = area.scrollHeight;
-    }
-
-    function votarTrazo(voto) {
-        if(!jogoAtivo || desenhistaDaVez === myName) return;
-
-        let respostaEsperada = eRodadaDaIA ? "IA" : "HUMANO";
-
-        if(voto === respostaEsperada) {
-            logSistema("✅ DIAGNÓSTICO CORRETO. Sua percepção identificou a assinatura biológica do traço.");
-            rodadaAtual++;
-            if(rodadaAtual > 3) {
-                logSistema("🏆 TRIAGEM CONCLUÍDA. VOCÊS ESTÃO SEGUROS.");
-                jogoAtivo = false;
+    function startLocalTimer() {
+        clearInterval(countdownInterval);
+        document.getElementById('timer-display').innerText = "⏱️ Sanidade: " + currentTimeLeft + "s";
+        countdownInterval = setInterval(() => {
+            currentTimeLeft--;
+            if (currentTimeLeft <= 0) {
+                clearInterval(countdownInterval);
+                showGarticAnnouncement("⏳ TEMPO ESGOTADO", `A visão sumiu no escuro. A palavra era: ${currentWord}`);
+                handleRoundEndAutomatically();
             } else {
-                let mestre = [...listaOperadores].sort()[0];
-                if(mestre === myName) setTimeout(sortearProximoTurnoLeste, 3000);
+                document.getElementById('timer-display').innerText = "⏱️ Sanidade: " + currentTimeLeft + "s";
             }
+        }, 1000);
+    }
+
+    function handleRoundEndAutomatically() {
+        roundActive = false; clearInterval(countdownInterval); clearInterval(botDrawInterval);
+        setTimeout(() => { checkAndAutoStart(); }, 4000);
+    }
+
+    function votarOrigem(voto) {
+        if (!roundActive || isDrawer) return;
+        clearInterval(botDrawInterval); clearInterval(countdownInterval);
+
+        let respostaCerta = eRodadaDaIA ? "IA" : "HUMANO";
+
+        if (voto === respostaCerta) {
+            addSystemMessage("✅ ANÁLISE PRECISA. Você detectou a real natureza vetorial do traço.");
+            addScore(username, 15);
+            showGarticAnnouncement("👁️ DIAGNÓSTICO ACEITO", "Você decifrou a mente por trás do traço.");
+            handleRoundEndAutomatically();
         } else {
-            // ERROU: Jumpscare
-            document.body.className = "panic";
-            let sc = document.getElementById('screamer');
-            sc.style.display = 'flex';
-            document.getElementById('morte-motivo').innerText = eRodadaDaIA ? "Você aceitou o disfarce da máquina achando que era seu amigo." : "Sua paranoia fez você condenar o traço do seu amigo real.";
+            // ERROU: Jumpscare estroboscópico de infecção
+            document.getElementById('screamer').style.display = 'flex';
+            document.getElementById('morte-motivo').innerText = eRodadaDaIA 
+                ? "Você confiou no disfarce do Mímico achando que era seu parceiro biológico." 
+                : "Sua paranoia excessiva condenou o traço real e inocente de um humano.";
             
-            setTimeout(() => { window.location.reload(); }, 4000);
+            setTimeout(() => { window.location.reload(); }, 5000);
         }
     }
+
+    function buildPalette() {
+        const grid = document.getElementById('palette-grid');
+        FULL_PALETTE.forEach(hex => {
+            const swatch = document.createElement('div');
+            swatch.className = 'color-swatch'; swatch.style.background = hex;
+            swatch.onclick = () => {
+                currentColor = hex; currentTool = "brush";
+                document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+                swatch.classList.add('active');
+            };
+            grid.appendChild(swatch);
+        });
+    }
+
+    function setTool(tool) { currentTool = tool; document.querySelectorAll('#tools .tool-btn').forEach(b => b.classList.remove('active')); document.getElementById('tool-' + tool).classList.add('active'); }
+    function setBrushSize(size, el) { currentBrushSize = size; document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active')); el.classList.add('active'); }
+    function sendClear() { if(isDrawer && !botBloqueado) { ctx.clearRect(0,0,canvas.width,canvas.height); mqttClient.publish(baseTopic + "/draw", JSON.stringify({ sender: username, action: 'clear' })); } }
+    function renderWrongGuessMessage(s, t) { const c = document.getElementById('guess-messages'); const m = document.createElement('div'); m.className = "msg msg-wrong"; m.innerText = `${s}: ${t}`; c.appendChild(m); c.scrollTop = c.scrollHeight; }
+    function renderNormalMessage(s, t) { const c = document.getElementById('chat-panel'); const m = document.createElement('div'); m.className = "msg msg-normal"; m.innerHTML = `<span class="username">${s}:</span> ${t}`; c.appendChild(m); c.scrollTop = c.scrollHeight; }
+    function addSystemMessage(t) { const c = document.getElementById('guess-messages'); const m = document.createElement('div'); m.className = "msg msg-system"; m.innerText = t; c.appendChild(m); c.scrollTop = c.scrollHeight; }
+    function addSuccessMessage(s, t) { const c = document.getElementById('guess-messages'); const m = document.createElement('div'); m.className = "msg msg-success"; m.innerText = `🎯 ${s} ${t}`; c.appendChild(m); c.scrollTop = c.scrollHeight; }
+    function showGarticAnnouncement(t, d) { const box = document.getElementById('round-announcement'); document.getElementById('announcement-title').innerText = t; document.getElementById('announcement-desc').innerText = d; box.classList.add('show'); setTimeout(() => box.classList.remove('show'), 3000); }
+    function adicionarJogadorLista(n) { if (listaJogadores.has(n)) return; listaJogadores.add(n); scores[n] = 0; renderScoreboard(); }
+    function addScore(n, p) { scores[n] = (scores[n]||0)+p; renderScoreboard(); }
+    function renderScoreboard() { const container = document.getElementById('players-list'); container.innerHTML = ""; Array.from(listaJogadores).forEach(nome => { const item = document.createElement('div'); item.className = 'player-item'; if(nome===currentDrawerName) item.classList.add('drawing'); item.innerHTML = `<div class="player-info"><span class="player-name">${nome}</span></div><span class="player-score">${scores[nome]||0}</span>`; container.appendChild(item); }); }
+    function sendGuessMessage() { const input = document.getElementById('guess-input'); let txt = input.value.trim(); if(!txt || isDrawer) return; let isCorrect = txt.toUpperCase() === currentWord.toUpperCase(); mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: txt, type: "guess", isCorrect })); input.value = ""; }
+    function sendChatMessage() { const input = document.getElementById('chat-input'); let txt = input.value.trim(); if(!txt) return; mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: txt, type: "talk" })); input.value = ""; }
+    function throwInteract(type) { const overlay = document.getElementById('egg-overlay'); if (type === 'egg') { overlay.classList.add('splat'); setTimeout(() => overlay.classList.remove('splat'), 1200); addSystemMessage(`💀 DISPARO: Alguém soltou um grito de pânico na frequência!`); } else { addSystemMessage(`👁️ ESTABILIZAÇÃO: Um sopro de sanidade foi compartilhado.`); } }
 </script>
 </body>
 </html>
