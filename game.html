@@ -111,7 +111,7 @@
     <div id="chat-wall"></div>
     <input type="text" id="chat-input" class="term-input" placeholder="Escreva aqui para avaliar ou responder..." autocomplete="off">
     <div class="choice-row">
-        <button class="btn-choice" onclick="diagnosticar('VERDADEIRO')">HUMANO INTEGRO</button>
+        <button class="btn-choice" onclick="diagnosticar('VERDADEIRO')">HUMANO ÍNTEGRO</button>
         <button class="btn-choice" onclick="diagnosticar('MIMICO')">SINAL CORROMPIDO (ZUMBI)</button>
     </div>
 </div>
@@ -135,32 +135,33 @@
     let jogoRodando = false, rodadaAtual = 1, eHumanoDeVerdade = true, amigoFingindoUrubu = false;
     let listaParceiros = [];
     let inimigoNome = "Parceiro";
-    let digitaçãoSimuladaTimeout = null;
+    let digitationTimeout = null;
+    let estaDigitandoIA = false;
+    let ultimaFraseDitaPeloBot = "";
     
-    // Base de Conhecimento Reativa do Zumbi para análise sem desespero
     const BANCO_REATIVO_MIMICO = {
         perguntasPessoais: [
-            "Por que você está tentando fazer joguinhos de pergunta agora?",
-            "Esquece isso um minuto, o canal de áudio caiu e o painel tá piscando aqui.",
-            "Não vou ficar respondendo teste de segurança no meio do blecaute.",
-            "Sou eu cara, para de paranoia. Vamos focar em sincronizar o comando."
+            "Pra que ficar fazendo pergunta boba agora?",
+            "Não vou ficar caindo em teste de segurança, anda logo.",
+            "Para de paranoia, a energia tá caindo aqui.",
+            "Sou eu cara. Para de bobeira e me ajuda com o terminal."
         ],
         localizacao: [
-            "Estou preso na cabine de controle do reator. A trava hidráulica fechou.",
-            "Tô na ala sul de quarentena. Meu monitor principal apagou, tô usando o reserva.",
-            "Não consigo sair do terminal de comando 2. O corredor tá trancado."
+            "Tô na cabine mestre do reator, a porta trancou.",
+            "Tô na ala sul de quarentena. Meu monitor reserva tá ruim.",
+            "Preso no setor 2. O corredor principal travou."
         ],
         saudacoes: [
-            "Conectei agora. Como estão os logs do seu lado?",
-            "Sinal estabilizado. Consegue me ler?",
-            "Estou aqui. O que o seu terminal reportou na diretriz?"
+            "Oi. Conseguiu estabilizar os logs aí?",
+            "Tô aqui. O canal de texto tá ativo?",
+            "E aí. O que seu terminal tá reportando?"
         ],
         genericas: [
-            "Meu teclado tá travando um pouco por causa da queda de tensão da subestação.",
-            "Estou lendo o que você escreveu, mas a linha de código sumiu aqui.",
-            "Sim, compreendo. Mas o tempo está correndo no painel mestre.",
-            "Para de testar o sistema e me diz o que apareceu de erro aí.",
-            "Tô tentando ler seu log de resposta, mas a estática tá quebrando o texto."
+            "O teclado tá meio lento por causa da oscilação de energia.",
+            "Consigo ler o que você manda, mas tá com delay.",
+            "Sim. Mas o tempo tá correndo no painel.",
+            "Escreve o que tá aparecendo de erro na sua tela.",
+            "Tô tentando calibrar o sinal, a estática tá forte."
         ]
     };
 
@@ -210,12 +211,13 @@
                 }
             } else if(topic === baseTopic + "/chat") {
                 if(data.sender !== myName && jogoRodando) {
-                    // Só exibe a mensagem real se o canal não estiver interceptado pelo Zumbi
                     if(eHumanoDeVerdade) {
                         logMsg(`${data.sender}: ${data.text}`, "target");
                     } else {
-                        // Se for rodada Zumbi, a IA lê o que o humano escreveu e gera uma contra-resposta realista
-                        analisarEGerarRespostaDoMimico(data.text);
+                        // Se a IA já estiver processando uma resposta, ignora mensagens paralelas para não duplicar
+                        if(!estaDigitandoIA) {
+                            analisarEGerarRespostaDoMimico(data.text);
+                        }
                     }
                 }
             } else if(topic === baseTopic + "/status") {
@@ -242,19 +244,18 @@
 
     function definirDestinoOculto() {
         let cenario;
-        
         if(rodadaAtual === 1) {
-            cenario = Math.random() > 0.5 ? 1 : 2; // Começa alternando entre Zumbi ou Humano Fingindo
+            cenario = Math.random() > 0.5 ? 1 : 2;
         } else {
             cenario = Math.random() > 0.2 ? (Math.random() > 0.5 ? 1 : 2) : 0;
         }
         
-        let jugadorInfectado = listaParceiros[Math.floor(Math.random() * listaParceiros.length)];
+        let jogadorInfectado = listaParceiros[Math.floor(Math.random() * listaParceiros.length)];
         
         mqttClient.publish(baseTopic + "/status", JSON.stringify({
             tipo: "RODADA_SETUP",
             cenarioEstilo: cenario,
-            alvoFoco: jugadorInfectado,
+            alvoFoco: jogadorInfectado,
             numero: rodadaAtual
         }));
     }
@@ -263,7 +264,9 @@
         document.getElementById('chat-wall').innerHTML = "";
         document.getElementById('chat-input').value = "";
         document.getElementById('secret-directive').style.display = 'none';
-        clearTimeout(digitaçãoSimuladaTimeout);
+        clearTimeout(digitationTimeout);
+        estaDigitandoIA = false;
+        ultimaFraseDitaPeloBot = "";
         
         rodadaAtual = data.numero;
         inimigoNome = listaParceiros.find(p => p !== myName) || "Parceiro";
@@ -277,18 +280,18 @@
             if(data.cenarioEstilo === 1) {
                 eHumanoDeVerdade = false;
                 document.getElementById('secret-directive').style.display = 'block';
-                document.getElementById('secret-directive').innerText = "⚠️ CANAL INTERCEPTADO: A IA assumiu seu rádio de texto. Suas mensagens reais não serão transmitidas para evitar vazamentos de dados.";
+                document.getElementById('secret-directive').innerText = "⚠️ CANAL INTERCEPTADO: A IA assumiu seu rádio de texto. Suas mensagens reais foram bloqueadas para triagem.";
             } else if(data.cenarioEstilo === 2) {
                 amigoFingindoUrubu = true;
                 document.getElementById('secret-directive').style.display = 'block';
-                document.getElementById('secret-directive').innerText = "👁️ DIRETRIZ OCULTA: Engane o avaliador. Finja ser o mímico mecânico, responda de forma evasiva e lógica demais para fazê-lo duvidar.";
+                document.getElementById('secret-directive').innerText = "👁️ DIRETRIZ OCULTA: Engane o avaliador. Finja ser o mímico, responda de forma fria ou desvie das perguntas pessoais dele.";
             } else {
                 document.getElementById('secret-directive').style.display = 'block';
-                document.getElementById('secret-directive').innerText = "🛡️ DIRETRIZ INTEGRA: Você está no controle. Prove sua identidade comportamental humana.";
+                document.getElementById('secret-directive').innerText = "🛡️ DIRETRIZ ÍNTEGRA: Você está no controle do canal. Prove que você é real.";
             }
         } else {
             if(data.cenarioEstilo === 1) {
-                eHumanoDeVerdade = false; // Sou o avaliador e o outro lado é uma cópia computacional
+                eHumanoDeVerdade = false;
             }
         }
     }
@@ -298,17 +301,22 @@
         const txt = input.value.trim();
         if(!txt || !jogoRodando) return;
 
+        if(!eHumanoDeVerdade && listaParceiros.find(p => p !== myName) === myName) {
+            logMsg(`${myName}: ${txt} (Sinal Bloqueado pela Infecção)`, "me");
+            input.value = "";
+            return;
+        }
+
         logMsg(`${myName}: ${txt}`, "me");
         mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: myName, text: txt }));
         input.value = "";
     }
 
     function analisarEGerarRespostaDoMimico(textoRecebido) {
-        clearTimeout(digitaçãoSimuladaTimeout);
+        estaDigitandoIA = true;
         let textoLimpo = textoRecebido.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
         let listaDeFrases = BANCO_REATIVO_MIMICO.genericas;
 
-        // SISTEMA DE LEITURA CONTEXTUAL (Análise Real de Inteligência Psicológica)
         if(textoLimpo.includes("quem") || textoLimpo.includes("mae") || textoLimpo.includes("cachorro") || textoLimpo.includes("nome") || textoLimpo.includes("lembra") || textoLimpo.includes("sabe")) {
             listaDeFrases = BANCO_REATIVO_MIMICO.perguntasPessoais;
         } else if(textoLimpo.includes("onde") || textoLimpo.includes("sala") || textoLimpo.includes("cabine") || textoLimpo.includes("lugar")) {
@@ -317,20 +325,28 @@
             listaDeFrases = BANCO_REATIVO_MIMICO.saudacoes;
         }
 
+        // Evita a repetição imediata da mesma frase
         let respostaSorteada = listaDeFrases[Math.floor(Math.random() * listaDeFrases.length)];
+        if(respostaSorteada === ultimaFraseDitaPeloBot && listaDeFrases.length > 1) {
+            let filtradas = listaDeFrases.filter(f => f !== ultimaFraseDitaPeloBot);
+            respostaSorteada = filtradas[Math.floor(Math.random() * filtradas.length)];
+        }
         
-        // Simulação mecânica de tempo de digitação baseado no tamanho da frase para passar realismo
-        let delayDeLeitura = 2000 + (respostaSorteada.length * 60);
+        ultimaFraseDitaPeloBot = respostaSorteada;
+        let delayDeLeitura = 1500 + (respostaSorteada.length * 50);
 
-        digitaçãoSimuladaTimeout = setTimeout(() => {
-            if(!jogoRodando || eHumanoDeVerdade) return;
+        clearTimeout(digitationTimeout);
+        digitationTimeout = setTimeout(() => {
+            if(!jogoRodando || eHumanoDeVerdade) { estaDigitandoIA = false; return; }
             logMsg(`${inimigoNome}: ${respostaSorteada}`, "target");
+            estaDigitandoIA = false; // Libera o bot para ler a próxima resposta humana
         }, delayDeLeitura);
     }
 
     function diagnosticar(voto) {
         if(!jogoRodando) return;
-        clearTimeout(digitaçãoSimuladaTimeout);
+        clearTimeout(digitationTimeout);
+        estaDigitandoIA = false;
 
         let respostaEsperada = (!eHumanoDeVerdade) ? "MIMICO" : "VERDADEIRO";
 
@@ -353,7 +369,8 @@
 
     function fimDeJogoComColapso(razao) {
         jogoRodando = false;
-        clearTimeout(digitaçãoSimuladaTimeout);
+        clearTimeout(digitationTimeout);
+        estaDigitandoIA = false;
         
         document.getElementById('morte-motivo').innerText = razao;
         document.getElementById('screamer').style.display = 'flex';
