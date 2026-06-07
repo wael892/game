@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gartic Proibidão Realtime</title>
+    <title>Gartic Proibidão Realtime - Dose Máxima</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -246,9 +246,11 @@
         #btn-egg:active { transform: scale(0.92); background: #560bad; }
         #btn-flower { background: #f72585; }
         #btn-flower:active { transform: scale(0.92); background: #b5179e; }
+        #btn-slap { background: #ffb703; color: #200a0f; }
+        #btn-slap:active { transform: scale(0.92); background: #fb8500; }
         .action-interact-btn.cooldown { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
-        .egg-fly, .flower-fly {
+        .egg-fly, .flower-fly, .slap-fly {
             position: fixed; font-size: 36px; pointer-events: none; z-index: 9999;
             animation: itemFly var(--duration, 0.9s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
@@ -258,7 +260,7 @@
             85%  { opacity: 1; transform: translate(var(--tx2), var(--ty2)) rotate(var(--rot)) scale(1.3); }
             100% { opacity: 0; transform: translate(var(--tx2), var(--ty2)) rotate(var(--rot)) scale(0.5); }
         }
-        .egg-splash, .flower-splash { position: fixed; font-size: 48px; pointer-events: none; z-index: 9999; animation: itemSplash 0.8s ease-out forwards; }
+        .egg-splash, .flower-splash, .slap-splash { position: fixed; font-size: 48px; pointer-events: none; z-index: 9999; animation: itemSplash 0.8s ease-out forwards; }
         @keyframes itemSplash {
             0%   { opacity: 1; transform: scale(0.5); }
             40%  { opacity: 1; transform: scale(1.6); }
@@ -274,9 +276,16 @@
             100%{ transform: translate(0,0); }
         }
         .shake { animation: screenShake 0.45s ease; }
-        #egg-overlay { position: fixed; inset: 0; pointer-events: none; background: rgba(114, 9, 183, 0.35); opacity: 0; z-index: 9998; transition: opacity 0.1s; }
-        #egg-overlay.splat { animation: splatFade 1.2s ease-out forwards; }
-        @keyframes splatFade { 0% { opacity: 0.7; } 100% { opacity: 0; } }
+        
+        #egg-overlay { 
+            position: fixed; inset: 0; pointer-events: none; 
+            background: rgba(114, 9, 183, 0.75); opacity: 0; z-index: 9998; 
+            display: flex; align-items: center; justify-content: center;
+            font-size: 40px; color: white; font-weight: bold; text-shadow: 2px 2px 4px black;
+        }
+        #egg-overlay.splat { animation: splatFade CegaTempo ease-out forwards; }
+        @keyframes splatFade { 0% { opacity: 0.9; } 80% { opacity: 0.9; } 100% { opacity: 0; } }
+        
         .petal-particle { position: fixed; pointer-events: none; font-size: 18px; z-index: 9997; animation: petalFall var(--fall-duration, 2s) linear forwards; }
         @keyframes petalFall {
             0% { transform: translateY(-20px) translateX(0) rotate(0deg); opacity: 1; }
@@ -301,6 +310,8 @@
         .msg-normal .username { font-weight: bold; color: #e63946; }
         .msg-egg     { background: #f3e5f5; color: #4a148c; font-weight: bold; border: 1px solid #ce93d8; }
         .msg-flower  { background: #fce4ec; color: #880e4f; font-weight: bold; border: 1px solid #f48fb1; }
+        .msg-slap    { background: #fff3cd; color: #664d03; font-weight: bold; border: 1px solid #ffecb5; }
+        
         .chat-input-row { display: flex; padding: 5px; border-top: 1px solid #dee2e6; background: #f8f9fa; flex-shrink: 0; }
         .chat-input-field { flex: 1; padding: 6px; border: 2px solid #ced4da; border-radius: 5px; outline: none; font-size: 12px; }
         .chat-send-btn { background: #e63946; color: white; margin-left: 4px; font-size: 11px; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
@@ -455,11 +466,11 @@
 </head>
 <body>
 
-<div id="egg-overlay"></div>
+<div id="egg-overlay">🥵 ME GUSTA... 💦</div>
 
 <div id="login-screen">
     <div class="login-box">
-        <h2>🌶️ Gartic Proibidão</h2>
+        <h2>🌶️ Gartic Proibidão - Dose Máxima</h2>
         <input type="text" id="input-username" placeholder="👤 Seu Nome / Apelido Safado" required>
         <input type="text" id="input-room" placeholder="🔑 Nome do Motel / Sala" required>
         <textarea id="input-custom-words" placeholder="📝 Palavras personalizadas (opcional)&#10;Ex: Algema, Chicote, Melancia..."></textarea>
@@ -536,6 +547,7 @@
             <button id="btn-skip" class="btn btn-skip" onclick="skipRound()">⏭️ Brochar / Passar Vez</button>
             <button id="btn-egg" class="action-interact-btn" onclick="throwInteractItem('egg')">🍆 Jogar Berinjela!</button>
             <button id="btn-flower" class="action-interact-btn" onclick="throwInteractItem('flower')">🍑 Dar Sarrada!</button>
+            <button id="btn-slap" class="action-interact-btn" onclick="throwInteractItem('slap')">👋 Dar Tapa!</button>
         </div>
     </div>
 
@@ -581,12 +593,12 @@
     let roundActive = false, currentDrawerIndex = -1;
     let countdownInterval = null, nextRoundTimeout = null, currentTimeLeft = 0;
     const TEMPO_RODADA = 60;
-    let eggCooldown = false, flowerCooldown = false;
+    let eggCooldown = false, flowerCooldown = false, slapCooldown = false;
     let customWords = [];
     let gameEnded = false;
     const PONTUACAO_MAXIMA = 1000;
     
-    const PALAVRAS_PADRAO = ["Algema","Chicote","Cama de Casal","Gelatina","Berinjela","Melancia","Morango","Banana","Pepino","Creme","Calcinha","CuecaBoxer","Massagem","Censura","Sutiã","Coração","Vela","Espelho","Pegada","Gemido","Beijo Grego","Chantilly","Travesseiro","Algemas"];
+    const PALAVRAS_PADRAO = ["Algema","Chicote","Cama de Casal","Gelatina","Berinjela","Melancia","Morango","Banana","Pepino","Creme","Calcinha","CuecaBoxer","Massagem","Censura","Sutiã","Coração","Vela","Espelho","Pegada","Gemido","Beijo Grego","Chantilly","Travesseiro","Massagista do Tinder","Sarrada no Ar","Tapa na Nuca","Fio Dental","Óleo Corporal","Banheira","Algemas"];
     function getPalavras() { return customWords.length > 0 ? customWords : PALAVRAS_PADRAO; }
 
     async function salvarPalavras() {
@@ -790,8 +802,10 @@
             ctx.lineTo(x, y); ctx.stroke();
             sendDrawData('draw', x, y, col, currentBrushSize);
         } else if (currentShape === 'spray') {
-            generateSpray(x, y, col, currentBrushSize);
-            sendDrawData('spray', x, y, col, currentBrushSize);
+            let sizeMod = currentBrushSize;
+            if (currentTimeLeft < 20) { sizeMod = currentBrushSize * 4; }
+            generateSpray(x, y, col, sizeMod);
+            sendDrawData('spray', x, y, col, sizeMod);
         } else {
             if (snapshot) ctx.putImageData(snapshot, 0, 0);
             drawBoundingShape(currentShape, startX, startY, x, y, col, currentBrushSize);
@@ -805,7 +819,7 @@
             const lastEvent = lastFormCoordinates;
             if (lastEvent) {
                 const col = currentTool === 'eraser' ? '#ffffff' : currentColor;
-                sendDrawData('final_shape', lastEvent.sX, lastEvent.sY, col, currentBrushSize, currentShape, lastEvent.cX, lastEvent.cY);
+                sendDrawData('final_shape', lastEvent.sX, lastEvent.sY, col, currentBrushSize, lastEvent.shape, lastEvent.cX, lastEvent.cY);
             }
         }
         snapshot = null; lastFormCoordinates = null;
@@ -950,6 +964,7 @@
         
         document.getElementById('btn-egg').style.display = 'none';
         document.getElementById('btn-flower').style.display = 'none';
+        document.getElementById('btn-slap').style.display = 'none';
         document.getElementById('btn-skip').style.display = 'none';
         
         document.getElementById('word-display').innerText = `👑 FIM DO ORGIAZO! O DONO DA NOITE É ${vencedor.toUpperCase()}!`;
@@ -1009,6 +1024,13 @@
             btn.classList.add('cooldown'); btn.textContent = '🍑 Respirando...';
             mqttClient.publish(baseTopic + "/interact", JSON.stringify({ thrower: username, target: currentDrawerName, type: 'flower' }));
             setTimeout(() => { flowerCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '🍑 Dar Sarrada!'; }, 5000);
+        } else if (itemType === 'slap') {
+            if (slapCooldown) return;
+            slapCooldown = true;
+            const btn = document.getElementById('btn-slap');
+            btn.classList.add('cooldown'); btn.textContent = '👋 Passando gel...';
+            mqttClient.publish(baseTopic + "/interact", JSON.stringify({ thrower: username, target: currentDrawerName, type: 'slap' }));
+            setTimeout(() => { slapCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '👋 Dar Tapa!'; }, 10000);
         }
     }
 
@@ -1020,8 +1042,10 @@
         const targetX = canvasRect.left + canvasRect.width/2 + (Math.random()-0.5)*120;
         const targetY = canvasRect.top + canvasRect.height/2 + (Math.random()-0.5)*100;
         const element = document.createElement('div');
-        element.className = type === 'egg' ? 'egg-fly' : 'flower-fly';
-        element.textContent = type === 'egg' ? '🍆' : '🍑';
+        
+        element.className = type === 'egg' ? 'egg-fly' : (type === 'flower' ? 'flower-fly' : 'slap-fly');
+        element.textContent = type === 'egg' ? '🍆' : (type === 'flower' ? '🍑' : '👋');
+        
         const dx = targetX - sx, dy = targetY - sy;
         const dist = Math.sqrt(dx*dx + dy*dy);
         const duration = Math.max(0.5, Math.min(1.0, dist/900));
@@ -1030,21 +1054,32 @@
         element.style.setProperty('--tx2', dx+'px'); element.style.setProperty('--rot', angle+'deg'); element.style.setProperty('--duration', duration+'s');
         element.style.left = sx+'px'; element.style.top = sy+'px';
         document.body.appendChild(element);
+        
         setTimeout(() => {
             element.remove();
             const splash = document.createElement('div');
-            splash.className = type === 'egg' ? 'egg-splash' : 'flower-splash';
-            splash.textContent = type === 'egg' ? '💦' : '💥';
+            splash.className = type === 'egg' ? 'egg-splash' : (type === 'flower' ? 'flower-splash' : 'slap-splash');
+            splash.textContent = type === 'egg' ? '💦' : (type === 'flower' ? '💥' : '💥 CLAP!');
             splash.style.left = (targetX-24)+'px'; splash.style.top = (targetY-24)+'px';
             document.body.appendChild(splash);
             setTimeout(() => splash.remove(), 900);
+            
             if (target === username) {
                 if (type === 'egg') {
                     const overlay = document.getElementById('egg-overlay');
                     overlay.classList.remove('splat'); void overlay.offsetWidth; overlay.classList.add('splat');
                     document.getElementById('canvas-container').classList.add('shake');
                     setTimeout(() => document.getElementById('canvas-container').classList.remove('shake'), 500);
-                } else if (type === 'flower') { createPetalShower(); }
+                } else if (type === 'flower') { 
+                    createPetalShower(); 
+                } else if (type === 'slap') {
+                    document.getElementById('canvas-container').classList.add('shake');
+                    setTimeout(() => document.getElementById('canvas-container').classList.remove('shake'), 800);
+                    if (isDrawer && roundActive) {
+                        currentTimeLeft = Math.max(1, currentTimeLeft - 5);
+                        document.getElementById('timer-display').innerText = "⏱ *AI!* Clímax: " + currentTimeLeft + "s";
+                    }
+                }
             }
         }, duration * 1000);
     }
@@ -1155,6 +1190,7 @@
                 animateInteractThrow(data.thrower, data.target, data.type);
                 if (data.type === 'egg') addEggMessage(data.thrower, data.target);
                 else if (data.type === 'flower') addFlowerMessage(data.thrower, data.target);
+                else if (data.type === 'slap') addSlapMessage(data.thrower, data.target);
             } else if (topic === baseTopic + "/customwords") {
                 if (data.words && data.words.length > 0 && customWords.length === 0) {
                     customWords = data.words;
@@ -1202,9 +1238,10 @@
         renderScoreboard();
         const eggBtn = document.getElementById('btn-egg');
         const flowerBtn = document.getElementById('btn-flower');
+        const slapBtn = document.getElementById('btn-slap');
         const skipBtn = document.getElementById('btn-skip');
         if (currentDrawerName === username) {
-            isDrawer = true; eggBtn.style.display = 'none'; flowerBtn.style.display = 'none';
+            isDrawer = true; eggBtn.style.display = 'none'; flowerBtn.style.display = 'none'; slapBtn.style.display = 'none';
             skipBtn.style.display = 'inline-flex';
             document.getElementById('word-display').innerText = "✏️ Seu fetiche secreto: " + currentWord.toUpperCase();
             addSystemMessage(`✏️ É a sua vez na cama! Desenhe: ${currentWord.toUpperCase()}`);
@@ -1212,6 +1249,7 @@
             isDrawer = false; skipBtn.style.display = 'none';
             eggBtn.style.display = 'inline-flex'; eggBtn.classList.remove('cooldown'); eggBtn.textContent = '🍆 Jogar Berinjela!';
             flowerBtn.style.display = 'inline-flex'; flowerBtn.classList.remove('cooldown'); flowerBtn.textContent = '🍑 Dar Sarrada!';
+            slapBtn.style.display = 'inline-flex'; slapBtn.classList.remove('cooldown'); slapBtn.textContent = '👋 Dar Tapa!';
             const u = "_ ".repeat(currentWord.length).trim();
             document.getElementById('word-display').innerText = `🎨 Esfregando pincel: ${currentDrawerName} (${u})`;
             addSystemMessage(`🎨 ${currentDrawerName} está rebolando no traço...`);
@@ -1233,6 +1271,7 @@
                 showGarticAnnouncement("⏳ BROCHOU GERAL!", `Ninguém conseguiu desvendar o mistério! Era: ${currentWord.toUpperCase()}`);
                 document.getElementById('btn-egg').style.display = 'none';
                 document.getElementById('btn-flower').style.display = 'none';
+                document.getElementById('btn-slap').style.display = 'none';
                 document.getElementById('btn-skip').style.display = 'none';
                 handleRoundEndAutomatically();
             } else {
@@ -1245,6 +1284,7 @@
         roundActive = false; clearInterval(countdownInterval);
         document.getElementById('btn-egg').style.display = 'none';
         document.getElementById('btn-flower').style.display = 'none';
+        document.getElementById('btn-slap').style.display = 'none';
         document.getElementById('btn-skip').style.display = 'none';
         if (gameEnded) return;
         if (currentDrawerName === username) { nextRoundTimeout = setTimeout(() => { if (!gameEnded) drawNewRound(); }, 4000); }
@@ -1274,8 +1314,15 @@
         const palpiteLimpo = msgText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
         const respostaLimpa = currentWord.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
         if (palpiteLimpo === respostaLimpa) {
-            const pts = calcPoints(currentTimeLeft);
-            mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: `Gemeu certinho: ${currentWord.toUpperCase()}! 🎯`, isCorrect: true, pts, type: "guess" }));
+            let pts = calcPoints(currentTimeLeft);
+            let coroaStatus = "";
+            if (currentTimeLeft >= 45) {
+                pts = pts * 2;
+                coroaStatus = "⚡ [EJACULADOR PRECOCE - BÔNUS X2] ";
+            } else if (currentTimeLeft <= 10) {
+                coroaStatus = "🛡️ [GUERREIRO DE CAMISINHA] ";
+            }
+            mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: `Gemeu certinho: ${coroaStatus}${currentWord.toUpperCase()}! 🎯`, isCorrect: true, pts, type: "guess" }));
         } else {
             mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: msgText, isCorrect: false, type: "guess" }));
         }
@@ -1307,10 +1354,13 @@
         m.appendChild(s); m.appendChild(document.createTextNode(text)); c.appendChild(m); c.scrollTop = c.scrollHeight;
     }
     function addEggMessage(thrower, target) {
-        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-egg"; m.innerText = `🍆 ${thrower} atirou uma berinjela violenta em ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
+        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-egg"; m.innerText = `🍆 ${thrower} cobriu ${target} com uma berinjela cegante!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
     }
     function addFlowerMessage(thrower, target) {
         const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-flower"; m.innerText = `🍑 ${thrower} encaixou uma sarrada de apoio em ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
+    }
+    function addSlapMessage(thrower, target) {
+        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-slap"; m.innerText = `👋 ${thrower} deu um TAPA NA NUCA de ${target} (-5s de clímax)!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
     }
 
     setActiveColor('#000000');
