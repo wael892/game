@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gartic Strip Realtime - Premium</title>
+    <title>Gartic Strip Realtime - Multiplayer Fixo</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -99,7 +99,7 @@
         }
 
         #scoreboard {
-            flex: 0 0 170px; background: white; border-radius: 12px; padding: 10px;
+            flex: 0 0 180px; background: white; border-radius: 12px; padding: 10px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex; flex-direction: column; overflow: hidden;
         }
@@ -117,7 +117,7 @@
         .player-item.drawing { border-left-color: #ef476f; background: #ffe3e8; }
         .player-meta-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .player-rank { font-size: 9px; color: #777; font-weight: normal; }
-        .player-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px; }
+        .player-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
         .player-strip-inventory {
             font-size: 9px; color: #666; font-weight: normal; background: #e9ecef;
             padding: 2px 4px; border-radius: 4px; width: 100%; text-align: left;
@@ -987,7 +987,7 @@
         if (!playerClothes[targetPlayer] || playerClothes[targetPlayer].length === 0) return;
         const pieceRemoved = playerClothes[targetPlayer].shift();
         mqttClient.publish(baseTopic + "/strip", JSON.stringify({ player: targetPlayer, piece: pieceRemoved, remaining: playerClothes[targetPlayer] }));
-        showGarticAnnouncement("🔞 STRIPTEASE!", `${targetPlayer} errou ou perdeu e teve que tirar: ${pieceRemoved.toUpperCase()}! 🔥`);
+        showGarticAnnouncement("🔞 STRIPTEASE!", `${targetPlayer} perdeu as defesas e teve que retirar: ${pieceRemoved.toUpperCase()}! 🔥`);
     }
 
     function checkEndGameConditions() {
@@ -1013,7 +1013,7 @@
         document.getElementById('word-display').innerText = `🏆 FIM DE JOGO! O(A) SUPREMO(A) É ${vencedor.toUpperCase()}!`;
         document.getElementById('timer-display').innerText = "⏱️ Fim";
         
-        showGarticAnnouncement("👑 DOMINOU O QUARTO!", `${vencedor} atingiu ${scores[vencedor]} pontos e limpou o armário do parceiro! 🎉`);
+        showGarticAnnouncement("👑 DOMINOU O QUARTO!", `${vencedor} venceu e limpou os armários da sala! 🎉`);
         addSystemMessage(`👑 FIM DE JOGO! O grande vencedor desta sala é: ${vencedor} com ${scores[vencedor]} pontos!`);
         createPetalShower();
     }
@@ -1158,10 +1158,13 @@
             mqttClient.subscribe(baseTopic + "/customwords");
             mqttClient.subscribe(baseTopic + "/customwords/add");
             mqttClient.subscribe(baseTopic + "/strip");
+            mqttClient.subscribe(baseTopic + "/sync/request");
+            mqttClient.subscribe(baseTopic + "/sync/response");
             
-            const identityPayload = JSON.stringify({ sender: "Sistema", text: `📢 ${username} entrou no quarto da sala.`, name: username, gender: currentGenderSelection, type: "system" });
+            const identityPayload = JSON.stringify({ sender: "Sistema", text: `📢 ${username} entrou no quarto.`, name: username, gender: currentGenderSelection, clothes: playerClothes[username], type: "system" });
             mqttClient.publish(baseTopic + "/chat", identityPayload);
             mqttClient.publish(baseTopic + "/presence", identityPayload);
+            mqttClient.publish(baseTopic + "/sync/request", JSON.stringify({ requester: username }));
             
             await carregarPalavrasSalvas();
             if (customWords.length > 0) { mqttClient.publish(baseTopic + "/customwords", JSON.stringify({ words: customWords, sender: username })); }
@@ -1176,7 +1179,7 @@
                     addSystemMessage(data.text);
                     if (data.name) { 
                         playerGenders[data.name] = data.gender;
-                        playerClothes[data.name] = data.gender === "F" ? [...CONFIG_ROUPAS_FEMININAS] : [...CONFIG_ROUPAS_MASCULINAS];
+                        playerClothes[data.name] = data.clothes || (data.gender === "F" ? [...CONFIG_ROUPAS_FEMININAS] : [...CONFIG_ROUPAS_MASCULINAS]);
                         adicionarJogadorLista(data.name); 
                         checkAndAutoStart(); 
                     }
@@ -1203,18 +1206,29 @@
             } else if (topic === baseTopic + "/presence") {
                 if (data.name && data.name !== username) {
                     playerGenders[data.name] = data.gender;
-                    playerClothes[data.name] = data.gender === "F" ? [...CONFIG_ROUPAS_FEMININAS] : [...CONFIG_ROUPAS_MASCULINAS];
+                    playerClothes[data.name] = data.clothes || (data.gender === "F" ? [...CONFIG_ROUPAS_FEMININAS] : [...CONFIG_ROUPAS_MASCULINAS]);
                     adicionarJogadorLista(data.name);
-                    mqttClient.publish(baseTopic + "/presence/echo", JSON.stringify({ name: username, gender: currentGenderSelection }));
+                    mqttClient.publish(baseTopic + "/presence/echo", JSON.stringify({ name: username, gender: currentGenderSelection, clothes: playerClothes[username] }));
                     if (customWords.length > 0) { mqttClient.publish(baseTopic + "/customwords", JSON.stringify({ words: customWords, sender: username })); }
                     checkAndAutoStart();
                 }
             } else if (topic === baseTopic + "/presence/echo") {
                 if (data.name && data.name !== username) { 
                     playerGenders[data.name] = data.gender;
-                    playerClothes[data.name] = data.gender === "F" ? [...CONFIG_ROUPAS_FEMININAS] : [...CONFIG_ROUPAS_MASCULINAS];
+                    playerClothes[data.name] = data.clothes || (data.gender === "F" ? [...CONFIG_ROUPAS_FEMININAS] : [...CONFIG_ROUPAS_MASCULINAS]);
                     adicionarJogadorLista(data.name); 
                     checkAndAutoStart(); 
+                }
+            } else if (topic === baseTopic + "/sync/request") {
+                if (data.requester !== username) {
+                    mqttClient.publish(baseTopic + "/sync/response", JSON.stringify({ target: data.requester, sender: username, gender: currentGenderSelection, clothes: playerClothes[username], score: scores[username] || 0 }));
+                }
+            } else if (topic === baseTopic + "/sync/response") {
+                if (data.target === username) {
+                    playerGenders[data.sender] = data.gender;
+                    playerClothes[data.sender] = data.clothes;
+                    scores[data.sender] = data.score;
+                    adicionarJogadorLista(data.sender);
                 }
             } else if (topic === baseTopic + "/gameflow" && !gameEnded) {
                 handleGameFlow(data);
@@ -1238,7 +1252,7 @@
             } else if (topic === baseTopic + "/customwords") {
                 if (data.words && data.words.length > 0 && customWords.length === 0) {
                     customWords = data.words;
-                    addSystemMessage(`📝 Palavras de ${data.sender} carregadas! (${data.words.length})`);
+                    addSystemMessage("📝 Palavras da sala carregadas e sincronizadas!");
                     salvarPalavras();
                 }
             } else if (topic === baseTopic + "/customwords/add") {
@@ -1261,7 +1275,7 @@
     }
 
     function checkAndAutoStart() {
-        if (!roundActive && currentDrawerName === "" && listaJogadores.size > 0 && !gameEnded) {
+        if (!roundActive && currentDrawerName === "" && listaJogadores.size > 1 && !gameEnded) {
             const arr = Array.from(listaJogadores);
             if (arr[0] === username) { drawNewRound(); }
         }
