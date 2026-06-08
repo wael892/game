@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gartic Strip Realtime - Multiplayer Fixo</title>
+    <title>Gartic Strip Proibidão Realtime - Dose Máxima</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -25,13 +25,13 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             width: 100%; max-width: 400px; text-align: center;
         }
-        .login-box h2 { color: #118ab2; margin-bottom: 20px; }
+        .login-box h2 { color: #e63946; margin-bottom: 20px; }
         .login-box input {
             width: 100%; padding: 12px; margin-bottom: 15px;
             border: 2px solid #ced4da; border-radius: 8px;
             outline: none; font-size: 16px;
         }
-        .login-box input:focus { border-color: #118ab2; }
+        .login-box input:focus { border-color: #e63946; }
         
         .gender-selector {
             display: flex; gap: 10px; margin-bottom: 15px; justify-content: center;
@@ -49,7 +49,7 @@
             outline: none; font-size: 14px; resize: vertical;
             min-height: 70px; color: #333;
         }
-        .login-box textarea:focus { border-color: #118ab2; }
+        .login-box textarea:focus { border-color: #e63946; }
         .login-box .hint { font-size: 11px; color: #888; margin-top: -10px; margin-bottom: 15px; text-align: left; }
 
         header {
@@ -60,29 +60,29 @@
             display: flex; justify-content: space-between; align-items: center;
             gap: 10px; flex-shrink: 0; position: relative;
         }
-        h1 { color: #118ab2; font-size: 20px; flex-shrink: 0; }
+        h1 { color: #e63946; font-size: 20px; flex-shrink: 0; }
         #word-display {
-            font-weight: bold; font-size: 16px; color: #ef476f;
+            font-weight: bold; font-size: 16px; color: #d90429;
             background: #f8f9fa; padding: 4px 14px; border-radius: 20px;
-            border: 2px dashed #ef476f; text-align: center; word-break: break-word; flex: 1;
+            border: 2px dashed #d90429; text-align: center; word-break: break-word; flex: 1;
         }
         #room-display {
             font-weight: bold; color: #666; font-size: 12px;
             display: flex; flex-direction: column; align-items: flex-end;
             gap: 2px; flex-shrink: 0;
         }
-        #timer-display { font-weight: bold; color: #ef476f; font-size: 14px; }
+        #timer-display { font-weight: bold; color: #d90429; font-size: 14px; }
 
         .btn-words-toggle {
-            background: #118ab2; color: white; border: none; padding: 6px 12px;
+            background: #e63946; color: white; border: none; padding: 6px 12px;
             border-radius: 20px; font-weight: bold; font-size: 12px; cursor: pointer;
             display: flex; align-items: center; gap: 4px; transition: background 0.2s;
         }
-        .btn-words-toggle:hover { background: #0f7495; }
+        .btn-words-toggle:hover { background: #b7094c; }
         #words-management-panel {
             position: absolute; top: 55px; left: 16px; background: white;
             padding: 12px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            border: 2px solid #118ab2; z-index: 600; width: 280px; display: none;
+            border: 2px solid #e63946; z-index: 600; width: 280px; display: none;
             flex-direction: column; gap: 8px; text-align: left;
         }
         #words-management-panel label { font-size: 11px; font-weight: bold; color: #333; }
@@ -90,7 +90,7 @@
             width: 100%; height: 60px; padding: 6px; font-size: 12px;
             border: 1px solid #ced4da; border-radius: 6px; resize: none; outline: none;
         }
-        #words-management-panel textarea:focus { border-color: #118ab2; }
+        #words-management-panel textarea:focus { border-color: #e63946; }
         #words-management-panel .panel-actions { display: flex; justify-content: flex-end; gap: 6px; }
 
         #main-container {
@@ -111,10 +111,10 @@
         .player-item {
             background: #f8f9fa; padding: 7px 8px; border-radius: 6px;
             font-weight: bold; color: #333; font-size: 11px;
-            border-left: 4px solid #118ab2;
+            border-left: 4px solid #e63946;
             display: flex; flex-direction: column; gap: 3px;
         }
-        .player-item.drawing { border-left-color: #ef476f; background: #ffe3e8; }
+        .player-item.drawing { border-left-color: #d90429; background: #ffe3e8; }
         .player-meta-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .player-rank { font-size: 9px; color: #777; font-weight: normal; }
         .player-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
@@ -124,18 +124,18 @@
             word-break: break-all; margin-top: 1px;
         }
         .player-score {
-            background: #118ab2; color: white; border-radius: 10px;
+            background: #e63946; color: white; border-radius: 10px;
             padding: 1px 7px; font-size: 11px; font-weight: bold;
             min-width: 32px; text-align: center;
             transition: transform 0.2s, background 0.3s;
             flex-shrink: 0;
         }
-        .player-item.drawing .player-score { background: #ef476f; }
-        .player-score.bump { transform: scale(1.4); background: #06d6a0 !important; }
+        .player-item.drawing .player-score { background: #d90429; }
+        .player-score.bump { transform: scale(1.4); background: #38b000 !important; }
 
         .score-popup {
             position: fixed; pointer-events: none;
-            font-size: 20px; font-weight: bold; color: #06d6a0;
+            font-size: 20px; font-weight: bold; color: #38b000;
             text-shadow: 0 2px 6px rgba(0,0,0,0.25);
             animation: floatUp 1.4s ease-out forwards; z-index: 9999;
         }
@@ -162,28 +162,28 @@
 
         #round-announcement {
             position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%) scale(0.5);
-            background: rgba(26, 26, 46, 0.95); color: white;
+            background: rgba(32, 10, 15, 0.95); color: white;
             padding: 18px 30px; border-radius: 16px; font-weight: bold; text-align: center;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4); border: 3px solid #ffd43b;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4); border: 3px solid #ff6b6b;
             z-index: 500; pointer-events: none; display: none; opacity: 0;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             max-width: 85%; width: max-content;
         }
         #round-announcement.show { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
-        #round-announcement h2 { font-size: 22px; color: #ffd43b; margin-bottom: 4px; }
+        #round-announcement h2 { font-size: 22px; color: #ff6b6b; margin-bottom: 4px; }
         #round-announcement p { font-size: 14px; color: #e6e6e6; font-weight: normal; }
 
         #tools {
-            background: #1a1a2e;
+            background: #200a0f;
             display: flex; flex-direction: column;
             padding: 8px; gap: 6px;
-            border-right: 3px solid #ffd43b;
+            border-right: 3px solid #ff6b6b;
             flex-shrink: 0; overflow-y: auto;
             width: 56px;
         }
 
         .tool-section-label {
-            font-size: 8px; color: #888; text-transform: uppercase;
+            font-size: 8px; color: #aa888f; text-transform: uppercase;
             letter-spacing: 0.5px; text-align: center; margin-top: 2px;
         }
 
@@ -191,13 +191,13 @@
             width: 38px; height: 38px; border-radius: 8px;
             border: 2px solid transparent; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            font-size: 16px; background: #2a2a3e;
+            font-size: 16px; background: #3d1921;
             color: white; transition: all 0.15s;
             flex-shrink: 0;
             -webkit-tap-highlight-color: transparent;
         }
-        .tool-btn:hover { background: #3a3a5e; border-color: #ffd43b; }
-        .tool-btn.active { background: #ffd43b; color: #1a1a2e; border-color: #ffa500; }
+        .tool-btn:hover { background: #5a2833; border-color: #ff6b6b; }
+        .tool-btn.active { background: #ff6b6b; color: #200a0f; border-color: #d90429; }
 
         .brush-sizes {
             display: flex; flex-direction: column; gap: 4px; align-items: center;
@@ -208,25 +208,25 @@
             flex-shrink: 0;
             -webkit-tap-highlight-color: transparent;
         }
-        .size-btn:hover { border-color: #ffd43b; transform: scale(1.15); }
-        .size-btn.active { border-color: #ffd43b; box-shadow: 0 0 0 2px rgba(255,212,59,0.5); }
+        .size-btn:hover { border-color: #ff6b6b; transform: scale(1.15); }
+        .size-btn.active { border-color: #ff6b6b; box-shadow: 0 0 0 2px rgba(255,107,107,0.5); }
 
-        .tool-separator { height: 1px; background: #333; margin: 3px 0; }
+        .tool-separator { height: 1px; background: #55242f; margin: 3px 0; }
 
         #palette-container {
-            flex: 0 0 46px; background: #1a1a2e; border-radius: 12px;
+            flex: 0 0 46px; background: #200a0f; border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex; flex-direction: column; overflow: hidden;
             padding: 6px 4px; gap: 4px;
         }
-        #palette-label { font-size: 8px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
+        #palette-label { font-size: 8px; color: #aa888f; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
         #palette-grid {
             display: grid; grid-template-columns: repeat(2, 1fr);
             gap: 4px; overflow-y: auto; flex: 1;
         }
         #palette-grid::-webkit-scrollbar { width: 3px; }
         #palette-grid::-webkit-scrollbar-track { background: transparent; }
-        #palette-grid::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+        #palette-grid::-webkit-scrollbar-thumb { background: #55242f; border-radius: 2px; }
 
         .color-swatch {
             width: 18px; height: 18px; border-radius: 4px;
@@ -236,7 +236,7 @@
             -webkit-tap-highlight-color: transparent;
         }
         .color-swatch:hover { transform: scale(1.2); border-color: white; }
-        .color-swatch.active { border-color: white; transform: scale(1.15); box-shadow: 0 0 0 1px #ffd43b; }
+        .color-swatch.active { border-color: white; transform: scale(1.15); box-shadow: 0 0 0 1px #ff6b6b; }
 
         #color-custom { width: 100%; height: 22px; border: none; border-radius: 4px; cursor: pointer; padding: 0; flex-shrink: 0; }
         #current-color-display {
@@ -247,24 +247,28 @@
 
         #bottom-actions {
             display: flex; gap: 6px; padding: 4px 8px;
-            background: #1a1a2e; border-top: 2px solid #2a2a3e;
-            align-items: center; flex-shrink: 0;
+            background: #200a0f; border-top: 2px solid #3d1921;
+            align-items: center; flex-shrink: 0; flex-wrap: wrap;
         }
         .btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
-        .btn-clear { background: #ef476f; color: white; }
+        .btn-clear { background: #d90429; color: white; }
         .btn-skip { background: #f4a261; color: white; display: none; }
         
         .action-interact-btn {
             color: white; font-size: 13px; padding: 5px 10px; border-radius: 7px; border: none; cursor: pointer; font-weight: bold; flex-shrink: 0; display: none; transition: transform 0.1s, background 0.2s; box-shadow: 0 3px 8px rgba(0,0,0,0.15);
             -webkit-tap-highlight-color: transparent;
         }
-        #btn-egg { background: #f4a261; }
-        #btn-egg:active { transform: scale(0.92); background: #e76f51; }
-        #btn-flower { background: #2a9d8f; }
-        #btn-flower:active { transform: scale(0.92); background: #1e7167; }
+        #btn-egg { background: #7209b7; }
+        #btn-egg:active { transform: scale(0.92); background: #560bad; }
+        #btn-flower { background: #f72585; }
+        #btn-flower:active { transform: scale(0.92); background: #b5179e; }
+        #btn-slap { background: #ffb703; color: #200a0f; }
+        #btn-slap:active { transform: scale(0.92); background: #fb8500; }
+        #btn-kick { background: #e63946; }
+        #btn-kick:active { transform: scale(0.92); background: #9b2226; }
         .action-interact-btn.cooldown { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
-        .egg-fly, .flower-fly {
+        .egg-fly, .flower-fly, .slap-fly, .kick-fly {
             position: fixed; font-size: 36px; pointer-events: none; z-index: 9999;
             animation: itemFly var(--duration, 0.9s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
@@ -274,25 +278,22 @@
             85%  { opacity: 1; transform: translate(var(--tx2), var(--ty2)) rotate(var(--rot)) scale(1.3); }
             100% { opacity: 0; transform: translate(var(--tx2), var(--ty2)) rotate(var(--rot)) scale(0.5); }
         }
-        .egg-splash, .flower-splash { position: fixed; font-size: 48px; pointer-events: none; z-index: 9999; animation: itemSplash 0.8s ease-out forwards; }
+        .egg-splash, .flower-splash, .slap-splash, .kick-splash { position: fixed; font-size: 48px; pointer-events: none; z-index: 9999; animation: itemSplash 0.8s ease-out forwards; }
         @keyframes itemSplash {
             0%   { opacity: 1; transform: scale(0.5); }
             40%  { opacity: 1; transform: scale(1.6); }
             100% { opacity: 0; transform: scale(2.2); }
         }
-        @keyframes screenShake {
-            0%  { transform: translate(0,0); }
-            15% { transform: translate(-6px, 3px); }
-            30% { transform: translate(6px, -3px); }
-            45% { transform: translate(-4px, 4px); }
-            60% { transform: translate(4px, -2px); }
-            75% { transform: translate(-2px, 2px); }
-            100%{ transform: translate(0,0); }
-        }
         .shake { animation: screenShake 0.45s ease; }
-        #egg-overlay { position: fixed; inset: 0; pointer-events: none; background: rgba(255, 200, 0, 0.45); opacity: 0; z-index: 9998; transition: opacity 0.1s; }
-        #egg-overlay.splat { animation: splatFade 1.2s ease-out forwards; }
-        @keyframes splatFade { 0% { opacity: 0.7; } 100% { opacity: 0; } }
+        #egg-overlay { 
+            position: fixed; inset: 0; pointer-events: none; 
+            background: rgba(114, 9, 183, 0.75); opacity: 0; z-index: 9998; 
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; color: white; font-weight: bold; text-shadow: 2px 2px 4px black;
+        }
+        #egg-overlay.splat { animation: splatFade 1.5s ease-out forwards; }
+        @keyframes splatFade { 0% { opacity: 0.9; } 80% { opacity: 0.9; } 100% { opacity: 0; } }
+        
         .petal-particle { position: fixed; pointer-events: none; font-size: 18px; z-index: 9997; animation: petalFall var(--fall-duration, 2s) linear forwards; }
         @keyframes petalFall {
             0% { transform: translateY(-20px) translateX(0) rotate(0deg); opacity: 1; }
@@ -307,19 +308,21 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex; flex-direction: column; overflow: hidden;
         }
-        .chat-title-bar { background: #1a1a2e; color: white; padding: 4px 8px; font-size: 11px; font-weight: bold; text-transform: uppercase; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        .chat-title-bar { background: #200a0f; color: white; padding: 4px 8px; font-size: 11px; font-weight: bold; text-transform: uppercase; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
         .chat-messages-area { flex: 1; padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
         .msg { padding: 4px 6px; border-radius: 5px; font-size: 11px; word-break: break-all; line-height: 1.3; }
-        .msg-system  { background: #e2f0d9; color: #385723; font-weight: bold; }
+        .msg-system  { background: #fae0e4; color: #7209b7; font-weight: bold; }
         .msg-success { background: #d1e7dd; color: #0f5132; font-weight: bold; border: 1px solid #badbcc; }
         .msg-wrong   { background: #ffe3e8; color: #c92a2a; }
         .msg-normal  { background: #f1f3f5; color: #333; }
-        .msg-normal .username { font-weight: bold; color: #118ab2; }
-        .msg-egg     { background: #fff3cd; color: #856404; font-weight: bold; border: 1px solid #ffc107; }
-        .msg-flower  { background: #e3fafc; color: #0b7285; font-weight: bold; border: 1px solid #99e9f2; }
+        .msg-normal .username { font-weight: bold; color: #e63946; }
+        .msg-egg     { background: #f3e5f5; color: #4a148c; font-weight: bold; border: 1px solid #ce93d8; }
+        .msg-flower  { background: #fce4ec; color: #880e4f; font-weight: bold; border: 1px solid #f48fb1; }
+        .msg-slap    { background: #fff3cd; color: #664d03; font-weight: bold; border: 1px solid #ffecb5; }
+        .msg-kick    { background: #f8d7da; color: #842029; font-weight: bold; border: 1px solid #f5c2c7; }
         .chat-input-row { display: flex; padding: 5px; border-top: 1px solid #dee2e6; background: #f8f9fa; flex-shrink: 0; }
         .chat-input-field { flex: 1; padding: 6px; border: 2px solid #ced4da; border-radius: 5px; outline: none; font-size: 12px; }
-        .chat-send-btn { background: #118ab2; color: white; margin-left: 4px; font-size: 11px; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .chat-send-btn { background: #e63946; color: white; margin-left: 4px; font-size: 11px; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
         @media (max-width: 768px) {
             body { padding: 4px; overflow: hidden; }
@@ -471,12 +474,12 @@
 </head>
 <body>
 
-<div id="egg-overlay"></div>
+<div id="egg-overlay">🥵 ME GUSTA... 💦</div>
 
 <div id="login-screen">
     <div class="login-box">
-        <h2>🌶️ Gartic Strip Proibidão</h2>
-        <input type="text" id="input-username" placeholder="👤 Seu Nome / Apelido" required>
+        <h2>🌶️ Gartic Strip Proibidão - Modo Infinito</h2>
+        <input type="text" id="input-username" placeholder="👤 Seu Nome / Apelido Safado" required>
         
         <p style="font-size: 11px; font-weight: bold; color: #555; margin-bottom: 5px; text-align: left;">Escolha seu guarda-roupa inicial:</p>
         <div class="gender-selector">
@@ -484,10 +487,10 @@
             <div class="gender-btn" data-gender="F" onclick="selectGender('F')">Feminino ♀️</div>
         </div>
 
-        <input type="text" id="input-room" placeholder="🔑 Nome da Sala Privada" required>
+        <input type="text" id="input-room" placeholder="🔑 Nome do Motel / Sala Privada" required>
         <textarea id="input-custom-words" placeholder="📝 Palavras personalizadas (opcional)&#10;Ex: Calcinha, Algema, Sutiã, Chicote..."></textarea>
         <p class="hint">Separe por vírgula. Se deixar vazio, usa o banco de dados temático.</p>
-        <button class="btn" style="width:100%;padding:12px;font-size:16px;background:#118ab2;color:white;" onclick="connectToGame()">🚀 ENTRAR NO JOGO</button>
+        <button class="btn" style="width:100%;padding:12px;font-size:16px;background:#e63946;color:white;" onclick="connectToGame()">🚀 ENTRAR NO JOGO</button>
     </div>
 </div>
 
@@ -495,17 +498,17 @@
     <h1>🌶️ STRIP GARTIC</h1>
     <button class="btn-words-toggle" onclick="toggleWordsPanel()">📝 Palavras</button>
     <div id="words-management-panel">
-        <label>➕ Adicionar Palavras na Sala:</label>
+        <label>➕ Injetar Palavras na Sala:</label>
         <textarea id="runtime-new-words" placeholder="Ex: Batom, MeiaCalça... (separe por vírgula)"></textarea>
         <div class="panel-actions">
             <button class="btn" style="background:#ef476f; color:white; padding:4px 8px; font-size:11px;" onclick="toggleWordsPanel()">Fechar</button>
-            <button class="btn" style="background:#06d6a0; color:white; padding:4px 8px; font-size:11px;" onclick="submitRuntimeWords()">Adicionar</button>
+            <button class="btn" style="background:#06d6a0; color:white; padding:4px 8px; font-size:11px;" onclick="submitRuntimeWords()">Injetar</button>
         </div>
     </div>
-    <div id="word-display">⏳ Aguardando jogadores se vestirem...</div>
+    <div id="word-display">⏳ Esperando os safados entrarem...</div>
     <div id="room-display">
-        <span id="room-id">Sala: —</span>
-        <span id="timer-display">⏱️ Tempo: --</span>
+        <span id="room-id">Motel: —</span>
+        <span id="timer-display">⏱️ Clímax: --</span>
     </div>
 </header>
 
@@ -519,70 +522,72 @@
         <div id="drawing-area">
             <div id="tools">
                 <span class="tool-section-label">Modo</span>
-                <div class="tool-btn active" id="tool-brush" title="Pincel Livre" onclick="setTool('brush')">✏️</div>
-                <div class="tool-btn" id="tool-eraser" title="Borracha" onclick="setTool('eraser')">🧹</div>
-                <div class="tool-btn" id="tool-fill" title="Preencher" onclick="setTool('fill')">🪣</div>
+                <div class="tool-btn active" id="tool-brush" title="Pincel Macio" onclick="setTool('brush')">✏️</div>
+                <div class="tool-btn" id="tool-eraser" title="Apagar Evidências" onclick="setTool('eraser')">🧹</div>
+                <div class="tool-btn" id="tool-fill" title="Arrombar Balde" onclick="setTool('fill')">🪣</div>
 
                 <div class="tool-separator"></div>
-                <span class="tool-section-label">Forma</span>
-                <div class="tool-btn active" id="shape-free" title="Desenho Livre" onclick="setShape('free')">〰️</div>
-                <div class="tool-btn" id="shape-circle" title="Arrastar Círculo" onclick="setShape('circle')">⭕</div>
-                <div class="tool-btn" id="shape-square" title="Arrastar Quadrado" onclick="setShape('square')">⬜</div>
-                <div class="tool-btn" id="shape-triangle" title="Arrastar Triângulo" onclick="setShape('triangle')">🔺</div>
-                <div class="tool-btn" id="shape-spray" title="Efeito Spray" onclick="setShape('spray')">💨</div>
+                <span class="tool-section-label">Curvas</span>
+                <div class="tool-btn active" id="shape-free" title="Movimento Livre" onclick="setShape('free')">〰️</div>
+                <div class="tool-btn" id="shape-circle" title="Forma Redonda" onclick="setShape('circle')">⭕</div>
+                <div class="tool-btn" id="shape-square" title="Forma Quadrada" onclick="setShape('square')">⬜</div>
+                <div class="tool-btn" id="shape-triangle" title="Forma Pontuda" onclick="setShape('triangle')">🔺</div>
+                <div class="tool-btn" id="shape-spray" title="Ejaculação de Tinta" onclick="setShape('spray')">💨</div>
 
                 <div class="tool-separator"></div>
-                <span class="tool-section-label">Tam.</span>
+                <span class="tool-section-label">Calibre</span>
                 <div class="brush-sizes">
-                    <div class="size-btn active" id="size-2" style="width:8px;height:8px;" title="Fino" onclick="setBrushSize(2,this)"></div>
-                    <div class="size-btn" id="size-5" style="width:12px;height:12px;" title="Médio" onclick="setBrushSize(5,this)"></div>
-                    <div class="size-btn" id="size-10" style="width:18px;height:18px;" title="Grosso" onclick="setBrushSize(10,this)"></div>
-                    <div class="size-btn" id="size-20" style="width:24px;height:24px;" title="Extra grosso" onclick="setBrushSize(20,this)"></div>
-                    <div class="size-btn" id="size-40" style="width:32px;height:32px;" title="Super grosso" onclick="setBrushSize(40,this)"></div>
+                    <div class="size-btn active" id="size-2" style="width:8px;height:8px;" title="Fininho" onclick="setBrushSize(2,this)"></div>
+                    <div class="size-btn" id="size-5" style="width:12px;height:12px;" title="Gostosinho" onclick="setBrushSize(5,this)"></div>
+                    <div class="size-btn" id="size-10" style="width:18px;height:18px;" title="Generoso" onclick="setBrushSize(10,this)"></div>
+                    <div class="size-btn" id="size-20" style="width:24px;height:24px;" title="Cavalo" onclick="setBrushSize(20,this)"></div>
+                    <div class="size-btn" id="size-40" style="width:32px;height:32px;" title="Destruidor" onclick="setBrushSize(40,this)"></div>
                 </div>
 
                 <div class="tool-separator"></div>
-                <div id="current-color-display" style="background:#000000;" title="Cor atual"></div>
+                <div id="current-color-display" style="background:#000000;" title="Tom da noite"></div>
             </div>
 
             <div id="canvas-container">
                 <div id="round-announcement">
-                    <h2 id="announcement-title">FIM DE RODADA</h2>
-                    <p id="announcement-desc">Descrição do que rolou</p>
+                    <h2 id="announcement-title">FIM DA rapidinha</h2>
+                    <p id="announcement-desc">O que rolou na cama</p>
                 </div>
                 <canvas id="canvas"></canvas>
-                <div id="fill-status">🪣 Modo Preenchimento</div>
+                <div id="fill-status">🪣 Modo Preenchimento Profundo</div>
             </div>
         </div>
         <div id="bottom-actions">
-            <button class="btn btn-clear" onclick="sendClear()">🗑️ Limpar</button>
-            <button id="btn-skip" class="btn btn-skip" onclick="skipRound()">⏭️ Pular Vez</button>
-            <button id="btn-egg" class="action-interact-btn" onclick="throwInteractItem('egg')">🥚 Jogar Ovo!</button>
-            <button id="btn-flower" class="action-interact-btn" onclick="throwInteractItem('flower')">🌹 Dar Flor!</button>
+            <button class="btn btn-clear" onclick="sendClear()">🗑️ Rasgar Tela</button>
+            <button id="btn-skip" class="btn btn-skip" onclick="skipRound()">⏭️ Brochar / Passar Vez</button>
+            <button id="btn-egg" class="action-interact-btn" onclick="throwInteractItem('egg')">🍆 Jogar Berinjela!</button>
+            <button id="btn-flower" class="action-interact-btn" onclick="throwInteractItem('flower')">🍑 Dar Sarrada!</button>
+            <button id="btn-slap" class="action-interact-btn" onclick="throwInteractItem('slap')">👋 Dar Tapa!</button>
+            <button id="btn-kick" class="action-interact-btn" onclick="throwInteractItem('kick')">👟 Chute na Raba!</button>
         </div>
     </div>
 
     <div id="palette-container">
-        <span id="palette-label">🎨 Cores</span>
+        <span id="palette-label">🎨 Tons</span>
         <div id="palette-grid"></div>
-        <input type="color" id="color-custom" value="#000000" title="Cor personalizada" onchange="pickCustomColor(this)">
+        <input type="color" id="color-custom" value="#000000" title="Tom exótico" onchange="pickCustomColor(this)">
         <div id="current-color-display-palette" style="width:30px;height:30px;border-radius:6px;border:2px solid white;flex-shrink:0;background:#000000;"></div>
     </div>
 
     <div id="right-chats-wrapper">
         <div class="chat-box-container">
-            <div class="chat-title-bar">🎯 Palpites</div>
+            <div class="chat-title-bar">🎯 Gemidos / Palpites</div>
             <div id="guess-messages" class="chat-messages-area"></div>
             <div class="chat-input-row">
-                <input type="text" id="guess-input" class="chat-input-field" placeholder="Chute a palavra..." autocomplete="off">
+                <input type="text" id="guess-input" class="chat-input-field" placeholder="Chute com força..." autocomplete="off">
                 <button class="chat-send-btn" onclick="sendGuessMessage()">➤</button>
             </div>
         </div>
         <div class="chat-box-container">
-            <div class="chat-title-bar">💬 Conversa</div>
+            <div class="chat-title-bar">💬 Conversa de Cama</div>
             <div id="chat-messages" class="chat-messages-area"></div>
             <div class="chat-input-row">
-                <input type="text" id="chat-input" class="chat-input-field" placeholder="Conversar na sala..." autocomplete="off">
+                <input type="text" id="chat-input" class="chat-input-field" placeholder="Sussurre algo no chat..." autocomplete="off">
                 <button class="chat-send-btn" onclick="sendChatMessage()">➤</button>
             </div>
         </div>
@@ -600,6 +605,15 @@
     const CONFIG_ROUPAS_MASCULINAS = ["Boné", "Camisa", "Calça", "Meias", "Cueca"];
     const CONFIG_ROUPAS_FEMININAS = ["Acessórios", "Blusa", "Saia", "Salto Alto", "Lingerie"];
     
+    const PRENDAS_DO_MOTEL = [
+        "Dar um beijo estalado no pescoço do parceiro! 💋",
+        "Fazer 1 minuto de massagem caprichada nas costas! 💆",
+        "Ficar a próxima rodada inteira de joelhos na cadeira! 🧎",
+        "Sussurrar uma fantasia bem secreta no ouvido! 🤫",
+        "Pagar 10 flexões ou agachamentos bem devagar! 🏋️",
+        "Dar um selinho demorado de 10 segundos! 🥵"
+    ];
+
     let playerClothes = {}; 
     let playerGenders = {};
 
@@ -617,12 +631,12 @@
     let roundActive = false, currentDrawerIndex = -1;
     let countdownInterval = null, nextRoundTimeout = null, currentTimeLeft = 0;
     const TEMPO_RODADA = 60;
-    let eggCooldown = false, flowerCooldown = false;
+    let eggCooldown = false, flowerCooldown = false, slapCooldown = false, kickCooldown = false;
     let customWords = [];
     let gameEnded = false;
-    const PONTUACAO_MAXIMA = 1000;
+    const PONTUACAO_MAXIMA = 99999; 
     
-    const PALAVRAS_PADRAO = ["Calcinha","Cueca","Sutiã","Chicote","Algemas","Cama de Casal","Morango","Banana","Pepino","Creme","Massagem","Censura","Vela","Espelho","Pegada","Gemido","Beijo","Chantilly","Travesseiro"];
+    const PALAVRAS_PADRAO = ["Calcinha","Cueca","Sutiã","Chicote","Algemas","Cama de Casal","Morango","Banana","Pepino","Creme","Massagem","Censura","Vela","Espelho","Pegada","Gemido","Beijo","Chantilly","Travesseiro","Massagista do Tinder","Sarrada no Ar","Tapa na Nuca","Fio Dental","Óleo Corporal","Banheira"];
     function getPalavras() { return customWords.length > 0 ? customWords : PALAVRAS_PADRAO; }
 
     async function salvarPalavras() {
@@ -638,7 +652,7 @@
                 const salvas = JSON.parse(result.value);
                 if (Array.isArray(salvas) && salvas.length > 0) {
                     salvas.forEach(w => { if (!customWords.includes(w)) customWords.push(w); });
-                    addSystemMessage("💾 " + customWords.length + " palavras carregadas da memória da sala!");
+                    addSystemMessage("💾 " + customWords.length + " palavras picantes carregadas da memória da sala!");
                 }
             }
         } catch(e) { }
@@ -819,8 +833,10 @@
             ctx.lineTo(x, y); ctx.stroke();
             sendDrawData('draw', x, y, col, currentBrushSize);
         } else if (currentShape === 'spray') {
-            generateSpray(x, y, col, currentBrushSize);
-            sendDrawData('spray', x, y, col, currentBrushSize);
+            let sizeMod = currentBrushSize;
+            if (currentTimeLeft < 20) { sizeMod = currentBrushSize * 4; }
+            generateSpray(x, y, col, sizeMod);
+            sendDrawData('spray', x, y, col, sizeMod);
         } else {
             if (snapshot) ctx.putImageData(snapshot, 0, 0);
             drawBoundingShape(currentShape, startX, startY, x, y, col, currentBrushSize);
@@ -945,8 +961,8 @@
             const rank = index + 1;
             let rankLabel = rank + "º";
             if (rank === 1) rankLabel = "🥇 1º";
-            else if (rank === 2) rankLabel = "🥈 2º";
-            else if (rank === 3) rankLabel = "🥉 3º";
+            else if (rank === 2) rankLabel = "💋 2º";
+            else if (rank === 3) rankLabel = "🍆 3º";
             
             const item = document.createElement('div');
             item.className = "player-item";
@@ -984,38 +1000,18 @@
     }
 
     function triggerStripConsequence(targetPlayer) {
-        if (!playerClothes[targetPlayer] || playerClothes[targetPlayer].length === 0) return;
+        if (!playerClothes[targetPlayer] || playerClothes[targetPlayer].length === 0) {
+            const prendaAleatoria = PRENDAS_DO_MOTEL[Math.floor(Math.random() * PRENDAS_DO_MOTEL.length)];
+            mqttClient.publish(baseTopic + "/prenda", JSON.stringify({ player: targetPlayer, text: prendaAleatoria }));
+            return;
+        }
         const pieceRemoved = playerClothes[targetPlayer].shift();
         mqttClient.publish(baseTopic + "/strip", JSON.stringify({ player: targetPlayer, piece: pieceRemoved, remaining: playerClothes[targetPlayer] }));
         showGarticAnnouncement("🔞 STRIPTEASE!", `${targetPlayer} perdeu as defesas e teve que retirar: ${pieceRemoved.toUpperCase()}! 🔥`);
     }
 
     function checkEndGameConditions() {
-        for (const [jogador, pontuacao] of Object.entries(scores)) {
-            if (pontuacao >= PONTUACAO_MAXIMA) {
-                triggerVictory(jogador);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    function triggerVictory(vencedor) {
-        gameEnded = true;
-        roundActive = false;
-        clearInterval(countdownInterval);
-        clearTimeout(nextRoundTimeout);
-        
-        document.getElementById('btn-egg').style.display = 'none';
-        document.getElementById('btn-flower').style.display = 'none';
-        document.getElementById('btn-skip').style.display = 'none';
-        
-        document.getElementById('word-display').innerText = `🏆 FIM DE JOGO! O(A) SUPREMO(A) É ${vencedor.toUpperCase()}!`;
-        document.getElementById('timer-display').innerText = "⏱️ Fim";
-        
-        showGarticAnnouncement("👑 DOMINOU O QUARTO!", `${vencedor} venceu e limpou os armários da sala! 🎉`);
-        addSystemMessage(`👑 FIM DE JOGO! O grande vencedor desta sala é: ${vencedor} com ${scores[vencedor]} pontos!`);
-        createPetalShower();
+        return false; 
     }
 
     function addScore(nome, pts) {
@@ -1059,14 +1055,28 @@
             const btn = document.getElementById('btn-egg');
             btn.classList.add('cooldown'); btn.textContent = '⏳ ...';
             mqttClient.publish(baseTopic + "/interact", JSON.stringify({ thrower: username, target: currentDrawerName, type: 'egg' }));
-            setTimeout(() => { eggCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '🥚 Jogar Ovo!'; }, 8000);
+            setTimeout(() => { eggCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '🍆 Jogar Berinjela!'; }, 8000);
         } else if (itemType === 'flower') {
             if (flowerCooldown) return;
             flowerCooldown = true;
             const btn = document.getElementById('btn-flower');
             btn.classList.add('cooldown'); btn.textContent = '⏳ ...';
             mqttClient.publish(baseTopic + "/interact", JSON.stringify({ thrower: username, target: currentDrawerName, type: 'flower' }));
-            setTimeout(() => { flowerCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '🌹 Dar Flor!'; }, 5000);
+            setTimeout(() => { flowerCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '🍑 Dar Sarrada!'; }, 5000);
+        } else if (itemType === 'slap') {
+            if (slapCooldown) return;
+            slapCooldown = true;
+            const btn = document.getElementById('btn-slap');
+            btn.classList.add('cooldown'); btn.textContent = '⏳ ...';
+            mqttClient.publish(baseTopic + "/interact", JSON.stringify({ thrower: username, target: currentDrawerName, type: 'slap' }));
+            setTimeout(() => { slapCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '👋 Dar Tapa!'; }, 10000);
+        } else if (itemType === 'kick') {
+            if (kickCooldown) return;
+            kickCooldown = true;
+            const btn = document.getElementById('btn-kick');
+            btn.classList.add('cooldown'); btn.textContent = '⏳ ...';
+            mqttClient.publish(baseTopic + "/interact", JSON.stringify({ thrower: username, target: currentDrawerName, type: 'kick' }));
+            setTimeout(() => { kickCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '👟 Chute na Raba!'; }, 9000);
         }
     }
 
@@ -1078,8 +1088,8 @@
         const targetX = canvasRect.left + canvasRect.width/2 + (Math.random()-0.5)*120;
         const targetY = canvasRect.top + canvasRect.height/2 + (Math.random()-0.5)*100;
         const element = document.createElement('div');
-        element.className = type === 'egg' ? 'egg-fly' : 'flower-fly';
-        element.textContent = type === 'egg' ? '🥚' : '🌹';
+        element.className = type === 'egg' ? 'egg-fly' : (type === 'flower' ? 'flower-fly' : (type === 'slap' ? 'slap-fly' : 'kick-fly'));
+        element.textContent = type === 'egg' ? '🍆' : (type === 'flower' ? '🍑' : (type === 'slap' ? '👋' : '👟'));
         const dx = targetX - sx, dy = targetY - sy;
         const dist = Math.sqrt(dx*dx + dy*dy);
         const duration = Math.max(0.5, Math.min(1.0, dist/900));
@@ -1091,8 +1101,8 @@
         setTimeout(() => {
             element.remove();
             const splash = document.createElement('div');
-            splash.className = type === 'egg' ? 'egg-splash' : 'flower-splash';
-            splash.textContent = type === 'egg' ? '💥' : '✨';
+            splash.className = type === 'egg' ? 'egg-splash' : (type === 'flower' ? 'flower-splash' : (type === 'slap' ? 'slap-splash' : 'kick-splash'));
+            splash.textContent = type === 'egg' ? '💦' : (type === 'flower' ? '💥' : (type === 'slap' ? '💥 CLAP!' : '💥🍑 CRACK!'));
             splash.style.left = (targetX-24)+'px'; splash.style.top = (targetY-24)+'px';
             document.body.appendChild(splash);
             setTimeout(() => splash.remove(), 900);
@@ -1102,7 +1112,24 @@
                     overlay.classList.remove('splat'); void overlay.offsetWidth; overlay.classList.add('splat');
                     document.getElementById('canvas-container').classList.add('shake');
                     setTimeout(() => document.getElementById('canvas-container').classList.remove('shake'), 500);
-                } else if (type === 'flower') { createPetalShower(); }
+                } else if (type === 'flower') { 
+                    createPetalShower(); 
+                } else if (type === 'slap') {
+                    document.getElementById('canvas-container').classList.add('shake');
+                    setTimeout(() => document.getElementById('canvas-container').classList.remove('shake'), 800);
+                    if (isDrawer && roundActive) {
+                        currentTimeLeft = Math.max(1, currentTimeLeft - 5);
+                        document.getElementById('timer-display').innerText = "⏱️ *AI!* Clímax: " + currentTimeLeft + "s";
+                    }
+                } else if (type === 'kick') {
+                    document.getElementById('canvas-container').classList.add('shake');
+                    setTimeout(() => document.getElementById('canvas-container').classList.remove('shake'), 600);
+                    if (isDrawer && roundActive) {
+                        setActiveColor('#000000');
+                        setBrushSize(2, document.getElementById('size-2'));
+                        addSystemMessage("⚠️ O CHUTE FOI TÃO FORTE que seu pincel resetou pro preto fino!");
+                    }
+                }
             }
         }, duration * 1000);
     }
@@ -1112,7 +1139,7 @@
             setTimeout(() => {
                 const petal = document.createElement('div');
                 petal.className = 'petal-particle';
-                petal.textContent = ['🌸','🌹','🍃'][Math.floor(Math.random() * 3)];
+                petal.textContent = ['💋','❤️','🔥'][Math.floor(Math.random() * 3)];
                 petal.style.left = Math.random() * window.innerWidth + 'px';
                 petal.style.setProperty('--drift', (Math.random() * 160 - 80) + 'px');
                 petal.style.setProperty('--fall-duration', (Math.random() * 1.5 + 1.5) + 's');
@@ -1138,7 +1165,7 @@
 
         if (customInput) { customWords = customInput.split(',').map(w => w.trim()).filter(w => w.length > 0); }
         document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('room-id').innerText = "Sala: " + roomName;
+        document.getElementById('room-id').innerText = "Motel: " + roomName;
         adicionarJogadorLista(username);
         initMqtt();
     }
@@ -1158,10 +1185,11 @@
             mqttClient.subscribe(baseTopic + "/customwords");
             mqttClient.subscribe(baseTopic + "/customwords/add");
             mqttClient.subscribe(baseTopic + "/strip");
+            mqttClient.subscribe(baseTopic + "/prenda");
             mqttClient.subscribe(baseTopic + "/sync/request");
             mqttClient.subscribe(baseTopic + "/sync/response");
             
-            const identityPayload = JSON.stringify({ sender: "Sistema", text: `📢 ${username} entrou no quarto.`, name: username, gender: currentGenderSelection, clothes: playerClothes[username], type: "system" });
+            const identityPayload = JSON.stringify({ sender: "Sistema", text: `📢 ${username} deitou na cama da sala.`, name: username, gender: currentGenderSelection, clothes: playerClothes[username], type: "system" });
             mqttClient.publish(baseTopic + "/chat", identityPayload);
             mqttClient.publish(baseTopic + "/presence", identityPayload);
             mqttClient.publish(baseTopic + "/sync/request", JSON.stringify({ requester: username }));
@@ -1195,9 +1223,7 @@
                         }
                         broadcastScores();
                         
-                        if (checkEndGameConditions()) return;
-                        
-                        showGarticAnnouncement("🎯 DESVENDADO!", `${data.sender} acertou o tema secreto: ${currentWord.toUpperCase()}!`);
+                        showGarticAnnouncement("🎯 EN CAI XOU!", `${data.sender} acertou o fetiche: ${currentWord.toUpperCase()}!`);
                         handleRoundEndAutomatically();
                     } else { renderWrongGuessMessage(data.sender, data.text); }
                 } else if (data.type === "talk") { renderNormalMessage(data.sender, data.text); }
@@ -1233,8 +1259,8 @@
             } else if (topic === baseTopic + "/gameflow" && !gameEnded) {
                 handleGameFlow(data);
             } else if (topic === baseTopic + "/gameflow/skip" && !gameEnded) {
-                showGarticAnnouncement("⏭️ VEZ PULADA!", `${data.drawer} passou a vez! A palavra era: ${data.word.toUpperCase()}`);
-                addSystemMessage(`⏭️ Vez pulada por ${data.drawer}. A palavra era: ${data.word.toUpperCase()}`);
+                showGarticAnnouncement("⏭️ BROCHOU!", `${data.drawer} passou a vez! A palavra era: ${data.word.toUpperCase()}`);
+                addSystemMessage(`⏭️ Voltou pra trás: ${data.drawer}. O fetiche era: ${data.word.toUpperCase()}`);
                 if (currentDrawerName) triggerStripConsequence(currentDrawerName);
                 handleRoundEndAutomatically();
             } else if (topic === baseTopic + "/scores") {
@@ -1243,28 +1269,32 @@
                         if (n !== username) { scores[n]=p; } 
                     } 
                     renderScoreboard(); 
-                    checkEndGameConditions();
                 }
             } else if (topic === baseTopic + "/interact") {
                 animateInteractThrow(data.thrower, data.target, data.type);
                 if (data.type === 'egg') addEggMessage(data.thrower, data.target);
                 else if (data.type === 'flower') addFlowerMessage(data.thrower, data.target);
+                else if (data.type === 'slap') addSlapMessage(data.thrower, data.target);
+                else if (data.type === 'kick') addKickMessage(data.thrower, data.target);
             } else if (topic === baseTopic + "/customwords") {
                 if (data.words && data.words.length > 0 && customWords.length === 0) {
                     customWords = data.words;
-                    addSystemMessage("📝 Palavras da sala carregadas e sincronizadas!");
+                    addSystemMessage("📝 Fantasias da sala carregadas e sincronizadas!");
                     salvarPalavras();
                 }
             } else if (topic === baseTopic + "/customwords/add") {
                 if (data.words && data.words.length > 0) {
                     data.words.forEach(w => { if(!customWords.includes(w)) customWords.push(w); });
-                    addSystemMessage(`📝 ${data.sender} adicionou +${data.words.length} novas palavras à lista!`);
+                    addSystemMessage(`📝 ${data.sender} colocou mais +${data.words.length} fantasias quentes na lista!`);
                     salvarPalavras();
                 }
             } else if (topic === baseTopic + "/strip") {
                 playerClothes[data.player] = data.remaining;
                 addSystemMessage(`🔞 PEÇA REMOVIDA: ${data.player} retirou seu/sua ${data.piece}!`);
                 renderScoreboard();
+            } else if (topic === baseTopic + "/prenda") {
+                addSystemMessage(`🔥 PENALIDADE MÁXIMA: ${data.player} está nu(a) e deve pagar a prenda: ${data.text}`);
+                showGarticAnnouncement("🔥 PRENDA DO QUARTO!", `${data.player} deve: ${data.text}`);
             }
         });
     }
@@ -1300,19 +1330,23 @@
         renderScoreboard();
         const eggBtn = document.getElementById('btn-egg');
         const flowerBtn = document.getElementById('btn-flower');
+        const slapBtn = document.getElementById('btn-slap');
+        const kickBtn = document.getElementById('btn-kick');
         const skipBtn = document.getElementById('btn-skip');
         if (currentDrawerName === username) {
-            isDrawer = true; eggBtn.style.display = 'none'; flowerBtn.style.display = 'none';
+            isDrawer = true; eggBtn.style.display = 'none'; flowerBtn.style.display = 'none'; slapBtn.style.display = 'none'; kickBtn.style.display = 'none';
             skipBtn.style.display = 'inline-flex';
-            document.getElementById('word-display').innerText = "✏️ Sua Palavra Secreta: " + currentWord.toUpperCase();
-            addSystemMessage(`✏️ Sua vez! Palavra: ${currentWord.toUpperCase()}`);
+            document.getElementById('word-display').innerText = "✏️ Seu Fetiche Secreto: " + currentWord.toUpperCase();
+            addSystemMessage(`✏️ Sua vez! Esfregue o traço: ${currentWord.toUpperCase()}`);
         } else {
             isDrawer = false; skipBtn.style.display = 'none';
-            eggBtn.style.display = 'inline-flex'; eggBtn.classList.remove('cooldown');
-            flowerBtn.style.display = 'inline-flex'; flowerBtn.classList.remove('cooldown');
+            eggBtn.style.display = 'inline-flex'; eggBtn.classList.remove('cooldown'); eggBtn.textContent = '🍆 Jogar Berinjela!';
+            flowerBtn.style.display = 'inline-flex'; flowerBtn.classList.remove('cooldown'); flowerBtn.textContent = '🍑 Dar Sarrada!';
+            slapBtn.style.display = 'inline-flex'; slapBtn.classList.remove('cooldown'); slapBtn.textContent = '👋 Dar Tapa!';
+            kickBtn.style.display = 'inline-flex'; kickBtn.classList.remove('cooldown'); kickBtn.textContent = '👟 Chute na Raba!';
             const u = "_ ".repeat(currentWord.length).trim();
-            document.getElementById('word-display').innerText = `🎨 Desenho de ${currentDrawerName} (${u})`;
-            addSystemMessage(`🎨 ${currentDrawerName} está desenhando...`);
+            document.getElementById('word-display').innerText = `🎨 Esfregando pincel: ${currentDrawerName} (${u})`;
+            addSystemMessage(`🎨 ${currentDrawerName} está rebolando no traço...`);
         }
         startLocalTimer(TEMPO_RODADA);
     }
@@ -1320,22 +1354,24 @@
     function startLocalTimer(seconds) {
         if (gameEnded) return;
         currentTimeLeft = seconds;
-        document.getElementById('timer-display').innerText = "⏱️ Tempo: " + currentTimeLeft + "s";
+        document.getElementById('timer-display').innerText = "⏱️ Clímax: " + currentTimeLeft + "s";
         countdownInterval = setInterval(() => {
             if (gameEnded) { clearInterval(countdownInterval); return; }
             currentTimeLeft--;
             if (currentTimeLeft <= 0) {
                 clearInterval(countdownInterval);
-                document.getElementById('timer-display').innerText = "⏱️ Tempo: 0s";
-                addSystemMessage(`🛑 Tempo esgotado! A palavra era: ${currentWord.toUpperCase()}`);
-                showGarticAnnouncement("⏳ TEMPO ESGOTADO!", `Ninguém acertou! A palavra secreta era: ${currentWord.toUpperCase()}`);
+                document.getElementById('timer-display').innerText = "⏱️ Clímax: 0s";
+                addSystemMessage(`🛑 Deu ruim! Tempo esgotado. A palavra oculta era: ${currentWord.toUpperCase()}`);
+                showGarticAnnouncement("⏳ BROCHOU GERAL!", `Ninguém adivinhou! A fantasia era: ${currentWord.toUpperCase()}`);
                 document.getElementById('btn-egg').style.display = 'none';
                 document.getElementById('btn-flower').style.display = 'none';
+                document.getElementById('btn-slap').style.display = 'none';
+                document.getElementById('btn-kick').style.display = 'none';
                 document.getElementById('btn-skip').style.display = 'none';
                 if (currentDrawerName) triggerStripConsequence(currentDrawerName);
                 handleRoundEndAutomatically();
             } else {
-                document.getElementById('timer-display').innerText = "⏱️ Tempo: " + currentTimeLeft + "s";
+                document.getElementById('timer-display').innerText = "⏱️ Clímax: " + currentTimeLeft + "s";
             }
         }, 1000);
     }
@@ -1344,6 +1380,8 @@
         roundActive = false; clearInterval(countdownInterval);
         document.getElementById('btn-egg').style.display = 'none';
         document.getElementById('btn-flower').style.display = 'none';
+        document.getElementById('btn-slap').style.display = 'none';
+        document.getElementById('btn-kick').style.display = 'none';
         document.getElementById('btn-skip').style.display = 'none';
         if (gameEnded) return;
         if (currentDrawerName === username) { nextRoundTimeout = setTimeout(() => { if (!gameEnded) drawNewRound(); }, 4000); }
@@ -1362,8 +1400,15 @@
         const palpiteLimpo = msgText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
         const respostaLimpa = currentWord.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
         if (palpiteLimpo === respostaLimpa) {
-            const pts = calcPoints(currentTimeLeft);
-            mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: `Acertou: ${currentWord.toUpperCase()}! 🎯`, isCorrect: true, pts, type: "guess" }));
+            let pts = calcPoints(currentTimeLeft);
+            let statusExotico = "";
+            if (currentTimeLeft >= 45) {
+                pts = pts * 2;
+                statusExotico = "⚡ [EJACULADOR PRECOCE - BÔNUS X2] ";
+            } else if (currentTimeLeft <= 10) {
+                statusExotico = "🛡️ [GUERREIRO DE CAMISINHA] ";
+            }
+            mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: `Gemeu certinho: ${statusExotico}${currentWord.toUpperCase()}! 🎯`, isCorrect: true, pts, type: "guess" }));
         } else {
             mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: msgText, isCorrect: false, type: "guess" }));
         }
@@ -1385,7 +1430,7 @@
     }
     function addSuccessMessage(sender, text) {
         const c = document.getElementById('guess-messages'); const m = document.createElement('div'); m.className = "msg msg-success"; m.innerText = `🎯 ${sender} ${text}`; c.appendChild(m); c.scrollTop = c.scrollHeight;
-        if (!gameEnded) document.getElementById('word-display').innerText = "🎉 Adivinhado! Próxima rodada...";
+        if (!gameEnded) document.getElementById('word-display').innerText = "🎉 No alvo! Próxima rodada...";
     }
     function renderWrongGuessMessage(sender, text) {
         const c = document.getElementById('guess-messages'); const m = document.createElement('div'); m.className = "msg msg-wrong"; m.innerText = `${sender}: ${text}`; c.appendChild(m); c.scrollTop = m.scrollHeight;
@@ -1395,10 +1440,16 @@
         m.appendChild(s); m.appendChild(document.createTextNode(text)); c.appendChild(m); c.scrollTop = c.scrollHeight;
     }
     function addEggMessage(thrower, target) {
-        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-egg"; m.innerText = `🥚 ${thrower} jogou um ovo em ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
+        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-egg"; m.innerText = `🍆 ${thrower} cobriu ${target} com uma berinjela cegante!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
     }
     function addFlowerMessage(thrower, target) {
-        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-flower"; m.innerText = `🌹 ${thrower} enviou uma flor de apoio para ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
+        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-flower"; m.innerText = `🍑 ${thrower} meteu uma sarrada de apoio em ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
+    }
+    function addSlapMessage(thrower, target) {
+        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-slap"; m.innerText = `👋 ${thrower} deu um TAPA NA NUCA de ${target} (-5s de clímax)!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
+    }
+    function addKickMessage(thrower, target) {
+        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-kick"; m.innerText = `👟💥🍑 ${thrower} acertou um CHUTE NA RABA de ${target}! O pincel dele(a) quebrou pro fino!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
     }
 
     selectGender('M');
