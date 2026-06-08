@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gartic Strip Proibidão Realtime - Sync Total</title>
+    <title>Gartic Strip Proibidão Realtime - Sync Total Fixo</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -186,7 +186,7 @@
         .chat-box-container { flex: 1; background: white; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
         .chat-title-bar { background: #200a0f; color: white; padding: 4px 8px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
         .chat-messages-area { flex: 1; padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
-        .msg { padding: 4px 6px; border-radius: 5px; font-size: 11px; word-break: break-all; }
+        .msg { padding: 4px 6px; border-radius: 5px; font-size: 11px; word-break: break-all; line-height: 1.3; }
         .msg-system  { background: #fae0e4; color: #7209b7; font-weight: bold; }
         .msg-success { background: #d1e7dd; color: #0f5132; font-weight: bold; }
         .msg-wrong   { background: #ffe3e8; color: #c92a2a; }
@@ -215,12 +215,12 @@
 </head>
 <body>
 
-<div id="egg-overlay"></div>
+<div id="egg-overlay">🔞 CENSURADO PELA EX CITA ÇÃO! 🔞</div>
 
 <div id="login-screen">
     <div class="login-box">
         <h2>🌶️ Gartic Strip Proibidão</h2>
-        <input type="text" id="input-username" placeholder=" Seu Nome / Apelido Safado" required>
+        <input type="text" id="input-username" placeholder="👤 Seu Nome / Apelido Safado" required>
         <p style="font-size: 11px; font-weight: bold; color: #555; margin-bottom: 5px; text-align: left;">Escolha seu guarda-roupa inicial:</p>
         <div class="gender-selector">
             <div class="gender-btn" data-gender="M" onclick="selectGender('M')">Masculino ♂️</div>
@@ -390,24 +390,50 @@
     }
     buildPalette();
 
-    canvas.addEventListener('mousedown', (e) => { if (!isDrawer || !roundActive) return; e.preventDefault(); const c = getCanvasCoordinates(e.clientX, e.clientY); if (currentTool === 'fill') { doFill(Math.round(c.x), Math.round(c.y)); return; } onStartDrag(c.x, c.y); });
-    canvas.addEventListener('mousemove', (e) => { if (!drawing) return; e.preventDefault(); const c = getCanvasCoordinates(e.clientX, e.clientY); onMoveDrag(c.x, c.y); });
+    canvas.addEventListener('mousedown', (e) => { 
+        if (!isDrawer || !roundActive) return; 
+        e.preventDefault(); 
+        const c = getCanvasCoordinates(e.clientX, e.clientY); 
+        if (currentTool === 'fill') { doFill(Math.round(c.x), Math.round(c.y)); return; } 
+        onStartDrag(c.x, c.y); 
+    });
+    canvas.addEventListener('mousemove', (e) => { 
+        if (!drawing) return; 
+        e.preventDefault(); 
+        const c = getCanvasCoordinates(e.clientX, e.clientY); 
+        onMoveDrag(c.x, c.y); 
+    });
     canvas.addEventListener('mouseup', (e) => { e.preventDefault(); onStopDrag(); });
     canvas.addEventListener('mouseleave', () => { if (drawing) onStopDrag(); });
 
-    canvas.addEventListener('touchstart', (e) => { if (!isDrawer || !roundActive || e.touches.length !== 1) return; e.preventDefault(); const touch = e.touches[0]; const c = getCanvasCoordinates(touch.clientX, touch.clientY); if (currentTool === 'fill') { doFill(Math.round(c.x), Math.round(c.y)); return; } onStartDrag(c.x, c.y); }, { passive: false });
-    canvas.addEventListener('touchmove', (e) => { if (!drawing || e.touches.length !== 1) return; e.preventDefault(); const touch = e.touches[0]; const c = getCanvasCoordinates(touch.clientX, touch.clientY); onMoveDrag(c.x, c.y); }, { passive: false });
+    canvas.addEventListener('touchstart', (e) => { 
+        if (!isDrawer || !roundActive || e.touches.length !== 1) return; 
+        e.preventDefault(); 
+        const touch = e.touches[0]; 
+        const c = getCanvasCoordinates(touch.clientX, touch.clientY); 
+        if (currentTool === 'fill') { doFill(Math.round(c.x), Math.round(c.y)); return; } 
+        onStartDrag(c.x, c.y); 
+    }, { passive: false });
+    canvas.addEventListener('touchmove', (e) => { 
+        if (!drawing || e.touches.length !== 1) return; 
+        e.preventDefault(); 
+        const touch = e.touches[0]; 
+        const c = getCanvasCoordinates(touch.clientX, touch.clientY); 
+        onMoveDrag(c.x, c.y); 
+    }, { passive: false });
     canvas.addEventListener('touchend', (e) => { e.preventDefault(); onStopDrag(); }, { passive: false });
 
     function onStartDrag(x, y) {
         drawing = true; startX = x; startY = y; const col = currentTool === 'eraser' ? '#ffffff' : currentColor;
         ctx.fillStyle = col; ctx.strokeStyle = col; ctx.lineWidth = currentBrushSize;
-        if (currentShape === 'free') { ctx.beginPath(); ctx.moveTo(x, y); sendDrawData('start', x, y, col, currentBrushSize); }
-        else { snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height); }
+        ctx.beginPath(); ctx.moveTo(x, y); 
+        sendDrawData('start', x, y, col, currentBrushSize);
+        if (currentShape !== 'free' && currentShape !== 'spray') { snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height); }
     }
 
     function onMoveDrag(x, y) {
         if (!drawing) return; const col = currentTool === 'eraser' ? '#ffffff' : currentColor; ctx.lineWidth = currentBrushSize;
+        ctx.strokeStyle = col; ctx.fillStyle = col;
         if (currentShape === 'free') { ctx.lineTo(x, y); ctx.stroke(); sendDrawData('draw', x, y, col, currentBrushSize); }
         else if (currentShape === 'spray') { let sm = currentBrushSize; if (currentTimeLeft < 20) sm = currentBrushSize * 4; generateSpray(x, y, col, sm); sendDrawData('spray', x, y, col, sm); }
         else { if (snapshot) ctx.putImageData(snapshot, 0, 0); drawBoundingShape(currentShape, startX, startY, x, y, col, currentBrushSize); }
@@ -594,7 +620,13 @@
     }
 
     function handleRoundEndAutomatically() { roundActive = false; clearInterval(countdownInterval); if (currentDrawerName === username) nextRoundTimeout = setTimeout(() => { drawNewRound(); }, 4000); }
-    function sendDrawData(action, x, y, color, size, shapeType = '', endX = 0, endY = 0) { if (mqttClient && roundActive) mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action, x, y, color, size, shapeType, endX, endY })); }
+    
+    function sendDrawData(action, x, y, color, size, shapeType = '', endX = 0, endY = 0) { 
+        if (mqttClient && roundActive && isDrawer) { 
+            mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action: action, x: x, y: y, color: color, size: size, shapeType: shapeType, endX: endX, endY: endY })); 
+        } 
+    }
+    
     function sendClear() { if (isDrawer) { ctx.clearRect(0, 0, canvas.width, canvas.height); mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action: 'clear' })); } }
 
     function sendGuessMessage() {
