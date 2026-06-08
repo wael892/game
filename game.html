@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gartic Strip Proibidão Realtime - Dose Máxima</title>
+    <title>Gartic Strip Proibidão Realtime - Mobile Fixed</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -246,7 +246,7 @@
         }
 
         #bottom-actions {
-            display: flex; gap: 6px; padding: 4px 8px;
+            display: flex; gap: 6px; padding: 6px 8px;
             background: #200a0f; border-top: 2px solid #3d1921;
             align-items: center; flex-shrink: 0; flex-wrap: wrap;
         }
@@ -349,7 +349,7 @@
             }
 
             #scoreboard {
-                flex: 0 0 45px !important;
+                flex: 0 0 54px !important;
                 width: 100%;
                 padding: 3px 6px;
                 border-radius: 6px;
@@ -367,9 +367,12 @@
             }
             .player-item {
                 padding: 3px 6px; font-size: 10px;
-                height: 38px; white-space: nowrap;
-                display: inline-flex; flex-shrink: 0; align-items: center;
+                height: 44px; white-space: nowrap;
+                display: inline-flex; flex-shrink: 0; align-items: flex-start;
+                justify-content: center;
             }
+            .player-meta-row { gap: 6px; }
+            .player-strip-inventory { font-size: 8px; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
             #canvas-wrapper {
                 flex: 1 1 0 !important;
@@ -441,7 +444,8 @@
             #current-color-display { width: 28px; height: 28px; flex-shrink: 0; }
             #color-custom { width: 26px; height: 26px; border-radius: 4px; flex-shrink: 0; }
 
-            #bottom-actions { padding: 3px 6px; flex-wrap: wrap; gap: 4px; }
+            #bottom-actions { padding: 4px 6px; gap: 4px; overflow-y: auto; max-height: 80px; }
+            #bottom-actions .btn, #bottom-actions .action-interact-btn { padding: 4px 8px; font-size: 11px; }
 
             #right-chats-wrapper {
                 flex: 0 0 150px !important;
@@ -464,11 +468,10 @@
         #canvas-container { flex: 1; position: relative; min-height: 0; }
 
         #fill-status {
-            display: none;
             position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
             background: rgba(0,0,0,0.7); color: white;
             padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;
-            pointer-events: none; z-index: 10;
+            pointer-events: none; z-index: 10; display: none;
         }
     </style>
 </head>
@@ -1259,8 +1262,8 @@
             } else if (topic === baseTopic + "/gameflow" && !gameEnded) {
                 handleGameFlow(data);
             } else if (topic === baseTopic + "/gameflow/skip" && !gameEnded) {
-                showGarticAnnouncement("⏭️ BROCHOU!", `${data.drawer} passou a vez! A palavra era: ${data.word.toUpperCase()}`);
-                addSystemMessage(`⏭️ Voltou pra trás: ${data.drawer}. O fetiche era: ${data.word.toUpperCase()}`);
+                showGarticAnnouncement("⏭ *BROCHOU!*", `${data.drawer} passou a vez! A palavra era: ${data.word.toUpperCase()}`);
+                addSystemMessage(`⏭ Vez pulada por ${data.drawer}. O fetiche era: ${data.word.toUpperCase()}`);
                 if (currentDrawerName) triggerStripConsequence(currentDrawerName);
                 handleRoundEndAutomatically();
             } else if (topic === baseTopic + "/scores") {
