@@ -121,6 +121,28 @@
             100% { opacity: 0; transform: translate(var(--tx), var(--ty)) rotate(360deg) scale(0.5); }
         }
 
+        /* Modal do Gerador SAVA Estácio */
+        #sava-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(38, 70, 83, 0.95); display: none; justify-content: center;
+            align-items: center; z-index: 3000; padding: 10px;
+        }
+        .sava-box {
+            background: white; width: 100%; max-width: 750px; height: 90vh;
+            border-radius: 8px; display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+        }
+        .sava-header {
+            background: #e76f51; color: white; padding: 8px 12px; font-size: 12px;
+            font-weight: bold; display: flex; justify-content: space-between; align-items: center;
+        }
+        .sava-body { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background: #f8f9fa; }
+        .sava-controls { display: flex; gap: 6px; margin-bottom: 4px; flex-shrink: 0; }
+        .sava-btn { padding: 6px 12px; border: none; border-radius: 4px; font-size: 11px; font-weight: bold; color: white; cursor: pointer; }
+        .card-resposta { background: white; padding: 8px; border-radius: 4px; border-left: 4px solid #e76f51; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .card-resposta h4 { font-size: 11px; color: #264653; margin-bottom: 4px; font-weight: bold; }
+        .card-resposta p { font-size: 11px; color: #333; line-height: 1.4; background: #f1f3f5; padding: 6px; border-radius: 3px; user-select: all; }
+
         @media (max-width: 768px) {
             body { padding: 2px; }
             header { height: auto; padding: 4px; flex-wrap: wrap; gap: 2px; }
@@ -178,6 +200,7 @@
             <button id="btn-skip" class="btn btn-action" onclick="skipQuestion()">>>>> Saltar</button>
             <button id="btn-coffee" class="btn btn-interact" onclick="throwInteract('coffee')">☕ Café</button>
             <button id="btn-paper" class="btn btn-interact" onclick="throwInteract('paper')">📄 Dados</button>
+            <button id="btn-sava" class="btn" style="background:#e76f51;" onclick="toggleSavaModal(true)">📝 Módulo SAVA</button>
         </div>
     </div>
 
@@ -201,6 +224,21 @@
     </div>
 </div>
 
+<div id="sava-modal">
+    <div class="sava-box">
+        <div class="sava-header">
+            <span>ESTÁCIO - MORFOLOGIA HUMANA E PROCESSOS PATOLÓGICOS INICIAIS (TEMA 9)</span>
+            <span style="cursor:pointer; padding: 2px 8px; background: #264653; border-radius: 3px;" onclick="toggleSavaModal(false)">X</span>
+        </div>
+        <div class="sava-body">
+            <div class="sava-controls">
+                <button class="sava-btn" style="background:#2a9d8f; flex:1;" onclick="gerarVariacoesSava()">Gerar Novas Respostas Únicas (Sem Limites)</button>
+            </div>
+            <div id="sava-output-list" style="display:flex; flex-direction:column; gap:6px;"></div>
+        </div>
+    </div>
+</div>
+
 <script>
     const BANCO_PERGUNTAS = [
         { c: "Etapas da estatística", d: "basico", q: "Qual a primeira etapa da estatística, responsável pela obtenção direta ou indireta dos dados brutos?", a: "Coleta de dados", e: ["Organização dos dados", "Apuração dos dados", "Análise dos resultados"] },
@@ -212,7 +250,7 @@
         { c: "Etapas da estatística", d: "intermediario", q: "Qual abordagem estatística visa resumir, organizar e descrever as características principais de um conjunto de dados sem fazer inferências precoces?", a: "Análise exploratória de dados", e: ["Análise dos resultados", "Exposição e apresentação dos dados", "Método de coleta de dados"] },
         { c: "Conceitos Básicos", d: "basico", q: "Como são classificadas as variáveis cujos valores são expressos por meio de números resultantes de contagens ou medições?", a: "Quantitativas", e: ["Qualitativas", "Nominais", "Categorizadas"] },
         { c: "Conceitos Básicos", d: "basico", q: "Como são classificadas as variáveis que expressam atributos, categorias, qualidades ou características não numéricas?", a: "Qualitativas", e: ["Quantitativas", "Contínuas", "Discretas"] },
-        { c: "Estruturação de Dados", d: "intermediario", q: "Qual o arranjo de dados numéricos brutos organizados em ordem crescente ou decrescente de magnitude?", a: "Rol", e: ["Amplitude total", "Histograma", "Frequência simples"] },
+        { c: "Estruturação de Dados", d: "intermediario", q: "Qual o arranjo de dados numéricos brutos organizados em ordem crescent ou decrescente de magnitude?", a: "Rol", e: ["Amplitude total", "Histograma", "Frequência simples"] },
         { c: "Estruturação de Dados", d: "intermediario", q: "Como se chama a diferença numérica exata entre o maior valor e o menor valor de um conjunto de dados observados?", a: "Amplitude total", e: ["Amplitude de classe", "Ponto médio da classe", "Variância"] },
         { c: "Estruturação de Dados", d: "intermediario", q: "Como chamamos o arranjo em tabela que organiza os dados brutos divididos em classes juntamente com suas respectivas contagens?", a: "Distribuições de frequência", e: ["Histograma", "Rol", "Caixa"] },
         { c: "Elementos da Distribuição", d: "intermediario", q: "Como se chama o número de observações individuais que caem dentro de uma classe específica de uma distribuição?", a: "Frequência simples", e: ["Frequência relativa", "Frequência acumulada", "Ponto médio da classe"] },
@@ -222,7 +260,7 @@
         { c: "Elementos da Distribuição", d: "hardcore", q: "Qual a proporção da frequência simples de uma classe em relação ao número total de observações da amostra, expressa em percentual?", a: "Frequência relativa", e: ["Frequência simples", "Frequência acumulada", "Coeficiente de variação"] },
         { c: "Elementos da Distribuição", d: "hardcore", q: "Como se chama o somatório das frequências simples de todas as classes anteriores até a classe atual na tabela?", a: "Frequência acumulada", e: ["Frequência relativa", "Frequência simples", "Ponto médio da classe"] },
         { c: "Cálculos Estatísticos", d: "hardcore", q: "Na construção de tabelas, qual regra matemática determina o número de classes (k) com base no logaritmo do tamanho da amostra?", a: "Regra de Sturges", e: ["Fórmula de Quartil", "Cálculo de Variância", "Efeito Boxplot"] },
-        { c: "Visualização Gráfica", d: "basico", q: "Qual gráfico utiliza retângulos dispostos verticalmente ou horizontalmente onde o comprimento é proporcional à frequência do atributo qualitativo?", a: "Gráfico de barras ou colunas", e: ["Histograma", "Gráficos de linhas", "Caixa"] },
+        { c: "Visualização Gráfica", d: "basico", q: "Qual gráfico utiliza retângulos dispostos verticalmente ou horizontalmente onde o comprimento é proporcional à frequência do atributo qualitativo?", a: "Gráfico de barras ou colunas", e: ["Histograma", "Gráticos de linhas", "Caixa"] },
         { c: "Visualização Gráfica", d: "intermediario", q: "Qual o gráfico formado por retângulos adjacentes, onde a base representa os intervalos de classe e a altura representa a densidade de frequência?", a: "Histograma", e: ["Gráfico de barras ou colunas", "Setor", "Gráticos de linhas"] },
         { c: "Visualização Gráfica", d: "basico", q: "Qual tipo de gráfico é ideal para demonstrar o comportamento de uma variável contínua ao longo de um eixo temporal contínuo?", a: "Gráticos de linhas", e: ["Setor", "Histograma", "Gráfico de barras ou colunas"] },
         { c: "Visualização Gráfica", d: "basico", q: "Qual gráfico circular é dividido em fatias proporcionais às frequências relativas dos dados, também chamado de gráfico de pizza?", a: "Setor", e: ["Histograma", "Gráticos de linhas", "Caixa"] },
@@ -248,6 +286,109 @@
     let streakAcertos = 0; 
     const TEMPO_RODADA = 30; 
 
+    // --- Matrizes Dinâmicas de Embaralhamento Científico para o Gerador SAVA ---
+    const SAVA_DATABASE = [
+        {
+            num: 1,
+            q: "A estrutura dos vasos sanguíneos apresenta adaptações específicas que permitem o desempenho de diferentes funções no sistema circulatório. Explique as principais diferenças estruturais entre artérias, veias e capilares e relacione essas características com suas respectivas funções fisiológicas.",
+            intro: ["As artérias contam com uma túnica média espessa e tecido elástico abundante,", "Sob o ponto de vista morfológico, as artérias possuem paredes altamente musculoelásticas,", "A organização vascular demonstra que vasos arteriais sustentam alta pressão por sua espessa camada muscular,"],
+            mid: ["o que permite suportar a ejeção sistólica de alta pressão. Em contrapartida, as veias possuem paredes mais finas e complacentes com válvulas,", "tornando-as aptas a guiar o fluxo sob estresse mecânico severo. Já as veias exibem túnica média delgada e complacência elevada,"],
+            fim: ["atuando como vasos de capacitância. Os capilares consistem apenas em endotélio e lâmina basal, maximizando as trocas gasosas e de nutrientes.", "funcionando como reservatórios de volume. Os capilares, formados por uma camada única de células endoteliais, facilitam a difusão celular direta."]
+        },
+        {
+            num: 2,
+            q: "O fluxo sanguíneo normal depende da interação entre diversos fatores físicos e fisiológicos. Descreva os mecanismos responsáveis pela manutenção do fluxo sanguíneo unidirecional e explicite a importância das válvulas nesse processo.",
+            intro: ["O gradiente de pressão gerado pela contração miocárdica e a bomba muscular esquelética", "O deslocamento anterógrado do sangue é mantido pela diferença de pressão hidrostática e a prensa muscular,", "A dinâmica circulatória unidirecional baseia-se na diferença de pressão gerada pelo coração somada à atividade muscular periférica,"],
+            mid: [" impulsionam o sangue de volta ao coração. Nesse contexto, as válvulas venosas desempenham papel crucial,", " garantem o retorno venoso eficiente contra a força da gravidade. As cúspides valvulares contidas nas veias periféricas"],
+            fim: [" impedindo o refluxo sanguíneo e a estase nas extremidades inferiores do organismo.", " atuam como barreiras anatômicas que barram o refluxo e evitam quadros congestivos periféricos."]
+        },
+        {
+            num: 3,
+            q: "O endotélio vascular desempenha papel fundamental na homeostase circulatória. Explique como o endotélio saudável atua na prevenção da trombose e na manutenção da fluidez sanguínea.",
+            intro: ["Um endotélio íntegro e funcional age como uma barreira física e sintética protetora,", "O tecido endotelial não ativado preserva a fluidez biológica do sangue,", "As células endoteliais intactas evitam ativamente o desencadeamento da cascata de coagulação,"],
+            mid: [" secretando continuamente mediadores químicos como óxido nítrico (NO) e prostaciclina (PGI2),", " através da liberação constante de fatores antiagregantes plaquetários potentes,"],
+            fim: [" que inibem a adesão de plaquetas e promovem vasoativação benéfica, além de expressar trombomodulina.", " que barram a ancoragem plaquetária precoce e degradam ativamente filamentos iniciais de fibrina."]
+        },
+        {
+            num: 4,
+            q: "A hemostasia é um processo altamente regulado que evita perdas sanguíneas excessivas após uma lesão vascular. Descreva as etapas da formação do tampão hemostático desde a lesão vascular até a estabilização do coágulo.",
+            intro: ["Logo após o insulto endotelial, ocorre vasoconstrição reflexa local imediata.", "O processo hemostático inicia-se com o espasmo vascular decorrente da lesão.", "Diante da ruptura da parede do vaso, instala-se uma vasoconstrição neurogênica local."],
+            mid: [" Na sequência, ocorre adesão e agregação plaquetária via colágeno exposto, formando o tampão primário.", " Em seguida, plaquetas ancoram-se à matriz extracelular exposta, gerando o tampão de hemostasia primária."],
+            fim: [" Posteriormente, ativa-se a cascata de coagulação, culminando na conversão de fibrinogênio em fibrina para estabilizar o coágulo definitivo.", " Por fim, a via enzimática sequencial gera trombina, que polimeriza a fibrina, convertendo o tampão frouxo em uma malha sólida e firme."]
+        },
+        {
+            num: 5,
+            q: "O fator de Von Willebrand é considerado essencial para a hemostasia primária. Explique sua função fisiológica e as consequências clínicas decorrentes de sua deficiência.",
+            intro: ["O fator de Von Willebrand (fVW) atua como uma ponte molecular indispensável,", "A principal atribuição do fVW reside em conectar quimicamente as plaquetas circulantes,", "Fisiologicamente, o fVW liga o receptor plaquetário GpIb ao colágeno subendotelial exposto,"],
+            mid: [" permitindo a adesão das plaquetas ao colágeno subendotelial sob altas forças de cisalhamento.", " promovendo a fixação primária dos fragmentos celulares no sítio da lesão sob forte fluxo."],
+            fim: [" A sua ausência ou defeito reduz a capacidade de adesão, desencadeando hemorragias, epistaxes e sangramentos prolongados.", " Desse modo, síndromes deficitárias dessa proteína resultam em distúrbios hemorrágicos crônicos e sangramentos de mucosas."]
+        },
+        {
+            num: 6,
+            q: "A trombina é considerada uma das moléculas mais importantes da coagulação sanguínea. Explique suas principais funções durante o processo hemostático.",
+            intro: ["A trombina (Fator IIa) atua clivando o fibrinogênio solúvel em monômeros de fibrina insolúveis,", "Esta enzima chave possui um papel central ao converter o fibrinogênio circulante em redes estáveis de fibrina,", "A ação da trombina concentra-se na geração mecânica do arcabouço do coágulo ao converter fibrinogênio,"],
+            mid: [" além de exercer feedback positivo amplificando a ativação dos fatores V, VIII e XI.", " exercendo também um potente efeito de ativação sobre os receptores plaquetários PAR e estimulando cofatores."],
+            fim: [" Adicionalmente, ela ativa o Fator XIII, responsável por estabilizar e consolidar as ligações cruzadas da malha.", " Promove também a estimulação do fator estabilizador de fibrina, convertendo a rede frouxa em um gel insolúvel."]
+        },
+        {
+            num: 7,
+            q: "A Tríade de Virchow representa os principais mecanismos envolvidos na gênese da trombose. Descreva cada um dos componentes da Tríade de Virchow e explique como eles favorecem a formação de trombos.",
+            intro: ["A Tríade de Virchow é constituída pela lesão endotelial, estase ou turbulência do fluxo e hipercoagulabilidade.", "Os três eixos indutores são a disfunção/lesão do endotélio, alterações do fluxo e estados de hipercoagulabilidade plasmática.", "Este modelo conceitual engloba o dano na parede vascular, a lentificação do fluxo e as alterações na composição do sangue."],
+            mid: [" A lesão expõe o colágeno; a alteração do fluxo impede a lavagem de fatores ativados e rompe o fluxo laminar;", " O dano celular ativa plaquetas; a estase quebra a barreira física de fluxo laminar aproximando células da parede;"],
+            fim: [" e a hipercoagulabilidade acelera as vias enzimáticas. Juntos, esses fatores desviam o equilíbrio biológico para a trombogênese.", " enquanto a hipercoagulabilidade propicia a atividade enzimática pró-trombótica, culminando na formação do trombo."]
+        },
+        {
+            num: 8,
+            q: "A trombose venosa profunda (TVP) é uma condição clínica frequente e potencialmente grave. Explique os fatores que favorecem sua ocorrência e as principais complicações associadas.",
+            intro: ["A TVP é impulsionada pela imobilidade prolongada, cirurgias ortopédicas de grande porte e estados inflamatórios,", "Fatores como estase venosa por repouso no leito, traumas teciduais e disfunções genéticas da coagulação propiciam a TVP,", "A imobilização em leitos hospitalares prolongada, o tabagismo e o uso de estrogênios aumentam radicalmente a incidência de TVP,"],
+            mid: [" os quais lentificam o fluxo sanguíneo nos plexos venosos profundos das panturrilhas.", " gerando represamento sanguíneo crônico e ativação endotelial nas veias profundas dos membros inferiores."],
+            fim: [" A complicação aguda mais temida é o tromboembolismo pulmonar (TEP), além do desenvolvimento crônico da síndrome pós-trombótica.", " Isso pode culminar no desprendimento do trombo, gerando embolia pulmonar obstrutiva e insuficiência venosa pós-flebítica crônica."]
+        },
+        {
+            num: 9,
+            q: "Embora frequentemente confundidas, hiperemia e congestão são processos distintos. Compare hiperemia e congestão quanto aos seus mecanismos fisiopatológicos e características clínicas.",
+            intro: ["A hiperemia constitui um processo ativo derivado de dilatação arteriolar", "Fisiopatologicamente, a hiperemia é ativa e decorre do aumento do influxo sanguíneo por abertura de esfíncteres,", "A hiperemia apresenta caráter ativo mediado por resposta inflamatória ou demanda metabólica arterial,"],
+            mid: [" que eleva o aporte de sangue oxigenado, deixando o tecido com coloração avermelhada (eritema). Já a congestão é passiva,", " provocando coloração vermelha viva. Em contrapartida, a congestão representa um evento puramente passivo,"],
+            fim: [" resultante do comprometimento do escoamento venoso, acumulando sangue desoxigenado e causando cianose tecidual.", " decorrente da obstrução ou lentificação do outflow venoso, gerando acúmulo de hemácias desoxigenadas e cianose."]
+        },
+        {
+            num: 10,
+            q: "A isquemia pode provocar danos celulares irreversíveis e comprometer a função de órgãos vitais. Explique os principais fatores que determinam a gravidade de uma lesão isquêmica e descreva o fenômeno de lesão por isquemia-reperfusão.",
+            intro: ["A extensão do dano isquêmico depende do tempo de oclusão, da vulnerabilidade do tecido à hipóxia e da presença de circulação colateral.", "A gravidade do insulto isquêmico é ditada pela taxa metabólica intrínseca do órgão afetado e a velocidade de instalação do bloqueio vascular.", "A magnitude do infarto isquêmico varia conforme a vulnerabilidade celular específica e a eficiência anatômica de vasos colaterais."],
+            mid: [" O fenômeno de isquemia-reperfusão ocorre quando o restabelecimento abrupto do fluxo de oxigênio", " Já a injúria por isquemia-reperfusão se desenvolve no momento em que a restauração do fluxo sanguíneo arterial"],
+            fim: [" desencadeia a produção massiva de radicais livres de oxigênio, exacerbando a lesão celular inicial e gerando estresse oxidativo.", " paradoxalmente intensifica a necrose local através da liberação abrupta de espécies reativas de oxigênio e influxo de cálcio."]
+        }
+    ];
+
+    function toggleSavaModal(show) {
+        document.getElementById('sava-modal').style.display = show ? 'flex' : 'none';
+        if (show) gerarVariacoesSava();
+    }
+
+    function gerarVariacoesSava() {
+        const container = document.getElementById('sava-output-list');
+        container.innerHTML = "";
+
+        SAVA_DATABASE.forEach(item => {
+            // Sorteio aleatório de estruturas textuais para garantir variação contínua
+            const iSel = item.intro[Math.floor(Math.random() * item.intro.length)];
+            const mSel = item.mid[Math.floor(Math.random() * item.mid.length)];
+            const fSel = item.fim[Math.floor(Math.random() * item.fim.length)];
+            
+            const respostaMontada = `${iSel}${mSel}${fSel}`;
+
+            const card = document.createElement('div');
+            card.className = "card-resposta";
+            card.innerHTML = `
+                <h4>Questão ${item.num} - SAVA</h4>
+                <div style="font-size:9px; color:#666; margin-bottom:4px; font-style:italic;">${item.q}</div>
+                <p>${respostaMontada}</p>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // --- Fluxo de Jogo Original Preservado na Íntegra ---
     function connectToGame() {
         username = document.getElementById('input-username').value.trim();
         roomName = document.getElementById('input-room').value.trim().toLowerCase().replace(/[^a-z0-9]/g,"");
