@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gartic Proibidão Realtime</title>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body {
+            background-color: #ff6b6b;
+            display: flex; flex-direction: column; align-items: center;
+            height: 100vh; height: -webkit-fill-available;
+            padding: 8px; overscroll-behavior: none; overflow: hidden;
+        }
+
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #ff6b6b; display: flex; justify-content: center;
+            align-items: center; z-index: 1000;
+        }
+        .login-box {
+            background: white; padding: 30px; border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%; max-width: 400px; text-align: center;
+        }
+        .login-box h2 { color: #e63946; margin-bottom: 20px; }
+        .login-box input {
+            width: 100%; padding: 12px; margin-bottom: 15px;
+            border: 2px solid #ced4da; border-radius: 8px;
+            outline: none; font-size: 16px;
+        }
+        .login-box input:focus { border-color: #e63946; }
+        .login-box textarea {
+            width: 100%; padding: 12px; margin-bottom: 15px;
+            border: 2px solid #ced4da; border-radius: 8px;
+            outline: none; font-size: 14px; resize: vertical;
+            min-height: 70px; color: #333;
+        }
+        .login-box textarea:focus { border-color: #e63946; }
+        .login-box .hint { font-size: 11px; color: #888; margin-top: -10px; margin-bottom: 15px; text-align: left; }
+
+        header {
+            text-align: center; margin-bottom: 6px; background: white;
+            padding: 8px 16px; border-radius: 50px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%; max-width: 1400px;
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 10px; flex-shrink: 0; position: relative;
+        }
+        h1 { color: #e63946; font-size: 20px; flex-shrink: 0; }
+        #word-display {
+            font-weight: bold; font-size: 16px; color: #d90429;
+            background: #f8f9fa; padding: 4px 14px; border-radius: 20px;
+            border: 2px dashed #d90429; text-align: center; word-break: break-word; flex: 1;
+        }
+        #room-display {
+            font-weight: bold; color: #666; font-size: 12px;
+            display: flex; flex-direction: column; align-items: flex-end;
+            gap: 2px; flex-shrink: 0;
+        }
+        #timer-display { font-weight: bold; color: #d90429; font-size: 14px; }
+
+        .btn-words-toggle {
+            background: #e63946; color: white; border: none; padding: 6px 12px;
+            border-radius: 20px; font-weight: bold; font-size: 12px; cursor: pointer;
+            display: flex; align-items: center; gap: 4px; transition: background 0.2s;
+        }
+        .btn-words-toggle:hover { background: #b7094c; }
+        #words-management-panel {
+            position: absolute; top: 55px; left: 16px; background: white;
+            padding: 12px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            border: 2px solid #e63946; z-index: 600; width: 280px; display: none;
+            flex-direction: column; gap: 8px; text-align: left;
+        }
+        #words-management-panel label { font-size: 11px; font-weight: bold; color: #333; }
+        #words-management-panel textarea {
+            width: 100%; height: 60px; padding: 6px; font-size: 12px;
+            border: 1px solid #ced4da; border-radius: 6px; resize: none; outline: none;
+        }
+        #words-management-panel textarea:focus { border-color: #e63946; }
+        #words-management-panel .panel-actions { display: flex; justify-content: flex-end; gap: 6px; }
+
+        #main-container {
+            display: flex; width: 100%; max-width: 1400px;
+            flex: 1; gap: 8px; overflow: hidden; min-height: 0;
+        }
+
+        #scoreboard {
+            flex: 0 0 150px; background: white; border-radius: 12px; padding: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        #scoreboard h3 { color: #555; padding-bottom: 5px; border-bottom: 2px solid #f1f3f5; font-size: 14px; }
+        #players-list {
+            margin-top: 8px; overflow-y: auto; flex: 1;
+            display: flex; flex-direction: column; gap: 5px;
+        }
+        .player-item {
+            background: #f8f9fa; padding: 7px 8px; border-radius: 6px;
+            font-weight: bold; color: #333; font-size: 11px;
+            border-left: 4px solid #e63946;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .player-item.drawing { border-left-color: #d90429; background: #ffe3e8; }
+        .player-info { display: flex; flex-direction: column; gap: 1px; overflow: hidden; }
+        .player-rank { font-size: 9px; color: #777; font-weight: normal; }
+        .player-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .player-score {
+            background: #e63946; color: white; border-radius: 10px;
+            padding: 1px 7px; font-size: 11px; font-weight: bold;
+            min-width: 32px; text-align: center;
+            transition: transform 0.2s, background 0.3s;
+            flex-shrink: 0;
+        }
+        .player-item.drawing .player-score { background: #d90429; }
+        .player-score.bump { transform: scale(1.4); background: #38b000 !important; }
+
+        .score-popup {
+            position: fixed; pointer-events: none;
+            font-size: 20px; font-weight: bold; color: #38b000;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.25);
+            animation: floatUp 1.4s ease-out forwards; z-index: 9999;
+        }
+        @keyframes floatUp {
+            0%   { opacity: 1; transform: translateY(0) scale(1); }
+            60%  { opacity: 1; transform: translateY(-40px) scale(1.15); }
+            100% { opacity: 0; transform: translateY(-70px) scale(0.9); }
+        }
+
+        #canvas-container {
+            flex: 1; background: white; border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; overflow: hidden; position: relative;
+            min-width: 0;
+        }
+        canvas {
+            flex: 1; background: #ffffff; cursor: crosshair;
+            touch-action: none;
+            width: 100%; height: 100%; display: block;
+            -webkit-user-select: none; user-select: none;
+        }
+        canvas.cursor-eraser { cursor: cell; }
+        canvas.cursor-fill   { cursor: copy; }
+
+        #round-announcement {
+            position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%) scale(0.5);
+            background: rgba(32, 10, 15, 0.95); color: white;
+            padding: 18px 30px; border-radius: 16px; font-weight: bold; text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4); border: 3px solid #ff6b6b;
+            z-index: 500; pointer-events: none; display: none; opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 85%; width: max-content;
+        }
+        #round-announcement.show { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        #round-announcement h2 { font-size: 22px; color: #ff6b6b; margin-bottom: 4px; }
+        #round-announcement p { font-size: 14px; color: #e6e6e6; font-weight: normal; }
+
+        #tools {
+            background: #200a0f;
+            display: flex; flex-direction: column;
+            padding: 8px; gap: 6px;
+            border-right: 3px solid #ff6b6b;
+            flex-shrink: 0; overflow-y: auto;
+            width: 56px;
+        }
+
+        .tool-section-label {
+            font-size: 8px; color: #aa888f; text-transform: uppercase;
+            letter-spacing: 0.5px; text-align: center; margin-top: 2px;
+        }
+
+        .tool-btn {
+            width: 38px; height: 38px; border-radius: 8px;
+            border: 2px solid transparent; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; background: #3d1921;
+            color: white; transition: all 0.15s;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .tool-btn:hover { background: #5a2833; border-color: #ff6b6b; }
+        .tool-btn.active { background: #ff6b6b; color: #200a0f; border-color: #d90429; }
+
+        .brush-sizes {
+            display: flex; flex-direction: column; gap: 4px; align-items: center;
+        }
+        .size-btn {
+            cursor: pointer; border-radius: 50%; background: white;
+            border: 2px solid #555; transition: border-color 0.15s, transform 0.1s;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .size-btn:hover { border-color: #ff6b6b; transform: scale(1.15); }
+        .size-btn.active { border-color: #ff6b6b; box-shadow: 0 0 0 2px rgba(255,107,107,0.5); }
+
+        .tool-separator { height: 1px; background: #55242f; margin: 3px 0; }
+
+        #palette-container {
+            flex: 0 0 46px; background: #200a0f; border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; overflow: hidden;
+            padding: 6px 4px; gap: 4px;
+        }
+        #palette-label { font-size: 8px; color: #aa888f; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
+        #palette-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 4px; overflow-y: auto; flex: 1;
+        }
+        #palette-grid::-webkit-scrollbar { width: 3px; }
+        #palette-grid::-webkit-scrollbar-track { background: transparent; }
+        #palette-grid::-webkit-scrollbar-thumb { background: #55242f; border-radius: 2px; }
+
+        .color-swatch {
+            width: 18px; height: 18px; border-radius: 4px;
+            cursor: pointer; border: 2px solid transparent;
+            transition: transform 0.1s, border-color 0.1s;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .color-swatch:hover { transform: scale(1.2); border-color: white; }
+        .color-swatch.active { border-color: white; transform: scale(1.15); box-shadow: 0 0 0 1px #ff6b6b; }
+
+        #color-custom { width: 100%; height: 22px; border: none; border-radius: 4px; cursor: pointer; padding: 0; flex-shrink: 0; }
+        #current-color-display {
+            width: 36px; height: 36px; border-radius: 8px;
+            border: 3px solid white; flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3); align-self: center;
+        }
+
+        #bottom-actions {
+            display: flex; gap: 6px; padding: 4px 8px;
+            background: #200a0f; border-top: 2px solid #3d1921;
+            align-items: center; flex-shrink: 0;
+        }
+        .btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
+        .btn-clear { background: #d90429; color: white; }
+        .btn-skip { background: #f4a261; color: white; display: none; }
+        
+        .action-interact-btn {
+            color: white; font-size: 13px; padding: 5px 10px; border-radius: 7px; border: none; cursor: pointer; font-weight: bold; flex-shrink: 0; display: none; transition: transform 0.1s, background 0.2s; box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            -webkit-tap-highlight-color: transparent;
+        }
+        #btn-egg { background: #7209b7; }
+        #btn-egg:active { transform: scale(0.92); background: #560bad; }
+        #btn-flower { background: #f72585; }
+        #btn-flower:active { transform: scale(0.92); background: #b5179e; }
+        .action-interact-btn.cooldown { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+
+        .egg-fly, .flower-fly {
+            position: fixed; font-size: 36px; pointer-events: none; z-index: 9999;
+            animation: itemFly var(--duration, 0.9s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+        @keyframes itemFly {
+            0%   { opacity: 1; transform: translate(0,0) rotate(0deg) scale(1); }
+            70%  { opacity: 1; transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1.1); }
+            85%  { opacity: 1; transform: translate(var(--tx2), var(--ty2)) rotate(var(--rot)) scale(1.3); }
+            100% { opacity: 0; transform: translate(var(--tx2), var(--ty2)) rotate(var(--rot)) scale(0.5); }
+        }
+        .egg-splash, .flower-splash { position: fixed; font-size: 48px; pointer-events: none; z-index: 9999; animation: itemSplash 0.8s ease-out forwards; }
+        @keyframes itemSplash {
+            0%   { opacity: 1; transform: scale(0.5); }
+            40%  { opacity: 1; transform: scale(1.6); }
+            100% { opacity: 0; transform: scale(2.2); }
+        }
+        @keyframes screenShake {
+            0%  { transform: translate(0,0); }
+            15% { transform: translate(-6px, 3px); }
+            30% { transform: translate(6px, -3px); }
+            45% { transform: translate(-4px, 4px); }
+            60% { transform: translate(4px, -2px); }
+            75% { transform: translate(-2px, 2px); }
+            100%{ transform: translate(0,0); }
+        }
+        .shake { animation: screenShake 0.45s ease; }
+        #egg-overlay { position: fixed; inset: 0; pointer-events: none; background: rgba(114, 9, 183, 0.35); opacity: 0; z-index: 9998; transition: opacity 0.1s; }
+        #egg-overlay.splat { animation: splatFade 1.2s ease-out forwards; }
+        @keyframes splatFade { 0% { opacity: 0.7; } 100% { opacity: 0; } }
+        .petal-particle { position: fixed; pointer-events: none; font-size: 18px; z-index: 9997; animation: petalFall var(--fall-duration, 2s) linear forwards; }
+        @keyframes petalFall {
+            0% { transform: translateY(-20px) translateX(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(105vh) translateX(var(--drift, 50px)) rotate(360deg); opacity: 0; }
+        }
+
+        #right-chats-wrapper {
+            flex: 0 0 240px; display: flex; flex-direction: column; gap: 8px; overflow: hidden;
+        }
+        .chat-box-container {
+            flex: 1; background: white; border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .chat-title-bar { background: #200a0f; color: white; padding: 4px 8px; font-size: 11px; font-weight: bold; text-transform: uppercase; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        .chat-messages-area { flex: 1; padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+        .msg { padding: 4px 6px; border-radius: 5px; font-size: 11px; word-break: break-all; line-height: 1.3; }
+        .msg-system  { background: #fae0e4; color: #7209b7; font-weight: bold; }
+        .msg-success { background: #d1e7dd; color: #0f5132; font-weight: bold; border: 1px solid #badbcc; }
+        .msg-wrong   { background: #ffe3e8; color: #c92a2a; }
+        .msg-normal  { background: #f1f3f5; color: #333; }
+        .msg-normal .username { font-weight: bold; color: #e63946; }
+        .msg-egg     { background: #f3e5f5; color: #4a148c; font-weight: bold; border: 1px solid #ce93d8; }
+        .msg-flower  { background: #fce4ec; color: #880e4f; font-weight: bold; border: 1px solid #f48fb1; }
+        .chat-input-row { display: flex; padding: 5px; border-top: 1px solid #dee2e6; background: #f8f9fa; flex-shrink: 0; }
+        .chat-input-field { flex: 1; padding: 6px; border: 2px solid #ced4da; border-radius: 5px; outline: none; font-size: 12px; }
+        .chat-send-btn { background: #e63946; color: white; margin-left: 4px; font-size: 11px; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
+        @media (max-width: 768px) {
+            body { padding: 4px; overflow: hidden; }
+
+            header {
+                padding: 5px 8px; margin-bottom: 0;
+                height: 44px; border-radius: 8px; flex-shrink: 0;
+            }
+            h1 { font-size: 11px; }
+            #word-display { font-size: 10px; padding: 2px 6px; }
+            #room-display { font-size: 9px; }
+            #timer-display { font-size: 10px; }
+            #words-management-panel { top: 48px; left: 4px; width: 260px; }
+
+            #main-container {
+                position: absolute;
+                top: 52px;
+                left: 4px;
+                right: 4px;
+                bottom: 4px;
+                flex-direction: column;
+                gap: 4px;
+                overflow: hidden;
+            }
+
+            #scoreboard {
+                flex: 0 0 36px !important;
+                width: 100%;
+                padding: 3px 6px;
+                border-radius: 6px;
+                flex-direction: row;
+                align-items: center;
+            }
+            #scoreboard h3 { display: none; }
+            #players-list {
+                margin-top: 0;
+                flex-direction: row !important;
+                overflow-x: auto; overflow-y: hidden;
+                height: 100%;
+                align-items: center;
+                gap: 5px;
+            }
+            .player-item {
+                padding: 3px 6px; font-size: 10px;
+                height: 28px; white-space: nowrap;
+                display: inline-flex; flex-shrink: 0; align-items: center;
+            }
+
+            #canvas-wrapper {
+                flex: 1 1 0 !important;
+                min-height: 0 !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+
+            #drawing-area {
+                flex: 1 1 0 !important;
+                min-height: 0 !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+
+            #canvas-container {
+                flex: 1 1 0 !important;
+                min-height: 0 !important;
+                position: relative !important;
+                overflow: hidden !important;
+            }
+
+            #canvas {
+                position: absolute !important;
+                top: 0 !important; left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+            }
+
+            #tools {
+                width: 100%;
+                flex-direction: row;
+                overflow-x: auto; overflow-y: hidden;
+                border-right: none;
+                border-top: 2px solid #ff6b6b;
+                height: 50px;
+                min-height: 50px;
+                padding: 6px 10px;
+                align-items: center;
+                gap: 8px;
+                flex-shrink: 0 !important;
+            }
+            .tool-section-label { display: none; }
+            .tool-separator { width: 1px; height: 32px; background: #55242f; margin: 0 2px; flex-shrink: 0; }
+            .brush-sizes { flex-direction: row; gap: 6px; align-items: center; }
+            .tool-btn { width: 38px; height: 38px; font-size: 17px; flex-shrink: 0; }
+            .size-btn { flex-shrink: 0; }
+
+            #palette-container {
+                flex: 0 0 42px !important;
+                width: 100% !important;
+                height: 42px !important;
+                flex-direction: row !important;
+                padding: 5px 8px;
+                gap: 6px;
+                border-radius: 8px;
+                align-items: center;
+                flex-shrink: 0 !important;
+            }
+            #palette-label { display: none; }
+            #palette-grid {
+                grid-template-columns: repeat(14, 22px);
+                overflow-x: auto; overflow-y: hidden;
+                height: 28px;
+                gap: 3px;
+                flex: 1;
+            }
+            .color-swatch { width: 22px; height: 22px; border-radius: 4px; }
+            #current-color-display { width: 28px; height: 28px; flex-shrink: 0; }
+            #color-custom { width: 26px; height: 26px; border-radius: 4px; flex-shrink: 0; }
+
+            #bottom-actions { padding: 3px 6px; flex-wrap: wrap; gap: 4px; }
+
+            #right-chats-wrapper {
+                flex: 0 0 150px !important;
+                width: 100% !important;
+                flex-direction: row !important;
+                gap: 4px;
+                flex-shrink: 0 !important;
+            }
+            .chat-box-container { flex: 1; min-width: 0; }
+            .chat-messages-area { font-size: 10px; padding: 5px; }
+            .chat-input-field { font-size: 11px; padding: 4px; }
+        }
+
+        #canvas-wrapper {
+            flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0;
+        }
+        #drawing-area {
+            flex: 1; display: flex; flex-direction: row; overflow: hidden; min-height: 0;
+        }
+        #canvas-container { flex: 1; position: relative; min-height: 0; }
+
+        #fill-status {
+            display: none;
+            position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.7); color: white;
+            padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;
+            pointer-events: none; z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+<div id="egg-overlay"></div>
+
+<div id="login-screen">
+    <div class="login-box">
+        <h2>🌶️ Gartic Proibidão</h2>
+        <input type="text" id="input-username" placeholder="👤 Seu Nome / Apelido Safado" required>
+        <input type="text" id="input-room" placeholder="🔑 Nome do Motel / Sala" required>
+        <textarea id="input-custom-words" placeholder="📝 Palavras personalizadas (opcional)&#10;Ex: Algema, Chicote, Melancia..."></textarea>
+        <p class="hint">Separe por vírgula. Se deixar em branco, o sistema usa o nosso banco de dados picante da zueira.</p>
+        <button class="btn" style="width:100%;padding:12px;font-size:16px;background:#e63946;color:white;" onclick="connectToGame()">🚀 ENTRAR NA SAFADEZA</button>
+    </div>
+</div>
+
+<header>
+    <h1>🌶️ PROIBIDÃO</h1>
+    <button class="btn-words-toggle" onclick="toggleWordsPanel()">📝 Palavras</button>
+    <div id="words-management-panel">
+        <label>➕ Injetar Palavras na Sala:</label>
+        <textarea id="runtime-new-words" placeholder="Ex: Cueca, Calcinha, Morango... (separe por vírgula)"></textarea>
+        <div class="panel-actions">
+            <button class="btn" style="background:#d90429; color:white; padding:4px 8px; font-size:11px;" onclick="toggleWordsPanel()">Fechar</button>
+            <button class="btn" style="background:#38b000; color:white; padding:4px 8px; font-size:11px;" onclick="submitRuntimeWords()">Injetar</button>
+        </div>
+    </div>
+    <div id="word-display">⏳ Esperando os safados entrarem...</div>
+    <div id="room-display">
+        <span id="room-id">Motel: —</span>
+        <span id="timer-display">⏱️ Clímax: --</span>
+    </div>
+</header>
+
+<div id="main-container">
+    <div id="scoreboard">
+        <h3>🏆 Atrevidos</h3>
+        <div id="players-list"></div>
+    </div>
+
+    <div id="canvas-wrapper">
+        <div id="drawing-area">
+            <div id="tools">
+                <span class="tool-section-label">Estilo</span>
+                <div class="tool-btn active" id="tool-brush" title="Pincel Macio" onclick="setTool('brush')">✏️</div>
+                <div class="tool-btn" id="tool-eraser" title="Apagar Evidências" onclick="setTool('eraser')">🧹</div>
+                <div class="tool-btn" id="tool-fill" title="Arrombar Balde" onclick="setTool('fill')">🪣</div>
+
+                <div class="tool-separator"></div>
+                <span class="tool-section-label">Curvas</span>
+                <div class="tool-btn active" id="shape-free" title="Movimento Livre" onclick="setShape('free')">〰️</div>
+                <div class="tool-btn" id="shape-circle" title="Forma Redonda" onclick="setShape('circle')">⭕</div>
+                <div class="tool-btn" id="shape-square" title="Forma Quadrada" onclick="setShape('square')">⬜</div>
+                <div class="tool-btn" id="shape-triangle" title="Forma Pontuda" onclick="setShape('triangle')">🔺</div>
+                <div class="tool-btn" id="shape-spray" title="Ejaculação de Tinta" onclick="setShape('spray')">💨</div>
+
+                <div class="tool-separator"></div>
+                <span class="tool-section-label">Calibre</span>
+                <div class="brush-sizes">
+                    <div class="size-btn active" id="size-2" style="width:8px;height:8px;" title="Fininho" onclick="setBrushSize(2,this)"></div>
+                    <div class="size-btn" id="size-5" style="width:12px;height:12px;" title="Gostosinho" onclick="setBrushSize(5,this)"></div>
+                    <div class="size-btn" id="size-10" style="width:18px;height:18px;" title="Generoso" onclick="setBrushSize(10,this)"></div>
+                    <div class="size-btn" id="size-20" style="width:24px;height:24px;" title="Cavalo" onclick="setBrushSize(20,this)"></div>
+                    <div class="size-btn" id="size-40" style="width:32px;height:32px;" title="Destruidor" onclick="setBrushSize(40,this)"></div>
+                </div>
+
+                <div class="tool-separator"></div>
+                <div id="current-color-display" style="background:#000000;" title="Tom da noite"></div>
+            </div>
+
+            <div id="canvas-container">
+                <div id="round-announcement">
+                    <h2 id="announcement-title">FIM DArapidinha</h2>
+                    <p id="announcement-desc">O que rolou na cama</p>
+                </div>
+                <canvas id="canvas"></canvas>
+                <div id="fill-status">🪣 Modo Preenchimento Profundo</div>
+            </div>
+        </div>
+        <div id="bottom-actions">
+            <button class="btn btn-clear" onclick="sendClear()">🗑️ Rasgar Tela</button>
+            <button id="btn-skip" class="btn btn-skip" onclick="skipRound()">⏭️ Brochar / Passar Vez</button>
+            <button id="btn-egg" class="action-interact-btn" onclick="throwInteractItem('egg')">🍆 Jogar Berinjela!</button>
+            <button id="btn-flower" class="action-interact-btn" onclick="throwInteractItem('flower')">🍑 Dar Sarrada!</button>
+        </div>
+    </div>
+
+    <div id="palette-container">
+        <span id="palette-label">🎨 Tons</span>
+        <div id="palette-grid"></div>
+        <input type="color" id="color-custom" value="#000000" title="Tom exótico" onchange="pickCustomColor(this)">
+        <div id="current-color-display-palette" style="width:30px;height:30px;border-radius:6px;border:2px solid white;flex-shrink:0;background:#000000;"></div>
+    </div>
+
+    <div id="right-chats-wrapper">
+        <div class="chat-box-container">
+            <div class="chat-title-bar">🎯 Gemidos / Palpites</div>
+            <div id="guess-messages" class="chat-messages-area"></div>
+            <div class="chat-input-row">
+                <input type="text" id="guess-input" class="chat-input-field" placeholder="Chute com força..." autocomplete="off">
+                <button class="chat-send-btn" onclick="sendGuessMessage()">➤</button>
+            </div>
+        </div>
+        <div class="chat-box-container">
+            <div class="chat-title-bar">💬 Conversa de Cama</div>
+            <div id="chat-messages" class="chat-messages-area"></div>
+            <div class="chat-input-row">
+                <input type="text" id="chat-input" class="chat-input-field" placeholder="Sussurre algo no chat..." autocomplete="off">
+                <button class="chat-send-btn" onclick="sendChatMessage()">➤</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const FULL_PALETTE = [
+        "#000000","#ffffff","#808080","#ff0000",
+        "#ff6600","#ffff00","#00ff00","#009900",
+        "#00ffff","#0000ff","#aa33ff","#ff00ff",
+        "#ff99cc","#663300"
+    ];
+
+    let username = "", roomName = "", mqttClient = null, baseTopic = "";
+    const listaJogadores = new Set();
+    const scores = {};
+    let isDrawer = false, currentWord = "", currentDrawerName = "";
+    let roundActive = false, currentDrawerIndex = -1;
+    let countdownInterval = null, nextRoundTimeout = null, currentTimeLeft = 0;
+    const TEMPO_RODADA = 60;
+    let eggCooldown = false, flowerCooldown = false;
+    let customWords = [];
+    let gameEnded = false;
+    const PONTUACAO_MAXIMA = 1000;
+    
+    const PALAVRAS_PADRAO = ["Algema","Chicote","Cama de Casal","Gelatina","Berinjela","Melancia","Morango","Banana","Pepino","Creme","Calcinha","CuecaBoxer","Massagem","Censura","Sutiã","Coração","Vela","Espelho","Pegada","Gemido","Beijo Grego","Chantilly","Travesseiro","Algemas"];
+    function getPalavras() { return customWords.length > 0 ? customWords : PALAVRAS_PADRAO; }
+
+    async function salvarPalavras() {
+        try {
+            await window.storage.set("words:" + roomName, JSON.stringify(customWords), true);
+        } catch(e) { console.warn("Storage save error:", e); }
+    }
+
+    async function carregarPalavrasSalvas() {
+        try {
+            const result = await window.storage.get("words:" + roomName, true);
+            if (result && result.value) {
+                const salvas = JSON.parse(result.value);
+                if (Array.isArray(salvas) && salvas.length > 0) {
+                    salvas.forEach(w => { if (!customWords.includes(w)) customWords.push(w); });
+                    addSystemMessage("💾 " + customWords.length + " fantasias secretas carregadas do histórico do quarto!");
+                }
+            }
+        } catch(e) { }
+    }
+
+    let currentTool = 'brush';
+    let currentShape = 'free';
+    let currentColor = '#000000';
+    let currentBrushSize = 2;
+    let startX = 0, startY = 0;
+    let snapshot = null;
+    let lastFormCoordinates = null;
+
+    function toggleWordsPanel() {
+        const panel = document.getElementById('words-management-panel');
+        panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function submitRuntimeWords() {
+        const textarea = document.getElementById('runtime-new-words');
+        const content = textarea.value.trim();
+        if (!content || !mqttClient || gameEnded) return;
+        const newWordsArr = content.split(',').map(w => w.trim()).filter(w => w.length > 0);
+        if (newWordsArr.length > 0) {
+            mqttClient.publish(baseTopic + "/customwords/add", JSON.stringify({ words: newWordsArr, sender: username }));
+            textarea.value = "";
+            toggleWordsPanel();
+        }
+    }
+
+    function setTool(tool) {
+        if (gameEnded) return;
+        currentTool = tool;
+        document.querySelectorAll('#tools .tool-btn[id^="tool-"]').forEach(b => b.classList.remove('active'));
+        document.getElementById('tool-' + tool).classList.add('active');
+        const c = document.getElementById('canvas');
+        c.className = '';
+        if (tool === 'eraser') { c.classList.add('cursor-eraser'); setShape('free'); }
+        else if (tool === 'fill') { c.classList.add('cursor-fill'); }
+        else { document.getElementById('shape-' + currentShape).classList.add('active'); }
+        document.getElementById('fill-status').style.display = tool === 'fill' ? 'block' : 'none';
+    }
+
+    function setShape(shape) {
+        if (gameEnded) return;
+        currentShape = shape;
+        document.querySelectorAll('#tools .tool-btn[id^="shape-"]').forEach(b => b.classList.remove('active'));
+        document.getElementById('shape-' + shape).classList.add('active');
+        if (currentTool === 'fill') setTool('brush');
+    }
+
+    function setBrushSize(size, el) {
+        currentBrushSize = size;
+        document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+        ctx.lineWidth = size;
+    }
+
+    function setActiveColor(hex) {
+        currentColor = hex;
+        document.getElementById('current-color-display').style.background = hex;
+        document.getElementById('current-color-display-palette').style.background = hex;
+        document.getElementById('color-custom').value = hex;
+        document.querySelectorAll('.color-swatch').forEach(s => {
+            s.classList.toggle('active', s.dataset.color === hex);
+        });
+    }
+
+    function pickCustomColor(input) {
+        setActiveColor(input.value);
+        if (currentTool === 'eraser') setTool('brush');
+    }
+
+    function buildPalette() {
+        const grid = document.getElementById('palette-grid');
+        grid.innerHTML = "";
+        FULL_PALETTE.forEach(hex => {
+            const swatch = document.createElement('div');
+            swatch.className = 'color-swatch';
+            swatch.dataset.color = hex;
+            swatch.style.background = hex;
+            swatch.title = hex;
+            if (hex === currentColor) swatch.classList.add('active');
+            swatch.addEventListener('click', () => {
+                setActiveColor(hex);
+                if (currentTool === 'eraser') setTool('brush');
+            });
+            grid.appendChild(swatch);
+        });
+    }
+    buildPalette();
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+    const VIRTUAL_WIDTH = 800, VIRTUAL_HEIGHT = 600;
+
+    function ajustarAlturaJanela() { document.body.style.height = window.innerHeight + "px"; }
+    window.addEventListener('resize', ajustarAlturaJanela);
+    window.addEventListener('load', ajustarAlturaJanela);
+    ajustarAlturaJanela();
+
+    function calcPoints(timeLeft) {
+        let pts = Math.ceil((timeLeft / TEMPO_RODADA) * 10);
+        return Math.max(1, Math.min(10, pts));
+    }
+
+    function initCanvasResolution() {
+        canvas.width = VIRTUAL_WIDTH; canvas.height = VIRTUAL_HEIGHT;
+        ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = currentBrushSize;
+    }
+    initCanvasResolution();
+
+    function getCanvasCoordinates(clientX, clientY) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: ((clientX - rect.left) / rect.width) * canvas.width,
+            y: ((clientY - rect.top) / rect.height) * canvas.height
+        };
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+        if (!isDrawer || !roundActive || gameEnded) return;
+        e.preventDefault();
+        const c = getCanvasCoordinates(e.clientX, e.clientY);
+        if (currentTool === 'fill') { doFill(Math.round(c.x), Math.round(c.y)); return; }
+        onStartDrag(c.x, c.y);
+    });
+    canvas.addEventListener('mousemove', (e) => {
+        if (!drawing || gameEnded) return;
+        e.preventDefault();
+        const c = getCanvasCoordinates(e.clientX, e.clientY);
+        onMoveDrag(c.x, c.y);
+    });
+    canvas.addEventListener('mouseup', (e) => { e.preventDefault(); onStopDrag(); });
+    canvas.addEventListener('mouseleave', (e) => { if (drawing) onStopDrag(); });
+
+    canvas.addEventListener('touchstart', (e) => {
+        if (!isDrawer || !roundActive || gameEnded) return;
+        e.preventDefault();
+        if (e.touches.length !== 1) return;
+        const touch = e.touches[0];
+        const c = getCanvasCoordinates(touch.clientX, touch.clientY);
+        if (currentTool === 'fill') { doFill(Math.round(c.x), Math.round(c.y)); return; }
+        onStartDrag(c.x, c.y);
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', (e) => {
+        if (!drawing || gameEnded) return;
+        e.preventDefault();
+        if (e.touches.length !== 1) return;
+        const touch = e.touches[0];
+        const c = getCanvasCoordinates(touch.clientX, touch.clientY);
+        onMoveDrag(c.x, c.y);
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        onStopDrag();
+    }, { passive: false });
+
+    canvas.addEventListener('touchcancel', (e) => {
+        e.preventDefault();
+        onStopDrag();
+    }, { passive: false });
+
+    function onStartDrag(x, y) {
+        drawing = true;
+        startX = x; startY = y;
+        const col = currentTool === 'eraser' ? '#ffffff' : currentColor;
+        ctx.fillStyle = col; ctx.strokeStyle = col; ctx.lineWidth = currentBrushSize;
+        if (currentShape === 'free') {
+            ctx.beginPath(); ctx.moveTo(x, y);
+            sendDrawData('start', x, y, col, currentBrushSize);
+        } else {
+            snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        }
+    }
+
+    function onMoveDrag(x, y) {
+        if (!drawing) return;
+        const col = currentTool === 'eraser' ? '#ffffff' : currentColor;
+        ctx.lineWidth = currentBrushSize;
+        if (currentShape === 'free') {
+            ctx.lineTo(x, y); ctx.stroke();
+            sendDrawData('draw', x, y, col, currentBrushSize);
+        } else if (currentShape === 'spray') {
+            generateSpray(x, y, col, currentBrushSize);
+            sendDrawData('spray', x, y, col, currentBrushSize);
+        } else {
+            if (snapshot) ctx.putImageData(snapshot, 0, 0);
+            drawBoundingShape(currentShape, startX, startY, x, y, col, currentBrushSize);
+        }
+    }
+
+    function onStopDrag() {
+        if (!drawing) return;
+        drawing = false;
+        if (currentShape !== 'free' && currentShape !== 'spray') {
+            const lastEvent = lastFormCoordinates;
+            if (lastEvent) {
+                const col = currentTool === 'eraser' ? '#ffffff' : currentColor;
+                sendDrawData('final_shape', lastEvent.sX, lastEvent.sY, col, currentBrushSize, currentShape, lastEvent.cX, lastEvent.cY);
+            }
+        }
+        snapshot = null; lastFormCoordinates = null;
+    }
+
+    function drawBoundingShape(shape, sX, sY, cX, cY, color, size) {
+        ctx.strokeStyle = color; ctx.fillStyle = "transparent"; ctx.lineWidth = size;
+        lastFormCoordinates = { shape, sX, sY, cX, cY };
+        ctx.beginPath();
+        if (shape === 'square') {
+            ctx.strokeRect(sX, sY, cX - sX, cY - sY);
+        } else if (shape === 'circle') {
+            let rx = (cX - sX) / 2; let ry = (cY - sY) / 2;
+            let cx = sX + rx; let cy = sY + ry;
+            ctx.save(); ctx.translate(cx, cy); ctx.scale(Math.abs(rx), Math.abs(ry)); ctx.arc(0, 0, 1, 0, 2 * Math.PI); ctx.restore(); ctx.stroke();
+        } else if (shape === 'triangle') {
+            ctx.moveTo(sX + (cX - sX) / 2, sY); ctx.lineTo(cX, cY); ctx.lineTo(sX, cY); ctx.closePath(); ctx.stroke();
+        }
+    }
+
+    function generateSpray(x, y, color, size) {
+        ctx.fillStyle = color;
+        const density = size * 4;
+        for (let i = 0; i < density; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const radius = Math.random() * (size * 3);
+            ctx.fillRect(x + Math.cos(angle) * radius, y + Math.sin(angle) * radius, 1, 1);
+        }
+    }
+
+    function doFill(startX, startY) {
+        if (!isDrawer || !roundActive || gameEnded) return;
+        const fillColor = currentColor;
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        const idx = (startY * canvas.width + startX) * 4;
+        const targetR = data[idx], targetG = data[idx+1], targetB = data[idx+2], targetA = data[idx+3];
+        const fillR = parseInt(fillColor.slice(1,3),16), fillG = parseInt(fillColor.slice(3,5),16), fillB = parseInt(fillColor.slice(5,7),16);
+        if (targetR === fillR && targetG === fillG && targetB === fillB) return;
+        const stack = [[startX, startY]];
+        const visited = new Uint8Array(canvas.width * canvas.height);
+        function match(i) { return Math.abs(data[i]-targetR)<32 && Math.abs(data[i+1]-targetG)<32 && Math.abs(data[i+2]-targetB)<32 && Math.abs(data[i+3]-targetA)<32; }
+        while (stack.length) {
+            const [x, y] = stack.pop();
+            if (x < 0 || x >= canvas.width || y < 0 || y >= canvas.height) continue;
+            const vi = y * canvas.width + x;
+            if (visited[vi]) continue;
+            const pi = vi * 4;
+            if (!match(pi)) continue;
+            visited[vi] = 1;
+            data[pi] = fillR; data[pi+1] = fillG; data[pi+2] = fillB; data[pi+3] = 255;
+            stack.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
+        }
+        ctx.putImageData(imageData, 0, 0);
+        sendDrawData('fill', startX, startY, fillColor, 0);
+    }
+
+    function renderRemoteDraw(data) {
+        ctx.strokeStyle = data.color; ctx.fillStyle = data.color; ctx.lineWidth = data.size || 2;
+        if (data.action === 'start') { ctx.beginPath(); ctx.moveTo(data.x, data.y); }
+        else if (data.action === 'draw') { ctx.lineTo(data.x, data.y); ctx.stroke(); }
+        else if (data.action === 'spray') { generateSpray(data.x, data.y, data.color, data.size); }
+        else if (data.action === 'clear') { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+        else if (data.action === 'fill') { doRemoteFill(Math.round(data.x), Math.round(data.y), data.color); }
+        else if (data.action === 'final_shape') {
+            ctx.fillStyle = "transparent"; ctx.beginPath();
+            if (data.shapeType === 'square') { ctx.strokeRect(data.x, data.y, data.endX - data.x, data.endY - data.y); }
+            else if (data.shapeType === 'circle') {
+                let rx = (data.endX - data.x) / 2; let ry = (data.endY - data.y) / 2;
+                let cx = data.x + rx; let cy = data.y + ry;
+                ctx.save(); ctx.translate(cx, cy); ctx.scale(Math.abs(rx), Math.abs(ry)); ctx.arc(0, 0, 1, 0, 2 * Math.PI); ctx.restore(); ctx.stroke();
+            } else if (data.shapeType === 'triangle') {
+                ctx.moveTo(data.x + (data.endX - data.x) / 2, data.y); ctx.lineTo(data.endX, data.endY); ctx.lineTo(data.x, data.endY); ctx.closePath(); ctx.stroke();
+            }
+        }
+    }
+
+    function doRemoteFill(startX, startY, fillColor) {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        const idx = (startY * canvas.width + startX) * 4;
+        const targetR = data[idx], targetG = data[idx+1], targetB = data[idx+2], targetA = data[idx+3];
+        const fillR = parseInt(fillColor.slice(1,3),16), fillG = parseInt(fillColor.slice(3,5),16), fillB = parseInt(fillColor.slice(5,7),16);
+        if (targetR === fillR && targetG === fillG && targetB === fillB) return;
+        const stack = [[startX, startY]];
+        const visited = new Uint8Array(canvas.width * canvas.height);
+        function match(i) { return Math.abs(data[i]-targetR)<32 && Math.abs(data[i+1]-targetG)<32 && Math.abs(data[i+2]-targetB)<32 && Math.abs(data[i+3]-targetA)<32; }
+        while (stack.length) {
+            const [x, y] = stack.pop();
+            if (x < 0 || x >= canvas.width || y < 0 || y >= canvas.height) continue;
+            const vi = y * canvas.width + x;
+            if (visited[vi]) continue;
+            const pi = vi * 4;
+            if (!match(pi)) continue;
+            visited[vi] = 1;
+            data[pi] = fillR; data[pi+1] = fillG; data[pi+2] = fillB; data[pi+3] = 255;
+            stack.push([x+1,y],[x-1,y],[x,y+1],[x,y-1]);
+        }
+        ctx.putImageData(imageData, 0, 0);
+    }
+
+    function renderScoreboard() {
+        const container = document.getElementById('players-list');
+        if (!container) return;
+        container.innerHTML = "";
+        const sortedPlayers = Array.from(listaJogadores).sort((a, b) => (scores[b] || 0) - (scores[a] || 0));
+        sortedPlayers.forEach((nome, index) => {
+            const rank = index + 1;
+            let rankLabel = rank + "º";
+            if (rank === 1) rankLabel = "👑 1º";
+            else if (rank === 2) rankLabel = "💋 2º";
+            else if (rank === 3) rankLabel = "🍆 3º";
+            const item = document.createElement('div');
+            item.className = "player-item";
+            item.id = "p-" + nome.replace(/\s+/g,'-');
+            if (nome === currentDrawerName) item.classList.add('drawing');
+            const infoDiv = document.createElement('div'); infoDiv.className = 'player-info';
+            const rankSpan = document.createElement('span'); rankSpan.className = 'player-rank'; rankSpan.textContent = rankLabel;
+            const nameSpan = document.createElement('span'); nameSpan.className = 'player-name'; nameSpan.textContent = nome;
+            infoDiv.appendChild(rankSpan); infoDiv.appendChild(nameSpan);
+            const scoreSpan = document.createElement('span'); scoreSpan.className = 'player-score'; scoreSpan.textContent = scores[nome] || 0;
+            item.appendChild(infoDiv); item.appendChild(scoreSpan);
+            container.appendChild(item);
+        });
+    }
+
+    function checkEndGameConditions() {
+        for (const [jogador, pontuacao] of Object.entries(scores)) {
+            if (pontuacao >= PONTUACAO_MAXIMA) {
+                triggerVictory(jogador);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function triggerVictory(vencedor) {
+        gameEnded = true;
+        roundActive = false;
+        clearInterval(countdownInterval);
+        clearTimeout(nextRoundTimeout);
+        
+        document.getElementById('btn-egg').style.display = 'none';
+        document.getElementById('btn-flower').style.display = 'none';
+        document.getElementById('btn-skip').style.display = 'none';
+        
+        document.getElementById('word-display').innerText = `👑 FIM DO ORGIAZO! O DONO DA NOITE É ${vencedor.toUpperCase()}!`;
+        document.getElementById('timer-display').innerText = "⏱️ Fim";
+        
+        showGarticAnnouncement("👑 DEU MATCH SUPREMO!", `${vencedor} atingiu a marca erótica de ${scores[vencedor]} orgasmos/pontos e dominou o quarto! 🎉`);
+        addSystemMessage(`👑 PARTIDA CONCLUÍDA! O(A) maior mestre da sedução da sala é: ${vencedor} com ${scores[vencedor]} pontos!`);
+        createPetalShower();
+    }
+
+    function addScore(nome, pts) {
+        if (gameEnded) return;
+        if (!scores[nome]) scores[nome] = 0;
+        scores[nome] += pts;
+        renderScoreboard();
+        const el = document.getElementById("p-" + nome.replace(/\s+/g,'-'));
+        if (el) {
+            const scoreEl = el.querySelector('.player-score');
+            if (scoreEl) { scoreEl.classList.add('bump'); setTimeout(() => scoreEl.classList.remove('bump'), 350); }
+        }
+    }
+
+    function showGarticAnnouncement(title, desc) {
+        const box = document.getElementById('round-announcement');
+        document.getElementById('announcement-title').innerText = title;
+        document.getElementById('announcement-desc').innerText = desc;
+        box.classList.add('show');
+        setTimeout(() => { box.classList.remove('show'); }, 3200);
+    }
+
+    function showScorePopup(pts, nome) {
+        const playerEl = document.getElementById("p-" + nome.replace(/\s+/g,'-'));
+        if (!playerEl) return;
+        const rect = playerEl.getBoundingClientRect();
+        const popup = document.createElement('div');
+        popup.className = 'score-popup';
+        popup.textContent = '+' + pts + ' pts';
+        popup.style.left = (rect.left + rect.width/2 - 30) + 'px';
+        popup.style.top  = (rect.top - 10) + 'px';
+        document.body.appendChild(popup);
+        setTimeout(() => popup.remove(), 1500);
+    }
+
+    function throwInteractItem(itemType) {
+        if (!roundActive || isDrawer || !mqttClient || gameEnded) return;
+        if (itemType === 'egg') {
+            if (eggCooldown) return;
+            eggCooldown = true;
+            const btn = document.getElementById('btn-egg');
+            btn.classList.add('cooldown'); btn.textContent = '🍆 Recarregando...';
+            mqttClient.publish(baseTopic + "/interact", JSON.stringify({ thrower: username, target: currentDrawerName, type: 'egg' }));
+            setTimeout(() => { eggCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '🍆 Jogar Berinjela!'; }, 8000);
+        } else if (itemType === 'flower') {
+            if (flowerCooldown) return;
+            flowerCooldown = true;
+            const btn = document.getElementById('btn-flower');
+            btn.classList.add('cooldown'); btn.textContent = '🍑 Respirando...';
+            mqttClient.publish(baseTopic + "/interact", JSON.stringify({ thrower: username, target: currentDrawerName, type: 'flower' }));
+            setTimeout(() => { flowerCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '🍑 Dar Sarrada!'; }, 5000);
+        }
+    }
+
+    function animateInteractThrow(thrower, target, type) {
+        const throwerEl = document.getElementById("p-" + thrower.replace(/\s+/g,'-'));
+        const canvasRect = canvas.getBoundingClientRect();
+        let sx = window.innerWidth / 2, sy = window.innerHeight - 100;
+        if (throwerEl) { const r = throwerEl.getBoundingClientRect(); sx = r.left + r.width/2; sy = r.top + r.height/2; }
+        const targetX = canvasRect.left + canvasRect.width/2 + (Math.random()-0.5)*120;
+        const targetY = canvasRect.top + canvasRect.height/2 + (Math.random()-0.5)*100;
+        const element = document.createElement('div');
+        element.className = type === 'egg' ? 'egg-fly' : 'flower-fly';
+        element.textContent = type === 'egg' ? '🍆' : '🍑';
+        const dx = targetX - sx, dy = targetY - sy;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const duration = Math.max(0.5, Math.min(1.0, dist/900));
+        const angle = Math.atan2(dy, dx) * (180/Math.PI) + 90;
+        element.style.setProperty('--tx', dx*0.75+'px'); element.style.setProperty('--ty', dy*0.75+'px');
+        element.style.setProperty('--tx2', dx+'px'); element.style.setProperty('--rot', angle+'deg'); element.style.setProperty('--duration', duration+'s');
+        element.style.left = sx+'px'; element.style.top = sy+'px';
+        document.body.appendChild(element);
+        setTimeout(() => {
+            element.remove();
+            const splash = document.createElement('div');
+            splash.className = type === 'egg' ? 'egg-splash' : 'flower-splash';
+            splash.textContent = type === 'egg' ? '💦' : '💥';
+            splash.style.left = (targetX-24)+'px'; splash.style.top = (targetY-24)+'px';
+            document.body.appendChild(splash);
+            setTimeout(() => splash.remove(), 900);
+            if (target === username) {
+                if (type === 'egg') {
+                    const overlay = document.getElementById('egg-overlay');
+                    overlay.classList.remove('splat'); void overlay.offsetWidth; overlay.classList.add('splat');
+                    document.getElementById('canvas-container').classList.add('shake');
+                    setTimeout(() => document.getElementById('canvas-container').classList.remove('shake'), 500);
+                } else if (type === 'flower') { createPetalShower(); }
+            }
+        }, duration * 1000);
+    }
+
+    function createPetalShower() {
+        for (let i = 0; i < 15; i++) {
+            setTimeout(() => {
+                const petal = document.createElement('div');
+                petal.className = 'petal-particle';
+                petal.textContent = ['💋','❤️','🔥'][Math.floor(Math.random() * 3)];
+                petal.style.left = Math.random() * window.innerWidth + 'px';
+                petal.style.setProperty('--drift', (Math.random() * 160 - 80) + 'px');
+                petal.style.setProperty('--fall-duration', (Math.random() * 1.5 + 1.5) + 's');
+                document.body.appendChild(petal);
+                setTimeout(() => petal.remove(), 3000);
+            }, i * 100);
+        }
+    }
+
+    function skipRound() {
+        if (!roundActive || !isDrawer || !mqttClient || gameEnded) return;
+        mqttClient.publish(baseTopic + "/gameflow/skip", JSON.stringify({ drawer: username, word: currentWord }));
+    }
+
+    function connectToGame() {
+        username = document.getElementById('input-username').value.trim();
+        roomName = document.getElementById('input-room').value.trim().toLowerCase().replace(/[^a-z0-9]/g,"");
+        const customInput = document.getElementById('input-custom-words').value.trim();
+        if (!username || !roomName) { alert("Digita o seu nome e o nome do motel pra sincronizar!"); return; }
+        if (customInput) { customWords = customInput.split(',').map(w => w.trim()).filter(w => w.length > 0); }
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('room-id').innerText = "Motel: " + roomName;
+        adicionarJogadorLista(username);
+        initMqtt();
+    }
+
+    function initMqtt() {
+        baseTopic = "gartic_clone_free_2026/" + roomName;
+        mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
+        mqttClient.on('connect', async () => {
+            mqttClient.subscribe(baseTopic + "/chat");
+            mqttClient.subscribe(baseTopic + "/draw");
+            mqttClient.subscribe(baseTopic + "/presence");
+            mqttClient.subscribe(baseTopic + "/presence/echo");
+            mqttClient.subscribe(baseTopic + "/gameflow");
+            mqttClient.subscribe(baseTopic + "/gameflow/skip");
+            mqttClient.subscribe(baseTopic + "/scores");
+            mqttClient.subscribe(baseTopic + "/interact");
+            mqttClient.subscribe(baseTopic + "/customwords");
+            mqttClient.subscribe(baseTopic + "/customwords/add");
+            
+            const identityPayload = JSON.stringify({ sender: "Sistema", text: `📢 ${username} deitou na cama da sala.`, name: username, type: "system" });
+            mqttClient.publish(baseTopic + "/chat", identityPayload);
+            mqttClient.publish(baseTopic + "/presence", identityPayload);
+            
+            await carregarPalavrasSalvas();
+            if (customWords.length > 0) { mqttClient.publish(baseTopic + "/customwords", JSON.stringify({ words: customWords, sender: username })); }
+            setTimeout(() => { checkAndAutoStart(); }, 2000);
+        });
+
+        mqttClient.on('message', (topic, message) => {
+            const data = JSON.parse(message.toString());
+            
+            if (topic === baseTopic + "/chat") {
+                if (data.type === "system") {
+                    addSystemMessage(data.text);
+                    if (data.name) { adicionarJogadorLista(data.name); checkAndAutoStart(); }
+                } else if (data.type === "guess") {
+                    if (data.isCorrect) {
+                        addSuccessMessage(data.sender, data.text);
+                        const pts = data.pts || 5;
+                        addScore(data.sender, pts); showScorePopup(pts, data.sender);
+                        if (currentDrawerName) { const dp = Math.max(1, Math.round(pts * 0.5)); addScore(currentDrawerName, dp); showScorePopup(dp, currentDrawerName); }
+                        broadcastScores();
+                        
+                        if (checkEndGameConditions()) return;
+                        
+                        showGarticAnnouncement("🎯 EN CAI XOU!", `${data.sender} adivinhou o fetiche secreto: ${currentWord.toUpperCase()}!`);
+                        handleRoundEndAutomatically();
+                    } else { renderWrongGuessMessage(data.sender, data.text); }
+                } else if (data.type === "talk") { renderNormalMessage(data.sender, data.text); }
+            } else if (topic === baseTopic + "/draw" && !isDrawer && !gameEnded) {
+                renderRemoteDraw(data);
+            } else if (topic === baseTopic + "/presence") {
+                if (data.name && data.name !== username) {
+                    adicionarJogadorLista(data.name);
+                    mqttClient.publish(baseTopic + "/presence/echo", JSON.stringify({ name: username }));
+                    if (customWords.length > 0) { mqttClient.publish(baseTopic + "/customwords", JSON.stringify({ words: customWords, sender: username })); }
+                    checkAndAutoStart();
+                }
+            } else if (topic === baseTopic + "/presence/echo") {
+                if (data.name && data.name !== username) { adicionarJogadorLista(data.name); checkAndAutoStart(); }
+            } else if (topic === baseTopic + "/gameflow" && !gameEnded) {
+                handleGameFlow(data);
+            } else if (topic === baseTopic + "/gameflow/skip" && !gameEnded) {
+                showGarticAnnouncement("⏭️ BROCHOU!", `${data.drawer} não deu conta e passou a vez! A palavra era: ${data.word.toUpperCase()}`);
+                addSystemMessage(`⏭️ Voltou pra trás: ${data.drawer}. O fetiche era: ${data.word.toUpperCase()}`);
+                handleRoundEndAutomatically();
+            } else if (topic === baseTopic + "/scores") {
+                if (data.scores) { 
+                    for (const [n,p] of Object.entries(data.scores)) { 
+                        if (n !== username) { scores[n]=p; } 
+                    } 
+                    renderScoreboard(); 
+                    checkEndGameConditions();
+                }
+            } else if (topic === baseTopic + "/interact") {
+                animateInteractThrow(data.thrower, data.target, data.type);
+                if (data.type === 'egg') addEggMessage(data.thrower, data.target);
+                else if (data.type === 'flower') addFlowerMessage(data.thrower, data.target);
+            } else if (topic === baseTopic + "/customwords") {
+                if (data.words && data.words.length > 0 && customWords.length === 0) {
+                    customWords = data.words;
+                    addSystemMessage(`📝 Dicionário proibido de ${data.sender} injetado! (${data.words.length})`);
+                    salvarPalavras();
+                }
+            } else if (topic === baseTopic + "/customwords/add") {
+                if (data.words && data.words.length > 0) {
+                    data.words.forEach(w => { if(!customWords.includes(w)) customWords.push(w); });
+                    addSystemMessage(`📝 ${data.sender} colocou mais +${data.words.length} fantasias quentes na lista da rodada!`);
+                    salvarPalavras();
+                }
+            }
+        });
+    }
+
+    function broadcastScores() {
+        if (!mqttClient) return;
+        mqttClient.publish(baseTopic + "/scores", JSON.stringify({ scores }));
+    }
+
+    function checkAndAutoStart() {
+        if (!roundActive && currentDrawerName === "" && listaJogadores.size > 0 && !gameEnded) {
+            const arr = Array.from(listaJogadores);
+            if (arr[0] === username) { drawNewRound(); }
+        }
+    }
+
+    function drawNewRound() {
+        if (!mqttClient || gameEnded) return;
+        const arr = Array.from(listaJogadores); if (arr.length === 0) return;
+        currentDrawerIndex = (currentDrawerIndex + 1) % arr.length;
+        const nextDrawer = arr[currentDrawerIndex];
+        const lista = getPalavras();
+        const randomWord = lista[Math.floor(Math.random() * lista.length)];
+        mqttClient.publish(baseTopic + "/gameflow", JSON.stringify({ drawer: nextDrawer, word: randomWord, currentIndex: currentDrawerIndex }));
+    }
+
+    function handleGameFlow(data) {
+        if (gameEnded) return;
+        clearInterval(countdownInterval); clearTimeout(nextRoundTimeout);
+        currentDrawerName = data.drawer; currentWord = data.word; currentDrawerIndex = data.currentIndex;
+        roundActive = true; currentTimeLeft = TEMPO_RODADA;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        renderScoreboard();
+        const eggBtn = document.getElementById('btn-egg');
+        const flowerBtn = document.getElementById('btn-flower');
+        const skipBtn = document.getElementById('btn-skip');
+        if (currentDrawerName === username) {
+            isDrawer = true; eggBtn.style.display = 'none'; flowerBtn.style.display = 'none';
+            skipBtn.style.display = 'inline-flex';
+            document.getElementById('word-display').innerText = "✏️ Seu fetiche secreto: " + currentWord.toUpperCase();
+            addSystemMessage(`✏️ É a sua vez na cama! Desenhe: ${currentWord.toUpperCase()}`);
+        } else {
+            isDrawer = false; skipBtn.style.display = 'none';
+            eggBtn.style.display = 'inline-flex'; eggBtn.classList.remove('cooldown'); eggBtn.textContent = '🍆 Jogar Berinjela!';
+            flowerBtn.style.display = 'inline-flex'; flowerBtn.classList.remove('cooldown'); flowerBtn.textContent = '🍑 Dar Sarrada!';
+            const u = "_ ".repeat(currentWord.length).trim();
+            document.getElementById('word-display').innerText = `🎨 Esfregando pincel: ${currentDrawerName} (${u})`;
+            addSystemMessage(`🎨 ${currentDrawerName} está rebolando no traço...`);
+        }
+        startLocalTimer(TEMPO_RODADA);
+    }
+
+    function startLocalTimer(seconds) {
+        if (gameEnded) return;
+        currentTimeLeft = seconds;
+        document.getElementById('timer-display').innerText = "⏱️ Clímax: " + currentTimeLeft + "s";
+        countdownInterval = setInterval(() => {
+            if (gameEnded) { clearInterval(countdownInterval); return; }
+            currentTimeLeft--;
+            if (currentTimeLeft <= 0) {
+                clearInterval(countdownInterval);
+                document.getElementById('timer-display').innerText = "⏱️ Clímax: 0s";
+                addSystemMessage(`🛑 Deu ruim! Tempo esgotado. A palavra oculta era: ${currentWord.toUpperCase()}`);
+                showGarticAnnouncement("⏳ BROCHOU GERAL!", `Ninguém conseguiu desvendar o mistério! Era: ${currentWord.toUpperCase()}`);
+                document.getElementById('btn-egg').style.display = 'none';
+                document.getElementById('btn-flower').style.display = 'none';
+                document.getElementById('btn-skip').style.display = 'none';
+                handleRoundEndAutomatically();
+            } else {
+                document.getElementById('timer-display').innerText = "⏱️ Clímax: " + currentTimeLeft + "s";
+            }
+        }, 1000);
+    }
+
+    function handleRoundEndAutomatically() {
+        roundActive = false; clearInterval(countdownInterval);
+        document.getElementById('btn-egg').style.display = 'none';
+        document.getElementById('btn-flower').style.display = 'none';
+        document.getElementById('btn-skip').style.display = 'none';
+        if (gameEnded) return;
+        if (currentDrawerName === username) { nextRoundTimeout = setTimeout(() => { if (!gameEnded) drawNewRound(); }, 4000); }
+    }
+
+    function adicionarJogadorLista(nome) {
+        if (listaJogadores.has(nome)) return;
+        listaJogadores.add(nome); if (!scores[nome]) scores[nome] = 0;
+        renderScoreboard();
+    }
+
+    function sendDrawData(action, x, y, color, size, shapeType = '', endX = 0, endY = 0) {
+        if (!mqttClient || !roundActive || gameEnded) return;
+        mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action, x, y, color, size, shapeType, endX, endY }));
+    }
+
+    function sendClear() {
+        if (!isDrawer || gameEnded) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (mqttClient) mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action: 'clear' }));
+    }
+
+    function sendGuessMessage() {
+        const input = document.getElementById('guess-input'); const msgText = input.value.trim();
+        if (!msgText || !mqttClient || gameEnded) return;
+        if (!roundActive || isDrawer) { input.value = ""; return; }
+        const palpiteLimpo = msgText.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+        const respostaLimpa = currentWord.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+        if (palpiteLimpo === respostaLimpa) {
+            const pts = calcPoints(currentTimeLeft);
+            mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: `Gemeu certinho: ${currentWord.toUpperCase()}! 🎯`, isCorrect: true, pts, type: "guess" }));
+        } else {
+            mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: msgText, isCorrect: false, type: "guess" }));
+        }
+        input.value = "";
+    }
+
+    function sendChatMessage() {
+        const input = document.getElementById('chat-input'); const msgText = input.value.trim();
+        if (!msgText || !mqttClient) return;
+        mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: msgText, type: "talk" }));
+        input.value = "";
+    }
+
+    document.getElementById('guess-input').addEventListener('keypress', function(e) { if (e.key === 'Enter') sendGuessMessage(); });
+    document.getElementById('chat-input').addEventListener('keypress', function(e) { if (e.key === 'Enter') sendChatMessage(); });
+
+    function addSystemMessage(text) {
+        const c = document.getElementById('guess-messages'); const m = document.createElement('div'); m.className = "msg msg-system"; m.innerText = text; c.appendChild(m); c.scrollTop = c.scrollHeight;
+    }
+    function addSuccessMessage(sender, text) {
+        const c = document.getElementById('guess-messages'); const m = document.createElement('div'); m.className = "msg msg-success"; m.innerText = `🎯 ${sender} ${text}`; c.appendChild(m); c.scrollTop = c.scrollHeight;
+        if (!gameEnded) document.getElementById('word-display').innerText = "🎉 No alvo! Preparando próxima rodada...";
+    }
+    function renderWrongGuessMessage(sender, text) {
+        const c = document.getElementById('guess-messages'); const m = document.createElement('div'); m.className = "msg msg-wrong"; m.innerText = `${sender}: ${text}`; c.appendChild(m); c.scrollTop = m.scrollHeight;
+    }
+    function renderNormalMessage(sender, text) {
+        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-normal"; const s = document.createElement('span'); s.className = "username"; s.innerText = sender + ": ";
+        m.appendChild(s); m.appendChild(document.createTextNode(text)); c.appendChild(m); c.scrollTop = c.scrollHeight;
+    }
+    function addEggMessage(thrower, target) {
+        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-egg"; m.innerText = `🍆 ${thrower} atirou uma berinjela violenta em ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
+    }
+    function addFlowerMessage(thrower, target) {
+        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-flower"; m.innerText = `🍑 ${thrower} encaixou uma sarrada de apoio em ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
+    }
+
+    setActiveColor('#000000');
+</script>
+</body>
+</html>
