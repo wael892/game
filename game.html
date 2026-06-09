@@ -37,6 +37,7 @@
             font-weight: bold; font-size: 11px; color: #e76f51;
             background: #f8f9fa; padding: 2px 8px; border-radius: 4px;
             border: 1px dashed #e76f51; text-align: center; flex: 1;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         #room-display {
             font-weight: bold; color: #666; font-size: 10px;
@@ -71,8 +72,8 @@
         }
         #question-card {
             flex: 1; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            padding: 12px; text-align: center; position: relative;
+            display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
+            padding: 30px 12px 12px 12px; text-align: center; position: relative; overflow: hidden;
         }
         #question-category {
             position: absolute; top: 6px; left: 6px; background: #264653; color: white;
@@ -82,14 +83,15 @@
             position: absolute; top: 6px; right: 6px; background: #e76f51; color: white;
             padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: bold; text-transform: uppercase;
         }
-        #question-text { font-size: 14px; font-weight: bold; color: #264653; line-height: 1.3; max-width: 600px; margin-bottom: 12px; }
+        #question-text { font-size: 14px; font-weight: bold; color: #264653; line-height: 1.3; max-width: 600px; margin-bottom: 10px; margin-top: 5px; }
         #options-container {
-            width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 6px; margin-top: 6px;
+            width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 5px; 
+            overflow-y: auto; max-height: calc(100vh - 280px); padding-right: 2px;
         }
         .option-btn {
             width: 100%; padding: 8px 12px; border: 2px solid #ced4da; border-radius: 6px;
             background: white; color: #333; font-size: 12px; font-weight: bold; text-align: left;
-            cursor: pointer; transition: all 0.15s ease; outline: none;
+            cursor: pointer; transition: all 0.15s ease; outline: none; flex-shrink: 0;
         }
         .option-btn:hover:not(:disabled) { background: #f1f3f5; border-color: #2a9d8f; }
         .option-btn:disabled { cursor: not-allowed; opacity: 0.8; }
@@ -100,16 +102,16 @@
         .btn-action { background: #e76f51; }
         .btn-interact { background: #f4a261; }
         #right-chats-wrapper { flex: 0 0 240px; display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
-        .chat-box-container { flex: 1; background: white; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; }
-        .chat-title-bar { background: #264653; color: white; padding: 3px 6px; font-size: 9px; font-weight: bold; text-transform: uppercase; }
-        .chat-messages-area { flex: 1; padding: 4px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
-        .msg { padding: 3px 5px; border-radius: 3px; font-size: 10px; word-break: break-all; line-height: 1.2; }
+        .chat-box-container { flex: 1; background: white; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; height: 50%; }
+        .chat-title-bar { background: #264653; color: white; padding: 4px 6px; font-size: 9px; font-weight: bold; text-transform: uppercase; flex-shrink: 0; }
+        .chat-messages-area { flex: 1; padding: 4px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; max-height: 100%; }
+        .msg { padding: 3px 5px; border-radius: 3px; font-size: 10px; word-break: break-all; line-height: 1.2; flex-shrink: 0; }
         .msg-system  { background: #e9ecef; color: #495057; font-weight: bold; }
         .msg-success { background: #d1e7dd; color: #0f5132; font-weight: bold; }
         .msg-wrong   { background: #ffe3e8; color: #c92a2a; }
         .msg-normal  { background: #f1f3f5; color: #333; }
         .msg-normal .username { font-weight: bold; color: #2a9d8f; }
-        .chat-input-row { display: flex; padding: 3px; border-top: 1px solid #dee2e6; background: #f8f9fa; }
+        .chat-input-row { display: flex; padding: 3px; border-top: 1px solid #dee2e6; background: #f8f9fa; flex-shrink: 0; }
         .chat-input-field { flex: 1; padding: 3px; border: 1px solid #ced4da; border-radius: 3px; outline: none; font-size: 10px; }
         .chat-send-btn { background: #264653; color: white; margin-left: 3px; font-size: 10px; padding: 3px 6px; border: none; border-radius: 3px; cursor: pointer; }
         
@@ -125,16 +127,17 @@
             h1 { font-size: 11px; }
             #word-display { font-size: 9px; order: 3; width: 100%; margin-top: 2px; padding: 1px 4px; }
             #main-container { flex-direction: column; gap: 2px; }
-            #scoreboard { flex: 0 0 32px; width: 100%; flex-direction: row; align-items: center; padding: 2px; }
+            #scoreboard { flex: 0 0 28px; width: 100%; flex-direction: row; align-items: center; padding: 2px; }
             #scoreboard h3 { display: none; }
             #players-list { flex-direction: row; margin-top: 0; height: 100%; align-items: center; overflow-x: auto; overflow-y: hidden; gap: 3px; }
             .player-item { white-space: nowrap; height: 22px; padding: 2px; font-size: 9px; }
-            #right-chats-wrapper { flex: 0 0 180px; flex-direction: row; gap: 2px; }
-            .chat-box-container { flex: 1; }
-            #quiz-container { flex: 1; min-height: 160px; padding: 4px; gap: 4px; }
-            #question-card { padding: 6px; }
-            #question-text { font-size: 11px; margin-bottom: 6px; }
-            .option-btn { padding: 5px 8px; font-size: 10px; }
+            #right-chats-wrapper { flex: 0 0 160px; flex-direction: row; gap: 2px; }
+            .chat-box-container { flex: 1; height: 100%; }
+            #quiz-container { flex: 1; min-height: 180px; padding: 4px; gap: 4px; }
+            #question-card { padding: 25px 6px 6px 6px; }
+            #question-text { font-size: 11px; margin-bottom: 4px; }
+            #options-container { max-height: calc(100vh - 340px); gap: 4px; }
+            .option-btn { padding: 4px 6px; font-size: 10px; border-width: 1px; }
         }
     </style>
 </head>
@@ -205,7 +208,7 @@
         { c: "Etapas da estatística", d: "basico", q: "Qual a etapa que consiste em dispor os dados de forma ordenada para eliminar erros iniciais e prepará-los?", a: "Organização dos dados", e: ["Coleta de dados", "Exposição e apresentação dos dados", "Análise dos resultados"] },
         { c: "Etapas da estatística", d: "basico", q: "Qual o termo para a etapa de contagem, processamento e classificação minuciosa dos dados coletados?", a: "Apuração dos dados", e: ["Coleta de dados", "Organização dos dados", "Análise exploratória de dados"] },
         { c: "Etapas da estatística", d: "basico", q: "Qual a etapa em que os dados purificados são estruturados em tabelas e gráficos estatísticos para visualização externa?", a: "Exposição e apresentação dos dados", e: ["Apuração dos dados", "Análise dos resultados", "Método de coleta de dados"] },
-        { c: "Etapas da estatística", d: "intermediario", q: "Como se chama a fase final onde são calculadas as medidas e índices estatísticos para tirar conclusões sobre a população?", a: "Análise dos resultados", e: ["Apuração dos dados", "Organização dos dados", "Coleta de dados"] },
+        { c: "Etapas da estatística", d: "intermediario", q: "Como se chama a fase final onde são calculadas as medidas e índices estatísticos para tirar conclusions sobre a população?", a: "Análise dos resultados", e: ["Apuração dos dados", "Organização dos dados", "Coleta de dados"] },
         { c: "Etapas da estatística", d: "intermediario", q: "Qual abordagem estatística visa resumir, organizar e descrever as características principais de um conjunto de dados sem fazer inferências precoces?", a: "Análise exploratória de dados", e: ["Análise dos resultados", "Exposição e apresentação dos dados", "Método de coleta de dados"] },
         { c: "Conceitos Básicos", d: "basico", q: "Como são classificadas as variáveis cujos valores são expressos por meio de números resultantes de contagens ou medições?", a: "Quantitativas", e: ["Qualitativas", "Nominais", "Categorizadas"] },
         { c: "Conceitos Básicos", d: "basico", q: "Como são classificadas as variáveis que expressam atributos, categorias, qualidades ou características não numéricas?", a: "Qualitativas", e: ["Quantitativas", "Contínuas", "Discretas"] },
@@ -220,10 +223,10 @@
         { c: "Elementos da Distribuição", d: "hardcore", q: "Como se chama o somatório das frequências simples de todas as classes anteriores até a classe atual na tabela?", a: "Frequência acumulada", e: ["Frequência relativa", "Frequência simples", "Ponto médio da classe"] },
         { c: "Cálculos Estatísticos", d: "hardcore", q: "Na construção de tabelas, qual regra matemática determina o número de classes (k) com base no logaritmo do tamanho da amostra?", a: "Regra de Sturges", e: ["Fórmula de Quartil", "Cálculo de Variância", "Efeito Boxplot"] },
         { c: "Visualização Gráfica", d: "basico", q: "Qual gráfico utiliza retângulos dispostos verticalmente ou horizontalmente onde o comprimento é proporcional à frequência do atributo qualitativo?", a: "Gráfico de barras ou colunas", e: ["Histograma", "Gráficos de linhas", "Caixa"] },
-        { c: "Visualização Gráfica", d: "intermediario", q: "Qual o gráfico formado por retângulos adjacentes, onde a base representa os intervalos de classe e a altura representa a densidade de frequência?", a: "Histograma", e: ["Gráfico de barras ou colunas", "Setor", "Gráficos de linhas"] },
-        { c: "Visualização Gráfica", d: "basico", q: "Qual tipo de gráfico é ideal para demonstrar o comportamento de uma variável contínua ao longo de um eixo temporal contínuo?", a: "Gráficos de linhas", e: ["Setor", "Histograma", "Gráfico de barras ou colunas"] },
-        { c: "Visualização Gráfica", d: "basico", q: "Qual gráfico circular é dividido em fatias proporcionais às frequências relativas dos dados, também chamado de gráfico de pizza?", a: "Setor", e: ["Histograma", "Gráficos de linhas", "Caixa"] },
-        { c: "Visualização Gráfica", d: "hardcore", q: "Qual representação gráfica geométrica exibe simultaneamente o mínimo, o primeiro quartil, a mediana, o terceiro quartil e o máximo dos dados?", a: "Caixa", e: ["Histograma", "Setor", "Gráficos de linhas"] },
+        { c: "Visualização Gráfica", d: "intermediario", q: "Qual o gráfico formado por retângulos adjacentes, onde a base representa os intervalos de classe e a altura representa a densidade de frequência?", a: "Histograma", e: ["Gráfico de barras ou colunas", "Setor", "Gráticos de linhas"] },
+        { c: "Visualização Gráfica", d: "basico", q: "Qual tipo de gráfico é ideal para demonstrar o comportamento de uma variável contínua ao longo de um eixo temporal contínuo?", a: "Gráticos de linhas", e: ["Setor", "Histograma", "Gráfico de barras ou colunas"] },
+        { c: "Visualização Gráfica", d: "basico", q: "Qual gráfico circular é dividido em fatias proporcionais às frequências relativas dos dados, também chamado de gráfico de pizza?", a: "Setor", e: ["Histograma", "Gráticos de linhas", "Caixa"] },
+        { c: "Visualização Gráfica", d: "hardcore", q: "Qual representação gráfica geométrica exibe simultaneamente o mínimo, o primeiro quartil, a mediana, o terceiro quartil e o máximo dos dados?", a: "Caixa", e: ["Histograma", "Setor", "Gráticos de linhas"] },
         { c: "Medidas de Tendência Central", d: "basico", q: "Como classificamos os dados que estão listados de forma bruta ou individualizada, sem estarem organizados em intervalos de classes?", a: "Não agrupados", e: ["Agrupados", "Distribuições de frequência", "Rol"] },
         { c: "Medidas de Tendência Central", d: "basico", q: "Como classificamos os dados que foram sintetizados e ordenados em uma tabela de distribuição de frequências por intervalos?", a: "Agrupados", e: ["Não agrupados", "Dados brutos", "Rol de magnitude"] },
         { c: "Medidas de Tendência Central", d: "intermediario", q: "Qual medida de posição representa o valor médio aritmético balanceado obtido pela divisão da soma de todos os valores pelo número total deles?", a: "Média", e: ["Mediana", "Moda", "Quartil"] },
@@ -348,7 +351,7 @@
         roundActive = true;
         
         document.getElementById('question-category').innerText = currentQuestion.c;
-        document.getElementById('question-difficulty').innerText = "Nível: " + currentQuestion.d.toUpperCase() + " (Sequência: " + streakAcertos + ")";
+        document.getElementById('question-difficulty').innerText = "Nível: " + currentQuestion.d.toUpperCase() + " (Seq: " + streakAcertos + ")";
         document.getElementById('question-text').innerText = currentQuestion.q;
         document.getElementById('word-display').innerText = "💡 Múltipla Escolha: Analise com precisão cognitiva!";
         
@@ -358,12 +361,16 @@
         data.shuffledOptions.forEach(opcao => {
             const btn = document.createElement('button');
             btn.className = "option-btn";
-            btn.innerText = opcao;
+            btn.innerText = opacityCheck(opcao);
             btn.onclick = () => selectOption(opcao);
             container.appendChild(btn);
         });
 
         startTimer(TEMPO_RODADA);
+    }
+
+    function opacityCheck(val) {
+        return val;
     }
 
     function selectOption(opcaoSelecionada) {
