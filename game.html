@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quiz Acadêmico Realtime</title>
+    <title>Quiz Universitário Rápido</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -27,7 +27,6 @@
             width: 100%; padding: 10px; margin-bottom: 12px;
             border: 2px solid #ced4da; border-radius: 6px; outline: none; font-size: 15px;
         }
-        .login-box input:focus { border-color: #2a9d8f; }
         header {
             background: white; padding: 6px 12px; border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 1200px;
@@ -84,7 +83,6 @@
         .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; color: white; transition: background 0.2s; }
         .btn-action { background: #e76f51; }
         .btn-interact { background: #f4a261; }
-        .btn-interact.cooldown { opacity: 0.4; cursor: not-allowed; }
         #right-chats-wrapper { flex: 0 0 220px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
         .chat-box-container { flex: 1; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; }
         .chat-title-bar { background: #264653; color: white; padding: 4px 8px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
@@ -110,7 +108,7 @@
             header { height: auto; padding: 6px; flex-wrap: wrap; }
             h1 { font-size: 13px; }
             #word-display { font-size: 11px; order: 3; width: 100%; margin-top: 4px; }
-            #main-container { flex-direction: column; position: static; top: 0; bottom: 0; left: 0; right: 0; }
+            #main-container { flex-direction: column; }
             #scoreboard { flex: 0 0 40px; width: 100%; flex-direction: row; align-items: center; }
             #scoreboard h3 { display: none; }
             #players-list { flex-direction: row; margin-top: 0; height: 100%; align-items: center; overflow-x: auto; overflow-y: hidden; }
@@ -127,8 +125,8 @@
 <div id="login-screen">
     <div class="login-box">
         <h2>🔬 Quiz Universitário *</h2>
-        <input type="text" id="input-username" placeholder="Seu Nome / Apelido *" required>
-        <input type="text" id="input-room" placeholder="Nome da Sala / Grupo *" required>
+        <input type="text" id="input-username" placeholder="Seu Nome *" required>
+        <input type="text" id="input-room" placeholder="Nome da Sala *" required>
         <button class="btn" style="width:100%; padding:10px; font-size:14px; background:#2a9d8f;" onclick="connectToGame()">Entrar na Sala</button>
     </div>
 </div>
@@ -151,29 +149,29 @@
     <div id="quiz-container">
         <div id="question-card">
             <div id="question-category">Geral</div>
-            <div id="question-text">Entre em uma sala para carregar os cartões de estudo interativos.</div>
+            <div id="question-text">Aguardando conexão com os outros estudantes...</div>
         </div>
         <div id="bottom-actions">
-            <button id="btn-skip" class="btn btn-action" onclick="skipQuestion()">⏭️ Pular Pergunta</button>
-            <button id="btn-coffee" class="btn btn-interact" onclick="throwInteract('coffee')">☕ Jogar Café</button>
+            <button id="btn-skip" class="btn btn-action" onclick="skipQuestion()">箱 Pular Rodada</button>
+            <button id="btn-coffee" class="btn btn-interact" onclick="throwInteract('coffee')">☕ Enviar Café</button>
             <button id="btn-paper" class="btn btn-interact" onclick="throwInteract('paper')">📄 Pedir Cópia</button>
         </div>
     </div>
 
     <div id="right-chats-wrapper">
         <div class="chat-box-container">
-            <div class="chat-title-bar">🎯 Palpites da Matéria</div>
+            <div class="chat-title-bar">🎯 Palpites (Digite a Resposta Aqui)</div>
             <div id="guess-messages" class="chat-messages-area"></div>
             <div class="chat-input-row">
-                <input type="text" id="guess-input" class="chat-input-field" placeholder="Sua resposta... *" autocomplete="off">
+                <input type="text" id="guess-input" class="chat-input-field" placeholder="Chute de resposta rápida... *" autocomplete="off">
                 <button class="chat-send-btn" onclick="sendGuess()">➤</button>
             </div>
         </div>
         <div class="chat-box-container">
-            <div class="chat-title-bar">💬 Conversa de Corredor</div>
+            <div class="chat-title-bar">💬 Chat Geral da Turma</div>
             <div id="chat-messages" class="chat-messages-area"></div>
             <div class="chat-input-row">
-                <input type="text" id="chat-input" class="chat-input-field" placeholder="Conversar... *" autocomplete="off">
+                <input type="text" id="chat-input" class="chat-input-field" placeholder="Escreva aqui para conversar... *" autocomplete="off">
                 <button class="chat-send-btn" onclick="sendChat()">➤</button>
             </div>
         </div>
@@ -182,15 +180,13 @@
 
 <script>
     const BANCO_PERGUNTAS = [
-        { c: "Epidemiologia", q: "Qual o termo para o número de casos novos de uma doença em uma população em um período?", a: "incidencia" },
-        { c: "Epidemiologia", q: "Como é chamada a descrição do curso de uma doença sem intervenção médica?", a: "historia natural" },
-        { c: "Prevenção", q: "A vacinação faz parte de qual nível de prevenção?", a: "primaria" },
-        { c: "Prevenção", q: "O diagnóstico precoce e o rastreamento clínico pertencem a qual nível de prevenção?", a: "secundaria" },
-        { c: "Saúde Pública", q: "Qual a sigla do sistema de saúde unificado instituído pela Constituição de 1988?", a: "sus" },
-        { c: "SUS", q: "Qual princípio do SUS garante que todos os cidadãos têm direito ao acesso sem discriminação?", a: "universalidade" },
-        { c: "SUS", q: "Qual diretriz do SUS transfere as responsabilidades de gestão para os municípios?", a: "descentralizacao" },
-        { c: "Biossegurança", q: "Qual a sigla para os equipamentos de proteção individual como luvas e jalecos?", a: "epi" },
-        { c: "Biomedicina", q: "Qual nível de biossegurança (NB) é exigido para agentes de alto risco individual e comunitário?", a: "nb4" }
+        { c: "Saúde Pública", q: "Qual a sigla do Sistema Único de Saúde do Brasil?", a: "sus" },
+        { c: "Biossegurança", q: "Qual a sigla para Equipamento de Proteção Individual?", a: "epi" },
+        { c: "Prevenção", q: "A vacinação é uma prevenção de qual tipo? (Primária, Secundária ou Terciária)", a: "primaria" },
+        { c: "Saúde Pública", q: "Em qual década o SUS foi criado no Brasil? (Anos ...)", a: "80" },
+        { c: "Biossegurança", q: "O jaleco de laboratório serve como barreira de proteção de qual tipo?", a: "fisica" },
+        { c: "Epidemiologia", q: "Como chamamos os novos casos de uma doença em um determinado período?", a: "incidencia" },
+        { c: "Biossegurança", q: "Qual o objeto perfurocortante mais comum descartado em caixa amarela?", a: "agulha" }
     ];
 
     let username = "", roomName = "", mqttClient = null, baseTopic = "";
@@ -219,7 +215,7 @@
             mqttClient.subscribe(baseTopic + "/flow");
             mqttClient.subscribe(baseTopic + "/interact");
 
-            let connectMsg = JSON.stringify({ sender: "Sistema", text: `📢 ${username} entrou na sala de estudos.`, name: username, type: "sys" });
+            let connectMsg = JSON.stringify({ sender: "Sistema", text: `📢 ${username} entrou na sala.`, name: username, type: "sys" });
             mqttClient.publish(baseTopic + "/chat", connectMsg);
             mqttClient.publish(baseTopic + "/presence", connectMsg);
             setTimeout(() => { checkAutoStart(); }, 1500);
@@ -233,7 +229,9 @@
                     if (data.name) { adicionarJogador(data.name); checkAutoStart(); }
                 } else if (data.type === "guess") {
                     if (data.isCorrect) {
-                        addMsg('guess-messages', 'msg-success', `🎯 ${data.sender} acertou a resposta!`);
+                        clearInterval(countdownInterval);
+                        addMsg('guess-messages', 'msg-success', `🎯 ${data.sender} acertou! A resposta era: ${data.ans.toUpperCase()}`);
+                        document.getElementById('word-display').innerText = `🎉 Resposta Correta: ${data.ans.toUpperCase()} (Por: ${data.sender})`;
                         addScore(data.sender, data.pts);
                         nextRound();
                     } else {
@@ -274,7 +272,7 @@
         roundActive = true;
         document.getElementById('question-category').innerText = currentQuestion.c;
         document.getElementById('question-text').innerText = currentQuestion.q;
-        document.getElementById('word-display').innerText = "💡 Pergunta liberada! Valendo pontuação de velocidade.";
+        document.getElementById('word-display').innerText = "💡 Digite a resposta correta no chat de palpites!";
         startTimer(TEMPO_RODADA);
     }
 
@@ -285,7 +283,8 @@
             currentTimeLeft--;
             if (currentTimeLeft <= 0) {
                 clearInterval(countdownInterval);
-                addMsg('guess-messages', 'msg-system', `🛑 Tempo esgotado! A resposta era: ${currentQuestion.a.toUpperCase()}`);
+                addMsg('guess-messages', 'msg-system', `🛑 Fim do tempo! A resposta era: ${currentQuestion.a.toUpperCase()}`);
+                document.getElementById('word-display').innerText = `⏱️ Tempo esgotado! A resposta correta era: ${currentQuestion.a.toUpperCase()}`;
                 nextRound();
             } else {
                 document.getElementById('timer-display').innerText = "⏱️ Tempo: " + currentTimeLeft + "s";
@@ -297,7 +296,7 @@
         roundActive = false;
         clearInterval(countdownInterval);
         if (Array.from(listaJogadores)[0] === username) {
-            setTimeout(() => { triggerNewQuestion(); }, 3000);
+            setTimeout(() => { triggerNewQuestion(); }, 4000);
         }
     }
 
@@ -306,9 +305,11 @@
         const text = input.value.trim();
         if (!text || !roundActive) { input.value = ""; return; }
         const cleanGuess = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-        if (cleanGuess.includes(currentQuestion.a)) {
+        const cleanAnswer = currentQuestion.a.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+        
+        if (cleanGuess === cleanAnswer) {
             let pts = Math.max(10, currentTimeLeft * 10);
-            mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text, isCorrect: true, pts, type: "guess" }));
+            mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text, isCorrect: true, pts, ans: currentQuestion.a, type: "guess" }));
         } else {
             mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text, isCorrect: false, type: "guess" }));
         }
@@ -324,7 +325,12 @@
     }
 
     function skipQuestion() {
-        if (roundActive) nextRound();
+        if (roundActive) {
+            clearInterval(countdownInterval);
+            addMsg('guess-messages', 'msg-system', `⏭️ Rodada pulada! A resposta era: ${currentQuestion.a.toUpperCase()}`);
+            document.getElementById('word-display').innerText = `⏭️ Pulada! A resposta correta era: ${currentQuestion.a.toUpperCase()}`;
+            nextRound();
+        }
     }
 
     function throwInteract(type) {
