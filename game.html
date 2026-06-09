@@ -3,120 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quiz Universitário Rápido</title>
+    <title>Sabatina de Bioestatística - Alta Densidade</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body {
-            background-color: #2a9d8f;
+            background-color: #264653;
             display: flex; flex-direction: column; align-items: center;
             height: 100vh; height: -webkit-fill-available;
-            padding: 6px; overscroll-behavior: none; overflow: hidden;
+            padding: 4px; overscroll-behavior: none; overflow: hidden;
         }
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #2a9d8f; display: flex; justify-content: center;
+            background: #264653; display: flex; justify-content: center;
             align-items: center; z-index: 1000;
         }
         .login-box {
-            background: white; padding: 20px; border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 100%; max-width: 360px; text-align: center;
+            background: white; padding: 15px; border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 100%; max-width: 340px; text-align: center;
         }
-        .login-box h2 { color: #264653; margin-bottom: 15px; font-size: 22px; }
+        .login-box h2 { color: #264653; margin-bottom: 12px; font-size: 18px; font-weight: bold; }
         .login-box input {
-            width: 100%; padding: 10px; margin-bottom: 12px;
-            border: 2px solid #ced4da; border-radius: 6px; outline: none; font-size: 15px;
+            width: 100%; padding: 8px; margin-bottom: 10px;
+            border: 2px solid #ced4da; border-radius: 4px; outline: none; font-size: 14px;
         }
         header {
-            background: white; padding: 6px 12px; border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 1200px;
-            display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-shrink: 0;
+            background: white; padding: 4px 10px; border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); width: 100%; max-width: 1200px;
+            display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-shrink: 0;
         }
-        h1 { color: #264653; font-size: 16px; flex-shrink: 0; }
+        h1 { color: #264653; font-size: 14px; flex-shrink: 0; letter-spacing: 0.5px; }
         #word-display {
-            font-weight: bold; font-size: 13px; color: #e76f51;
-            background: #f8f9fa; padding: 4px 10px; border-radius: 6px;
-            border: 2px dashed #e76f51; text-align: center; flex: 1;
+            font-weight: bold; font-size: 11px; color: #e76f51;
+            background: #f8f9fa; padding: 2px 8px; border-radius: 4px;
+            border: 1px dashed #e76f51; text-align: center; flex: 1;
         }
         #room-display {
-            font-weight: bold; color: #666; font-size: 11px;
+            font-weight: bold; color: #666; font-size: 10px;
             display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0;
         }
         #timer-display { font-weight: bold; color: #e76f51; }
         #main-container {
-            display: flex; width: 100%; max-width: 1200px; flex: 1; gap: 6px; overflow: hidden; margin-top: 6px;
+            display: flex; width: 100%; max-width: 1200px; flex: 1; gap: 4px; overflow: hidden; margin-top: 4px;
         }
         #scoreboard {
-            flex: 0 0 140px; background: white; border-radius: 8px; padding: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden;
+            flex: 0 0 130px; background: white; border-radius: 6px; padding: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden;
         }
-        #scoreboard h3 { color: #555; padding-bottom: 4px; border-bottom: 2px solid #f1f3f5; font-size: 12px; }
-        #players-list { margin-top: 6px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        #scoreboard h3 { color: #555; padding-bottom: 2px; border-bottom: 2px solid #f1f3f5; font-size: 11px; text-transform: uppercase; }
+        #players-list { margin-top: 4px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 3px; }
         .player-item {
-            background: #f8f9fa; padding: 6px; border-radius: 4px;
-            font-weight: bold; color: #333; font-size: 11px; border-left: 4px solid #2a9d8f;
+            background: #f8f9fa; padding: 4px; border-radius: 4px;
+            font-weight: bold; color: #333; font-size: 10px; border-left: 3px solid #2a9d8f;
             display: flex; justify-content: space-between; align-items: center;
         }
         .player-info { display: flex; flex-direction: column; overflow: hidden; }
-        .player-rank { font-size: 9px; color: #777; }
+        .player-rank { font-size: 8px; color: #777; }
         .player-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .player-score {
-            background: #2a9d8f; color: white; border-radius: 8px;
-            padding: 1px 6px; font-size: 10px; min-width: 28px; text-align: center; flex-shrink: 0;
+            background: #2a9d8f; color: white; border-radius: 4px;
+            padding: 1px 4px; font-size: 9px; min-width: 24px; text-align: center; flex-shrink: 0;
         }
-        .player-score.bump { transform: scale(1.3); background: #e76f51 !important; transition: transform 0.2s; }
+        .player-score.bump { transform: scale(1.2); background: #e76f51 !important; transition: transform 0.15s; }
         #quiz-container {
-            flex: 1; background: white; border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; padding: 12px; gap: 8px;
+            flex: 1; background: white; border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; padding: 8px; gap: 6px;
         }
         #question-card {
-            flex: 1; background: #f8f9fa; border-radius: 8px; border: 2px solid #e9ecef;
+            flex: 1; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            padding: 16px; text-align: center; position: relative;
+            padding: 12px; text-align: center; position: relative;
         }
         #question-category {
-            position: absolute; top: 8px; left: 8px; background: #264653; color: white;
-            padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase;
+            position: absolute; top: 6px; left: 6px; background: #264653; color: white;
+            padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: bold; text-transform: uppercase;
         }
-        #question-text { font-size: 16px; font-weight: bold; color: #264653; line-height: 1.4; max-width: 500px; }
+        #question-difficulty {
+            position: absolute; top: 6px; right: 6px; background: #e76f51; color: white;
+            padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: bold; text-transform: uppercase;
+        }
+        #question-text { font-size: 14px; font-weight: bold; color: #264653; line-height: 1.3; max-width: 600px; }
         #bottom-actions { display: flex; gap: 4px; justify-content: center; flex-shrink: 0; }
-        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; color: white; transition: background 0.2s; }
+        .btn { padding: 4px 8px; border: none; border-radius: 3px; cursor: pointer; font-weight: bold; font-size: 10px; color: white; transition: background 0.2s; }
         .btn-action { background: #e76f51; }
         .btn-interact { background: #f4a261; }
-        #right-chats-wrapper { flex: 0 0 220px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
-        .chat-box-container { flex: 1; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; }
-        .chat-title-bar { background: #264653; color: white; padding: 4px 8px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
-        .chat-messages-area { flex: 1; padding: 6px; overflow-y: auto; display: flex; flex-direction: column; gap: 3px; }
-        .msg { padding: 4px 6px; border-radius: 4px; font-size: 11px; word-break: break-all; }
+        #right-chats-wrapper { flex: 0 0 240px; display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+        .chat-box-container { flex: 1; background: white; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; }
+        .chat-title-bar { background: #264653; color: white; padding: 3px 6px; font-size: 9px; font-weight: bold; text-transform: uppercase; }
+        .chat-messages-area { flex: 1; padding: 4px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+        .msg { padding: 3px 5px; border-radius: 3px; font-size: 10px; word-break: break-all; line-height: 1.2; }
         .msg-system  { background: #e9ecef; color: #495057; font-weight: bold; }
         .msg-success { background: #d1e7dd; color: #0f5132; font-weight: bold; }
         .msg-wrong   { background: #ffe3e8; color: #c92a2a; }
         .msg-normal  { background: #f1f3f5; color: #333; }
         .msg-normal .username { font-weight: bold; color: #2a9d8f; }
-        .chat-input-row { display: flex; padding: 4px; border-top: 1px solid #dee2e6; background: #f8f9fa; }
-        .chat-input-field { flex: 1; padding: 4px; border: 1px solid #ced4da; border-radius: 4px; outline: none; font-size: 11px; }
-        .chat-send-btn { background: #264653; color: white; margin-left: 4px; font-size: 11px; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; }
+        .chat-input-row { display: flex; padding: 3px; border-top: 1px solid #dee2e6; background: #f8f9fa; }
+        .chat-input-field { flex: 1; padding: 3px; border: 1px solid #ced4da; border-radius: 3px; outline: none; font-size: 10px; }
+        .chat-send-btn { background: #264653; color: white; margin-left: 3px; font-size: 10px; padding: 3px 6px; border: none; border-radius: 3px; cursor: pointer; }
         
-        .coffee-fly, .paper-fly { position: fixed; font-size: 28px; pointer-events: none; z-index: 2000; animation: flyEffect 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+        .coffee-fly, .paper-fly { position: fixed; font-size: 24px; pointer-events: none; z-index: 2000; animation: flyEffect 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
         @keyframes flyEffect {
             0% { opacity: 1; transform: translate(0,0) scale(1); }
             100% { opacity: 0; transform: translate(var(--tx), var(--ty)) rotate(360deg) scale(0.5); }
         }
 
         @media (max-width: 768px) {
-            body { padding: 4px; }
-            header { height: auto; padding: 6px; flex-wrap: wrap; }
-            h1 { font-size: 13px; }
-            #word-display { font-size: 11px; order: 3; width: 100%; margin-top: 4px; }
-            #main-container { flex-direction: column; }
-            #scoreboard { flex: 0 0 40px; width: 100%; flex-direction: row; align-items: center; }
+            body { padding: 2px; }
+            header { height: auto; padding: 4px; flex-wrap: wrap; gap: 2px; }
+            h1 { font-size: 11px; }
+            #word-display { font-size: 9px; order: 3; width: 100%; margin-top: 2px; padding: 1px 4px; }
+            #main-container { flex-direction: column; gap: 2px; }
+            #scoreboard { flex: 0 0 32px; width: 100%; flex-direction: row; align-items: center; padding: 2px; }
             #scoreboard h3 { display: none; }
-            #players-list { flex-direction: row; margin-top: 0; height: 100%; align-items: center; overflow-x: auto; overflow-y: hidden; }
-            .player-item { white-space: nowrap; height: 26px; }
-            #right-chats-wrapper { flex: 0 0 160px; flex-direction: row; }
+            #players-list { flex-direction: row; margin-top: 0; height: 100%; align-items: center; overflow-x: auto; overflow-y: hidden; gap: 3px; }
+            .player-item { white-space: nowrap; height: 22px; padding: 2px; font-size: 9px; }
+            #right-chats-wrapper { flex: 0 0 180px; flex-direction: row; gap: 2px; }
             .chat-box-container { flex: 1; }
-            #quiz-container { flex: 1; min-height: 140px; }
-            #question-text { font-size: 13px; }
+            #quiz-container { flex: 1; min-height: 130px; padding: 4px; gap: 4px; }
+            #question-card { padding: 8px; }
+            #question-text { font-size: 11px; }
         }
     </style>
 </head>
@@ -124,16 +129,16 @@
 
 <div id="login-screen">
     <div class="login-box">
-        <h2>🔬 Quiz Universitário *</h2>
+        <h2>🔬 Sabatina de Bioestatística *</h2>
         <input type="text" id="input-username" placeholder="Seu Nome *" required>
         <input type="text" id="input-room" placeholder="Nome da Sala *" required>
-        <button class="btn" style="width:100%; padding:10px; font-size:14px; background:#2a9d8f;" onclick="connectToGame()">Entrar na Sala</button>
+        <button class="btn" style="width:100%; padding:8px; font-size:12px; background:#2a9d8f;" onclick="connectToGame()">Entrar na Sabatina</button>
     </div>
 </div>
 
 <header>
-    <h1>🔬 QUIZ</h1>
-    <div id="word-display">Aguardando início da rodada acadêmica...</div>
+    <h1>🔬 BIOESTATÍSTICA</h1>
+    <div id="word-display">Aguardando início da ativação cortical...</div>
     <div id="room-display">
         <span id="room-id">Sala: —</span>
         <span id="timer-display">⏱️ Tempo: --</span>
@@ -149,29 +154,30 @@
     <div id="quiz-container">
         <div id="question-card">
             <div id="question-category">Geral</div>
-            <div id="question-text">Aguardando conexão com os outros estudantes...</div>
+            <div id="question-difficulty">Nível 1</div>
+            <div id="question-text">Aguardando inicialização dos buffers de dados...</div>
         </div>
         <div id="bottom-actions">
-            <button id="btn-skip" class="btn btn-action" onclick="skipQuestion()">箱 Pular Rodada</button>
-            <button id="btn-coffee" class="btn btn-interact" onclick="throwInteract('coffee')">☕ Enviar Café</button>
-            <button id="btn-paper" class="btn btn-interact" onclick="throwInteract('paper')">📄 Pedir Cópia</button>
+            <button id="btn-skip" class="btn btn-action" onclick="skipQuestion()">⏭️ Forçar Próxima</button>
+            <button id="btn-coffee" class="btn btn-interact" onclick="throwInteract('coffee')">☕ Injetar Café</button>
+            <button id="btn-paper" class="btn btn-interact" onclick="throwInteract('paper')">📄 Solicitar Formulário</button>
         </div>
     </div>
 
     <div id="right-chats-wrapper">
         <div class="chat-box-container">
-            <div class="chat-title-bar">🎯 Palpites (Digite a Resposta Aqui)</div>
+            <div class="chat-title-bar">🎯 Resposta da Sabatina (Sem abreviações / Exata)</div>
             <div id="guess-messages" class="chat-messages-area"></div>
             <div class="chat-input-row">
-                <input type="text" id="guess-input" class="chat-input-field" placeholder="Chute de resposta rápida... *" autocomplete="off">
+                <input type="text" id="guess-input" class="chat-input-field" placeholder="Sua resposta fundamentada... *" autocomplete="off">
                 <button class="chat-send-btn" onclick="sendGuess()">➤</button>
             </div>
         </div>
         <div class="chat-box-container">
-            <div class="chat-title-bar">💬 Chat Geral da Turma</div>
+            <div class="chat-title-bar">💬 Discussão Teórica Interna</div>
             <div id="chat-messages" class="chat-messages-area"></div>
             <div class="chat-input-row">
-                <input type="text" id="chat-input" class="chat-input-field" placeholder="Escreva aqui para conversar... *" autocomplete="off">
+                <input type="text" id="chat-input" class="chat-input-field" placeholder="Notas de estudo ou chat... *" autocomplete="off">
                 <button class="chat-send-btn" onclick="sendChat()">➤</button>
             </div>
         </div>
@@ -180,20 +186,48 @@
 
 <script>
     const BANCO_PERGUNTAS = [
-        { c: "Saúde Pública", q: "Qual a sigla do Sistema Único de Saúde do Brasil?", a: "sus" },
-        { c: "Biossegurança", q: "Qual a sigla para Equipamento de Proteção Individual?", a: "epi" },
-        { c: "Prevenção", q: "A vacinação é uma prevenção de qual tipo? (Primária, Secundária ou Terciária)", a: "primaria" },
-        { c: "Saúde Pública", q: "Em qual década o SUS foi criado no Brasil? (Anos ...)", a: "80" },
-        { c: "Biossegurança", q: "O jaleco de laboratório serve como barreira de proteção de qual tipo?", a: "fisica" },
-        { c: "Epidemiologia", q: "Como chamamos os novos casos de uma doença em um determinado período?", a: "incidencia" },
-        { c: "Biossegurança", q: "Qual o objeto perfurocortante mais comum descartado em caixa amarela?", a: "agulha" }
+        { c: "Etapas da estatística", d: "basico", q: "Qual a primeira etapa da estatística, responsável pela obtenção direta ou indireta dos dados brutos?", a: "coleta de dados" },
+        { c: "Etapas da estatística", d: "basico", q: "Como se chama o plano ou instrumento estruturado (como questionários ou medições laboratoriais) utilizado para capturar os dados?", a: "metodo de coleta de dados" },
+        { c: "Etapas da estatística", d: "basico", q: "Qual a etapa que consiste em dispor os dados de forma ordenada (como em tabelas de frequência) para eliminar erros iniciais?", a: "organizacao dos dados" },
+        { c: "Etapas da estatística", d: "basico", q: "Qual o termo para a etapa de contagem, processamento e classificação dos dados coletados?", a: "apuracao dos dados" },
+        { c: "Etapas da estatística", d: "basico", q: "Qual a etapa em que os dados purificados são estruturados em tabelas complexas e gráficos estatísticos para visualização externa?", a: "exposicao e apresentacao dos dados" },
+        { c: "Etapas da estatística", d: "intermediario", q: "Como se chama a fase final onde são calculadas as medidas e índices estatísticos para tirar conclusões sobre a população?", a: "analise dos resultados" },
+        { c: "Etapas da estatística", d: "intermediario", q: "Qual abordagem estatística visa resumir, organizar e descrever as características principais de um conjunto de dados sem fazer inferências precoces?", a: "analise exploratoria de dados" },
+        { c: "Conceitos Básicos", d: "basico", q: "Como são classificadas as variáveis cujos valores são expressos por meio de números resultantes de contagens ou medições?", a: "quantitativas" },
+        { c: "Conceitos Básicos", d: "basico", q: "Como são classificadas as variáveis que expressam atributos, categorias, qualidades ou características não numéricas?", a: "qualitativas" },
+        { c: "Estruturação de Dados", d: "intermediario", q: "Qual o arranjo de dados numéricos brutos organizados em ordem crescente ou decrescente de magnitude?", a: "rol" },
+        { c: "Estruturação de Dados", d: "intermediario", q: "Como se chama a diferença numérica exata entre o maior valor e o menor valor de um conjunto de dados observados?", a: "amplitude total" },
+        { c: "Estruturação de Dados", d: "intermediario", q: "Como chamamos o arranjo em tabela que organiza os dados brutos divididos em classes juntamente com suas respectivas contagens?", a: "distribuicoes de frequencia" },
+        { c: "Elementos da Distribuição", d: "intermediario", q: "Como se chama o número de observações individuais que caem dentro de uma classe específica de uma distribuição?", a: "frequencia simples" },
+        { c: "Elementos da Distribuição", d: "intermediario", q: "Como chamamos os valores extremos que delimitam o início e o fim de uma classe estatística?", a: "limites de classe" },
+        { c: "Elementos da Distribuição", d: "intermediario", q: "Como se chama a largura ou intervalo de uma classe isolada, calculada pela diferença entre o seu limite superior e inferior?", a: "amplitude de classe" },
+        { c: "Elementos da Distribuição", d: "intermediario", q: "Qual o valor representativo da classe, calculado pela soma dos limites inferior e superior dividida por dois? (Escreva por extenso)", a: "ponto medio da classe" },
+        { c: "Elementos da Distribuição", d: "hardcore", q: "Qual a proporção da frequência simples de uma classe em relação ao número total de observações da amostra, expressa em percentual?", a: "frequencia relativa" },
+        { c: "Elementos da Distribuição", d: "hardcore", q: "Como se chama o somatório das frequências simples de todas as classes anteriores até a classe atual na tabela?", a: "frequencia acumulada" },
+        { c: "Cálculos Estatísticos", d: "hardcore", q: "Na construção de tabelas, qual regra matemática ou fórmula é frequentemente usada para determinar o número ideal de classes (k) com base no tamanho da amostra?", a: "regra de sturges" },
+        { c: "Visualização Gráfica", d: "basico", q: "Qual gráfico utiliza retângulos dispostos verticalmente ou horizontalmente onde o comprimento é proporcional à frequência do atributo qualitativo?", a: "grafico de barras ou colunas" },
+        { c: "Visualização Gráfica", d: "intermediario", q: "Qual o gráfico formado por retângulos adjacentes (grudados), onde a base representa os intervalos de classe e a altura representa a densidade de frequência?", a: "histograma" },
+        { c: "Visualização Gráfica", d: "basico", q: "Qual tipo de gráfico é ideal para demonstrar o comportamento de uma variável contínua ao longo do tempo através de segmentos de reta?", a: "graficos de linhas" },
+        { c: "Visualização Gráfica", d: "basico", q: "Qual gráfico circular é dividido em fatias proporcionais às frequências relativas dos dados, também chamado de gráfico de pizza?", a: "setor" },
+        { c: "Visualização Gráfica", d: "hardcore", q: "Qual representação gráfica geométrica exibe simultaneamente o mínimo, o primeiro quartil, a mediana, o terceiro quartil e o máximo dos dados?", a: "caixa" },
+        { c: "Medidas de Tendência Central", d: "basico", q: "Como classificamos os dados que estão listados de forma bruta ou individualizada, sem estarem organizados em tabelas de classes?", a: "nao agrupados" },
+        { c: "Medidas de Tendência Central", d: "basico", q: "Como classificamos os dados que foram sintetizados e ordenados em uma tabela de distribuição de frequências por intervalos?", a: "agrupados" },
+        { c: "Medidas de Tendência Central", d: "intermediario", q: "Qual medida de posição representa o valor médio aritmético balanceado obtido pela divisão da soma de todos os valores pelo número total deles?", a: "media" },
+        { c: "Medidas de Tendência Central", d: "intermediario", q: "Qual o valor central de um conjunto de dados ordenados que divide a distribuição exatamente em duas partes iguais de cinquenta por cento?", a: "mediana" },
+        { c: "Medidas de Tendência Central", d: "basico", q: "Qual a medida estatística de tendência central que representa o valor de maior ocorrência ou maior frequência dentro de uma amostra?", a: "moda" },
+        { c: "Separatrizes", d: "hardcore", q: "Como se chamam as medidas que dividem uma série de dados ordenados em quatro partes iguais de vinte e cinco por cento cada?", a: "quartil" },
+        { c: "Separatrizes", d: "hardcore", q: "Como se chamam os valores posicionais que dividem o conjunto de dados ordenados em dez partes iguais de dez por cento cada?", a: "decil" },
+        { c: "Medidas de Dispersão", d: "hardcore", q: "Qual medida de dispersão calcula a média dos quadrados dos desvios de cada valor em relação à média aritmética da amostra?", a: "variancia" },
+        { c: "Medidas de Dispersão", d: "hardcore", q: "Qual a medida de variabilidade absoluta calculada como a raiz quadrada positiva da variância?", a: "desvio-padrao" },
+        { c: "Medidas de Dispersão", d: "hardcore", q: "Qual medida de dispersão relativa expressa o desvio-padrão como um percentual da média aritmética?", a: "coeficiente de variacao" }
     ];
 
     let username = "", roomName = "", mqttClient = null, baseTopic = "";
     const listaJogadores = new Set();
     const scores = {};
     let currentQuestion = null, roundActive = false, countdownInterval = null, currentTimeLeft = 0;
-    const TEMPO_RODADA = 30;
+    let currentLevel = 1; 
+    const TEMPO_RODADA = 45; 
 
     function connectToGame() {
         username = document.getElementById('input-username').value.trim();
@@ -206,7 +240,7 @@
     }
 
     function initMqtt() {
-        baseTopic = "academic_quiz_engine_2026/" + roomName;
+        baseTopic = "bioestat_quiz_engine_2026/" + roomName;
         mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
         mqttClient.on('connect', () => {
             mqttClient.subscribe(baseTopic + "/chat");
@@ -215,7 +249,7 @@
             mqttClient.subscribe(baseTopic + "/flow");
             mqttClient.subscribe(baseTopic + "/interact");
 
-            let connectMsg = JSON.stringify({ sender: "Sistema", text: `📢 ${username} entrou na sala.`, name: username, type: "sys" });
+            let connectMsg = JSON.stringify({ sender: "Sistema", text: `📢 ${username} iniciou o acoplamento neural na sala.`, name: username, type: "sys" });
             mqttClient.publish(baseTopic + "/chat", connectMsg);
             mqttClient.publish(baseTopic + "/presence", connectMsg);
             setTimeout(() => { checkAutoStart(); }, 1500);
@@ -230,12 +264,15 @@
                 } else if (data.type === "guess") {
                     if (data.isCorrect) {
                         clearInterval(countdownInterval);
-                        addMsg('guess-messages', 'msg-success', `🎯 ${data.sender} acertou! A resposta era: ${data.ans.toUpperCase()}`);
-                        document.getElementById('word-display').innerText = `🎉 Resposta Correta: ${data.ans.toUpperCase()} (Por: ${data.sender})`;
+                        addMsg('guess-messages', 'msg-success', `🎯 ${data.sender} decodificou! Resposta: ${data.ans.toUpperCase()}`);
+                        document.getElementById('word-display').innerText = `🎉 Consolidado: ${data.ans.toUpperCase()} (Por: ${data.sender})`;
                         addScore(data.sender, data.pts);
+                        if (data.sender === username) {
+                            currentLevel = Math.min(3, currentLevel + 1); 
+                        }
                         nextRound();
                     } else {
-                        addMsg('guess-messages', 'msg-wrong', `${data.sender}: ${data.text}`);
+                        addMsg('guess-messages', 'msg-wrong', `${data.sender} falhou: ${data.text}`);
                     }
                 } else if (data.type === "talk") {
                     addChatMsg(data.sender, data.text);
@@ -262,8 +299,17 @@
     }
 
     function triggerNewQuestion() {
-        const index = Math.floor(Math.random() * BANCO_PERGUNTAS.length);
-        mqttClient.publish(baseTopic + "/flow", JSON.stringify({ index }));
+        let diffTarget = "basico";
+        if (currentLevel === 2) diffTarget = "intermediario";
+        if (currentLevel === 3) diffTarget = "hardcore";
+
+        let filtradas = BANCO_PERGUNTAS.filter(p => p.d === diffTarget);
+        if (filtradas.length === 0) filtradas = BANCO_PERGUNTAS; 
+
+        const questaoSorteada = filtradas[Math.floor(Math.random() * filtradas.length)];
+        const indexOriginal = BANCO_PERGUNTAS.indexOf(questaoSorteada);
+
+        mqttClient.publish(baseTopic + "/flow", JSON.stringify({ index: indexOriginal, nivel: currentLevel }));
     }
 
     function handleFlow(data) {
@@ -271,8 +317,9 @@
         currentQuestion = BANCO_PERGUNTAS[data.index];
         roundActive = true;
         document.getElementById('question-category').innerText = currentQuestion.c;
+        document.getElementById('question-difficulty').innerText = "Nível: " + currentQuestion.d.toUpperCase();
         document.getElementById('question-text').innerText = currentQuestion.q;
-        document.getElementById('word-display').innerText = "💡 Digite a resposta correta no chat de palpites!";
+        document.getElementById('word-display').innerText = "💡 Digite a definição ou termo exato sem abreviação!";
         startTimer(TEMPO_RODADA);
     }
 
@@ -283,8 +330,9 @@
             currentTimeLeft--;
             if (currentTimeLeft <= 0) {
                 clearInterval(countdownInterval);
-                addMsg('guess-messages', 'msg-system', `🛑 Fim do tempo! A resposta era: ${currentQuestion.a.toUpperCase()}`);
-                document.getElementById('word-display').innerText = `⏱️ Tempo esgotado! A resposta correta era: ${currentQuestion.a.toUpperCase()}`;
+                addMsg('guess-messages', 'msg-system', `🛑 Isquemia de tempo! Resposta oculta: ${currentQuestion.a.toUpperCase()}`);
+                document.getElementById('word-display').innerText = `⏱️ Esgotado! Resposta correta: ${currentQuestion.a.toUpperCase()}`;
+                currentLevel = Math.max(1, currentLevel - 1); 
                 nextRound();
             } else {
                 document.getElementById('timer-display').innerText = "⏱️ Tempo: " + currentTimeLeft + "s";
@@ -296,7 +344,7 @@
         roundActive = false;
         clearInterval(countdownInterval);
         if (Array.from(listaJogadores)[0] === username) {
-            setTimeout(() => { triggerNewQuestion(); }, 4000);
+            setTimeout(() => { triggerNewQuestion(); }, 4500);
         }
     }
 
@@ -304,14 +352,18 @@
         const input = document.getElementById('guess-input');
         const text = input.value.trim();
         if (!text || !roundActive) { input.value = ""; return; }
-        const cleanGuess = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-        const cleanAnswer = currentQuestion.a.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+        
+        const cleanGuess = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g,"");
+        const cleanAnswer = currentQuestion.a.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g,"");
         
         if (cleanGuess === cleanAnswer) {
-            let pts = Math.max(10, currentTimeLeft * 10);
+            let multiplier = currentLevel === 3 ? 30 : (currentLevel === 2 ? 20 : 10);
+            let pts = Math.max(15, currentTimeLeft * multiplier);
             mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text, isCorrect: true, pts, ans: currentQuestion.a, type: "guess" }));
         } else {
             mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text, isCorrect: false, type: "guess" }));
+            currentLevel = Math.max(1, currentLevel - 1); 
+            addScore(username, -25); 
         }
         input.value = "";
     }
@@ -327,8 +379,9 @@
     function skipQuestion() {
         if (roundActive) {
             clearInterval(countdownInterval);
-            addMsg('guess-messages', 'msg-system', `⏭️ Rodada pulada! A resposta era: ${currentQuestion.a.toUpperCase()}`);
-            document.getElementById('word-display').innerText = `⏭️ Pulada! A resposta correta era: ${currentQuestion.a.toUpperCase()}`;
+            addMsg('guess-messages', 'msg-system', `⏭️ Rodada abortada! Resposta correta: ${currentQuestion.a.toUpperCase()}`);
+            document.getElementById('word-display').innerText = `⏭️ Forçado! Resposta correta: ${currentQuestion.a.toUpperCase()}`;
+            currentLevel = Math.max(1, currentLevel - 1);
             nextRound();
         }
     }
@@ -357,8 +410,9 @@
     }
 
     function addScore(nome, pts) {
-        if (!scores[nome]) scores[nome] = 0;
+        if (scores[nome] === undefined) scores[nome] = 0;
         scores[nome] += pts;
+        if (scores[nome] < 0) scores[nome] = 0; 
         renderScoreboard();
         const item = document.getElementById("p-" + nome.replace(/\s+/g,'-'));
         if (item) {
