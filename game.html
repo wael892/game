@@ -516,6 +516,7 @@
                 <div class="tool-separator"></div>
                 <span class="tool-section-label">Forma</span>
                 <div class="tool-btn active" id="shape-free" title="Desenho Livre" onclick="setShape('free')">〰️</div>
+                <div class="tool-btn" id="shape-line" title="Arrastar Linha Reta" onclick="setShape('line')">📐</div>
                 <div class="tool-btn" id="shape-circle" title="Arrastar Círculo" onclick="setShape('circle')">⭕</div>
                 <div class="tool-btn" id="shape-square" title="Arrastar Quadrado" onclick="setShape('square')">⬜</div>
                 <div class="tool-btn" id="shape-triangle" title="Arrastar Triângulo" onclick="setShape('triangle')">🔺</div>
@@ -693,7 +694,7 @@
         if (pickerBtn) {
             pickerBtn.classList.toggle('active', customBtnIsActive);
             if (customBtnIsActive) {
-                pickerBtn.style.border = "2px solid " + hex;
+                pickerBtn.style.border = "2px solid #888888";
             } else {
                 pickerBtn.style.border = "2px solid transparent";
             }
@@ -841,7 +842,7 @@
             const lastEvent = lastFormCoordinates;
             if (lastEvent) {
                 const col = currentTool === 'eraser' ? '#ffffff' : currentColor;
-                sendDrawData('final_shape', lastEvent.sX, lastEvent.sY, col, currentBrushSize, currentShape, lastEvent.cX, lastEvent.cY);
+                sendDrawData('final_shape', lastEvent.sX, lastEvent.sY, col, currentBrushSize, lastEvent.shape, lastEvent.cX, lastEvent.cY);
             }
         }
         snapshot = null; lastFormCoordinates = null;
@@ -851,7 +852,9 @@
         ctx.strokeStyle = color; ctx.fillStyle = "transparent"; ctx.lineWidth = size;
         lastFormCoordinates = { shape, sX, sY, cX, cY };
         ctx.beginPath();
-        if (shape === 'square') {
+        if (shape === 'line') {
+            ctx.moveTo(sX, sY); ctx.lineTo(cX, cY); ctx.stroke();
+        } else if (shape === 'square') {
             ctx.strokeRect(sX, sY, cX - sX, cY - sY);
         } else if (shape === 'circle') {
             let rx = (cX - sX) / 2; let ry = (cY - sY) / 2;
@@ -908,8 +911,11 @@
         else if (data.action === 'fill') { doRemoteFill(Math.round(data.x), Math.round(data.y), data.color); }
         else if (data.action === 'final_shape') {
             ctx.fillStyle = "transparent"; ctx.beginPath();
-            if (data.shapeType === 'square') { ctx.strokeRect(data.x, data.y, data.endX - data.x, data.endY - data.y); }
-            else if (data.shapeType === 'circle') {
+            if (data.shapeType === 'line') {
+                ctx.moveTo(data.x, data.y); ctx.lineTo(data.endX, data.endY); ctx.stroke();
+            } else if (data.shapeType === 'square') {
+                ctx.strokeRect(data.x, data.y, data.endX - data.x, data.endY - data.y);
+            } else if (data.shapeType === 'circle') {
                 let rx = (data.endX - data.x) / 2; let ry = (data.endY - data.y) / 2;
                 let cx = data.x + rx; let cy = data.y + ry;
                 ctx.save(); ctx.translate(cx, cy); ctx.scale(Math.abs(rx), Math.abs(ry)); ctx.arc(0, 0, 1, 0, 2 * Math.PI); ctx.restore(); ctx.stroke();
@@ -982,7 +988,7 @@
         gameEnded = true;
         roundActive = false;
         clearInterval(countdownInterval);
-        幕clearTimeout(nextRoundTimeout);
+        clearTimeout(nextRoundTimeout);
         
         document.getElementById('btn-egg').style.display = 'none';
         document.getElementById('btn-flower').style.display = 'none';
@@ -1033,14 +1039,14 @@
         if (!roundActive || isDrawer || !mqttClient || gameEnded) return;
         if (itemType === 'egg') {
             if (eggCooldown) return;
-            let eggCooldown = true;
+            eggCooldown = true;
             const btn = document.getElementById('btn-egg');
             btn.classList.add('cooldown'); btn.textContent = '🥚 Espere...';
             mqttClient.publish(baseTopic + "/interact", JSON.stringify({ thrower: username, target: currentDrawerName, type: 'egg' }));
             setTimeout(() => { eggCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '🥚 Jogar Ovo!'; }, 8000);
         } else if (itemType === 'flower') {
             if (flowerCooldown) return;
-            let flowerCooldown = true;
+            flowerCooldown = true;
             const btn = document.getElementById('btn-flower');
             btn.classList.add('cooldown'); btn.textContent = '🌹 Espere...';
             mqttClient.publish(baseTopic + "/interact", JSON.stringify({ thrower: username, target: currentDrawerName, type: 'flower' }));
@@ -1235,6 +1241,7 @@
         currentDrawerName = data.drawer; currentWord = data.word; currentDrawerIndex = data.currentIndex;
         roundActive = true; currentTimeLeft = TEMPO_RODADA;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        snapshot = null; lastFormCoordinates = null;
         renderScoreboard();
         const eggBtn = document.getElementById('btn-egg');
         const flowerBtn = document.getElementById('btn-flower');
@@ -1300,6 +1307,7 @@
     function sendClear() {
         if (!isDrawer || gameEnded) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        snapshot = null; lastFormCoordinates = null;
         if (mqttClient) mqttClient.publish(baseTopic + "/draw", JSON.stringify({ action: 'clear' }));
     }
 
