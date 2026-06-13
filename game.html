@@ -2,664 +2,350 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sabatina Avançada: Epidemiologia e Estatística</title>
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAGE - Notebook Local Analytics</title>
+    <!-- Carrega a biblioteca de extração de PDF da Mozilla -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --border-color: #30363d;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --accent-success: #2ea44f;
+            --content-bg: #1f242c;
+            --container-width: 1100px;
+        }
+
         body {
-            background-color: #264653;
-            display: flex; flex-direction: column; align-items: center;
-            height: 100vh; height: -webkit-fill-available;
-            padding: 4px; overscroll-behavior: none; overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
         }
-        #login-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #264653; display: flex; justify-content: center;
-            align-items: center; z-index: 1000;
+
+        .container {
+            width: 100%;
+            max-width: var(--container-width);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
-        .login-box {
-            background: white; padding: 15px; border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 100%; max-width: 340px; text-align: center;
-        }
-        .login-box h2 { color: #264653; margin-bottom: 12px; font-size: 18px; font-weight: bold; }
-        .login-box input {
-            width: 100%; padding: 8px; margin-bottom: 10px;
-            border: 2px solid #ced4da; border-radius: 4px; outline: none; font-size: 14px;
-        }
+
         header {
-            background: white; padding: 4px 10px; border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); width: 100%; max-width: 1200px;
-            display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-shrink: 0;
-        }
-        h1 { color: #264653; font-size: 14px; flex-shrink: 0; letter-spacing: 0.5px; }
-        #word-display {
-            font-weight: bold; font-size: 11px; color: #e76f51;
-            background: #f8f9fa; padding: 2px 8px; border-radius: 4px;
-            border: 1px dashed #e76f51; text-align: center; flex: 1;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        #room-display {
-            font-weight: bold; color: #666; font-size: 10px;
-            display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0;
-        }
-        #timer-display { font-weight: bold; color: #e76f51; }
-        #main-container {
-            display: flex; width: 100%; max-width: 1200px; flex: 1; gap: 4px; overflow: hidden; margin-top: 4px;
-        }
-        #scoreboard {
-            flex: 0 0 130px; background: white; border-radius: 6px; padding: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden;
-        }
-        #scoreboard h3 { color: #555; padding-bottom: 2px; border-bottom: 2px solid #f1f3f5; font-size: 11px; text-transform: uppercase; }
-        #players-list { margin-top: 4px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 3px; }
-        .player-item {
-            background: #f8f9fa; padding: 4px; border-radius: 4px;
-            font-weight: bold; color: #333; font-size: 10px; border-left: 3px solid #2a9d8f;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .player-info { display: flex; flex-direction: column; overflow: hidden; }
-        .player-rank { font-size: 8px; color: #777; }
-        .player-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .player-score {
-            background: #2a9d8f; color: white; border-radius: 4px;
-            padding: 1px 4px; font-size: 9px; min-width: 24px; text-align: center; flex-shrink: 0;
-        }
-        .player-score.bump { transform: scale(1.2); background: #e76f51 !important; transition: transform 0.15s; }
-        #quiz-container {
-            flex: 1; background: white; border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; padding: 8px; gap: 6px;
-        }
-        #question-card {
-            flex: 1; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef;
-            display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
-            padding: 30px 12px 12px 12px; text-align: center; position: relative; overflow: hidden;
-        }
-        #question-category {
-            position: absolute; top: 6px; left: 6px; background: #264653; color: white;
-            padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: bold; text-transform: uppercase;
-        }
-        #question-difficulty {
-            position: absolute; top: 6px; right: 6px; background: #e76f51; color: white;
-            padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: bold; text-transform: uppercase;
-        }
-        #question-text { font-size: 14px; font-weight: bold; color: #264653; line-height: 1.3; max-width: 600px; margin-bottom: 10px; margin-top: 5px; }
-        #options-container {
-            width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 5px; 
-            overflow-y: auto; max-height: calc(100vh - 280px); padding-right: 2px;
-        }
-        .option-btn {
-            width: 100%; padding: 8px 12px; border: 2px solid #ced4da; border-radius: 6px;
-            background: white; color: #333; font-size: 12px; font-weight: bold; text-align: left;
-            cursor: pointer; transition: all 0.15s ease; outline: none; flex-shrink: 0;
-        }
-        .option-btn:hover:not(:disabled) { background: #f1f3f5; border-color: #2a9d8f; }
-        .option-btn:disabled { cursor: not-allowed; opacity: 0.8; }
-        .option-correct { background: #d1e7dd !important; border-color: #0f5132 !important; color: #0f5132 !important; }
-        .option-wrong { background: #ffe3e8 !important; border-color: #c92a2a !important; color: #c92a2a !important; }
-        #bottom-actions { display: flex; gap: 4px; justify-content: center; flex-shrink: 0; margin-top: 2px; }
-        .btn { padding: 4px 8px; border: none; border-radius: 3px; cursor: pointer; font-weight: bold; font-size: 10px; color: white; transition: background 0.2s; }
-        .btn-action { background: #e76f51; }
-        .btn-interact { background: #f4a261; }
-        #right-chats-wrapper { flex: 0 0 240px; display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
-        .chat-box-container { flex: 1; background: white; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; flex-direction: column; overflow: hidden; height: 50%; }
-        .chat-title-bar { background: #264653; color: white; padding: 4px 6px; font-size: 9px; font-weight: bold; text-transform: uppercase; flex-shrink: 0; }
-        .chat-messages-area { flex: 1; padding: 4px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; max-height: 100%; }
-        .msg { padding: 3px 5px; border-radius: 3px; font-size: 10px; word-break: break-all; line-height: 1.2; flex-shrink: 0; }
-        .msg-system  { background: #e9ecef; color: #495057; font-weight: bold; }
-        .msg-success { background: #d1e7dd; color: #0f5132; font-weight: bold; }
-        .msg-wrong   { background: #ffe3e8; color: #c92a2a; }
-        .msg-normal  { background: #f1f3f5; color: #333; }
-        .msg-normal .username { font-weight: bold; color: #2a9d8f; }
-        .chat-input-row { display: flex; padding: 3px; border-top: 1px solid #dee2e6; background: #f8f9fa; flex-shrink: 0; }
-        .chat-input-field { flex: 1; padding: 3px; border: 1px solid #ced4da; border-radius: 3px; outline: none; font-size: 10px; }
-        .chat-send-btn { background: #264653; color: white; margin-left: 3px; font-size: 10px; padding: 3px 6px; border: none; border-radius: 3px; cursor: pointer; }
-        
-        .coffee-fly, .paper-fly { position: fixed; font-size: 24px; pointer-events: none; z-index: 2000; animation: flyEffect 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-        @keyframes flyEffect {
-            0% { opacity: 1; transform: translate(0,0) scale(1); }
-            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) rotate(360deg) scale(0.5); }
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            text-align: center;
         }
 
-        /* Modal do Gerador SAVA Estácio */
-        #sava-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(38, 70, 83, 0.95); display: none; justify-content: center;
-            align-items: center; z-index: 3000; padding: 10px;
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+            color: #f0f6fc;
+            letter-spacing: 0.5px;
         }
-        .sava-box {
-            background: white; width: 100%; max-width: 750px; height: 90vh;
-            border-radius: 8px; display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
-        }
-        .sava-header {
-            background: #e76f51; color: white; padding: 8px 12px; font-size: 12px;
-            font-weight: bold; display: flex; justify-content: space-between; align-items: center;
-        }
-        .sava-body { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background: #f8f9fa; }
-        .sava-controls { display: flex; gap: 6px; margin-bottom: 4px; flex-shrink: 0; }
-        .sava-btn { padding: 6px 12px; border: none; border-radius: 4px; font-size: 11px; font-weight: bold; color: white; cursor: pointer; }
-        .card-resposta { background: white; padding: 8px; border-radius: 4px; border-left: 4px solid #e76f51; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .card-resposta h4 { font-size: 11px; color: #264653; margin-bottom: 4px; font-weight: bold; }
-        .card-resposta p { font-size: 11px; color: #333; line-height: 1.4; background: #f1f3f5; padding: 6px; border-radius: 3px; user-select: all; }
 
-        @media (max-width: 768px) {
-            body { padding: 2px; }
-            header { height: auto; padding: 4px; flex-wrap: wrap; gap: 2px; }
-            h1 { font-size: 11px; }
-            #word-display { font-size: 9px; order: 3; width: 100%; margin-top: 2px; padding: 1px 4px; }
-            #main-container { flex-direction: column; gap: 2px; }
-            #scoreboard { flex: 0 0 28px; width: 100%; flex-direction: row; align-items: center; padding: 2px; }
-            #scoreboard h3 { display: none; }
-            #players-list { flex-direction: row; margin-top: 0; height: 100%; align-items: center; overflow-x: auto; overflow-y: hidden; gap: 3px; }
-            .player-item { white-space: nowrap; height: 22px; padding: 2px; font-size: 9px; }
-            #right-chats-wrapper { flex: 0 0 160px; flex-direction: row; gap: 2px; }
-            .chat-box-container { flex: 1; height: 100%; }
-            #quiz-container { flex: 1; min-height: 180px; padding: 4px; gap: 4px; }
-            #question-card { padding: 25px 6px 6px 6px; }
-            #question-text { font-size: 11px; margin-bottom: 4px; }
-            #options-container { max-height: calc(100vh - 340px); gap: 4px; }
-            .option-btn { padding: 4px 6px; font-size: 10px; border-width: 1px; }
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin: 5px 0 0 0;
+        }
+
+        /* ÁREA DE UPLOAD ESTILO NOTEBOOKLM */
+        .upload-zone {
+            border: 2px dashed var(--border-color);
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent);
+            background-color: rgba(88, 166, 255, 0.02);
+        }
+
+        .upload-zone p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--text-main);
+        }
+
+        .upload-zone span {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: block;
+            margin-top: 5px;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin: 0;
+        }
+
+        /* ESTILIZAÇÃO DOS ENVIOS PROCESSADOS */
+        .status-loading {
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .output-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card-estudio {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--bg-primary);
+            overflow: hidden;
+        }
+
+        .card-header {
+            background-color: rgba(88, 166, 255, 0.08);
+            border-bottom: 1px solid var(--border-color);
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .card-body {
+            padding: 15px;
+        }
+
+        .concept-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #f0f6fc;
+            margin-bottom: 8px;
+        }
+
+        .section-block {
+            background-color: var(--content-bg);
+            border-left: 3px solid var(--accent);
+            padding: 10px 12px;
+            border-radius: 0 4px 4px 0;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+            color: #e6edf3;
+        }
+
+        .section-block ul {
+            margin: 5px 0 0 0;
+            padding-left: 18px;
+        }
+
+        .section-block li {
+            margin-bottom: 3px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .section-block.checklist {
+            border-left-color: #3fb950;
+        }
+        .section-block.checklist .section-title {
+            color: #3fb950;
         }
     </style>
 </head>
 <body>
 
-<div id="login-screen">
-    <div class="login-box">
-        <h2>🔬 Sabatina Cognitiva: Epidemiologia e Estatística *</h2>
-        <input type="text" id="input-username" placeholder="Seu Nome *" required>
-        <input type="text" id="input-room" placeholder="Nome da Sala *" required>
-        <button class="btn" style="width:100%; padding:8px; font-size:12px; background:#2a9d8f;" onclick="connectToGame()">Ativar Módulos</button>
-    </div>
-</div>
+<div class="container">
+    <header>
+        <h1>SAGE - INTELLECT COMPANION</h1>
+        <p class="subtitle">Análise de Documentos e Geração Estruturada de Estudos Local (Sem API)</p>
+    </header>
 
-<header>
-    <h1>🔬 COGNIÇÃO E DADOS</h1>
-    <div id="word-display">Aguardando consolidação de conexões sinápticas...</div>
-    <div id="room-display">
-        <span id="room-id">Sala: —</span>
-        <span id="timer-display">⏱️ Tempo: --</span>
+    <!-- ÁREA NOTEBOOKLM DE SOLTAR ARQUIVO -->
+    <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+        <p>📊 Selecione ou Arraste o PDF de Patologia / Slides da Faculdade</p>
+        <span>Formatos suportados: .pdf (Processamento interno instantâneo)</span>
+        <div id="loading-txt" class="status-loading">🔄 Extraindo dados e mapeando conceitos ementares...</div>
     </div>
-</header>
+    <input type="file" id="file-input" accept="application/pdf" onchange="manipularUpload(event)">
 
-<div id="main-container">
-    <div id="scoreboard">
-        <h3>🏆 Ranking</h3>
-        <div id="players-list"></div>
-    </div>
-
-    <div id="quiz-container">
-        <div id="question-card">
-            <div id="question-category">Geral</div>
-            <div id="question-difficulty">Nível 1</div>
-            <div id="question-text">Puxando registros do banco de dados...</div>
-            <div id="options-container"></div>
-        </div>
-        <div id="bottom-actions">
-            <button id="btn-skip" class="btn btn-action" onclick="skipQuestion()">>>>> Saltar</button>
-            <button id="btn-coffee" class="btn btn-interact" onclick="throwInteract('coffee')">☕ Café</button>
-            <button id="btn-paper" class="btn btn-interact" onclick="throwInteract('paper')">📄 Dados</button>
-            <button id="btn-sava" class="btn" style="background:#e76f51;" onclick="toggleSavaModal(true)">📝 Módulo SAVA</button>
-        </div>
-    </div>
-
-    <div id="right-chats-wrapper">
-        <div class="chat-box-container">
-            <div class="chat-title-bar">🎯 Registro de Respostas Globais</div>
-            <div id="guess-messages" class="chat-messages-area"></div>
-            <div class="chat-input-row" style="display:none;">
-                <input type="text" id="guess-input" class="chat-input-field" placeholder="Escreva a resposta... *">
-                <button class="chat-send-btn">➤</button>
+    <div class="workspace">
+        <div class="panel">
+            <h2 class="panel-title">Guia de Estudo Gerado Automaticamente</h2>
+            <div id="output" class="output-container">
+                <div style="color: var(--text-muted); text-align: center; font-size: 13px; padding: 20px;">
+                    Nenhum documento carregado. Suba um PDF acima para estruturar os tópicos e os objetivos de aprendizagem.
+                </div>
             </div>
-        </div>
-        <div class="chat-box-container">
-            <div class="chat-title-bar">💬 Notas e Debates Clínicos</div>
-            <div id="chat-messages" class="chat-messages-area"></div>
-            <div class="chat-input-row">
-                <input type="text" id="chat-input" class="chat-input-field" placeholder="Escreva aqui para conversar... *" autocomplete="off">
-                <button class="chat-send-btn" onclick="sendChat()">➤</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="sava-modal">
-    <div class="sava-box">
-        <div class="sava-header">
-            <span>ESTÁCIO - MORFOLOGIA HUMANA E PROCESSOS PATOLÓGICOS INICIAIS (TEMA 9)</span>
-            <span style="cursor:pointer; padding: 2px 8px; background: #264653; border-radius: 3px;" onclick="toggleSavaModal(false)">X</span>
-        </div>
-        <div class="sava-body">
-            <div class="sava-controls">
-                <button class="sava-btn" style="background:#2a9d8f; flex:1;" onclick="gerarVariacoesSava()">Gerar Novas Respostas Únicas (Sem Limites)</button>
-            </div>
-            <div id="sava-output-list" style="display:flex; flex-direction:column; gap:6px;"></div>
         </div>
     </div>
 </div>
 
 <script>
-    const BANCO_PERGUNTAS = [
-        { c: "Etapas da estatística", d: "basico", q: "Qual a primeira etapa da estatística, responsável pela obtenção direta ou indireta dos dados brutos?", a: "Coleta de dados", e: ["Organização dos dados", "Apuração dos dados", "Análise dos resultados"] },
-        { c: "Etapas da estatística", d: "basico", q: "Como se chama o plano ou instrumento estruturado utilizado para capturar os dados observados?", a: "Método de coleta de dados", e: ["Rol", "Amplitude total", "Análise exploratória de dados"] },
-        { c: "Etapas da estatística", d: "basico", q: "Qual a etapa que consiste em dispor os dados de forma ordenada para eliminar erros iniciais e prepará-los?", a: "Organização dos dados", e: ["Coleta de dados", "Exposição e apresentação dos dados", "Análise dos resultados"] },
-        { c: "Etapas da estatística", d: "basico", q: "Qual o termo para a etapa de contagem, processamento e classificação minuciosa dos dados coletados?", a: "Apuração dos dados", e: ["Coleta de dados", "Organização dos dados", "Análise exploratória de dados"] },
-        { c: "Etapas da estatística", d: "basico", q: "Qual a etapa em que os dados purificados são estruturados em tabelas e gráficos estatísticos para visualização externa?", a: "Exposição e apresentação dos dados", e: ["Apuração dos dados", "Análise dos resultados", "Método de coleta de dados"] },
-        { c: "Etapas da estatística", d: "intermediario", q: "Como se chama a fase final onde são calculadas as medidas e índices estatísticos para tirar conclusions sobre a população?", a: "Análise dos resultados", e: ["Apuração dos dados", "Organização dos dados", "Coleta de dados"] },
-        { c: "Etapas da estatística", d: "intermediario", q: "Qual abordagem estatística visa resumir, organizar e descrever as características principais de um conjunto de dados sem fazer inferências precoces?", a: "Análise exploratória de dados", e: ["Análise dos resultados", "Exposição e apresentação dos dados", "Método de coleta de dados"] },
-        { c: "Conceitos Básicos", d: "basico", q: "Como são classificadas as variáveis cujos valores são expressos por meio de números resultantes de contagens ou medições?", a: "Quantitativas", e: ["Qualitativas", "Nominais", "Categorizadas"] },
-        { c: "Conceitos Básicos", d: "basico", q: "Como são classificadas as variáveis que expressam atributos, categorias, qualidades ou características não numéricas?", a: "Qualitativas", e: ["Quantitativas", "Contínuas", "Discretas"] },
-        { c: "Estruturação de Dados", d: "intermediario", q: "Qual o arranjo de dados numéricos brutos organizados em ordem crescent ou decrescente de magnitude?", a: "Rol", e: ["Amplitude total", "Histograma", "Frequência simples"] },
-        { c: "Estruturação de Dados", d: "intermediario", q: "Como se chama a diferença numérica exata entre o maior valor e o menor valor de um conjunto de dados observados?", a: "Amplitude total", e: ["Amplitude de classe", "Ponto médio da classe", "Variância"] },
-        { c: "Estruturação de Dados", d: "intermediario", q: "Como chamamos o arranjo em tabela que organiza os dados brutos divididos em classes juntamente com suas respectivas contagens?", a: "Distribuições de frequência", e: ["Histograma", "Rol", "Caixa"] },
-        { c: "Elementos da Distribuição", d: "intermediario", q: "Como se chama o número de observações individuais que caem dentro de uma classe específica de uma distribuição?", a: "Frequência simples", e: ["Frequência relativa", "Frequência acumulada", "Ponto médio da classe"] },
-        { c: "Elementos da Distribuição", d: "intermediario", q: "Como chamamos os valores extremos que delimitam o início e o fim de uma classe estatística?", a: "Limites de classe", e: ["Amplitude total", "Ponto médio da classe", "Decil"] },
-        { c: "Elementos da Distribuição", d: "intermediario", q: "Como se chama a largura ou intervalo de uma classe isolada, calculada pela diferença entre o seu limite superior e inferior?", a: "Amplitude de classe", e: ["Amplitude total", "Limites de classe", "Variância"] },
-        { c: "Elementos da Distribuição", d: "hardcore", q: "Qual o valor representativo da classe, calculado pela soma dos limites inferior e superior dividida por dois?", a: "Ponto médio da classe", e: ["Frequência simples", "Amplitude de classe", "Mediana"] },
-        { c: "Elementos da Distribuição", d: "hardcore", q: "Qual a proporção da frequência simples de uma classe em relação ao número total de observações da amostra, expressa em percentual?", a: "Frequência relativa", e: ["Frequência simples", "Frequência acumulada", "Coeficiente de variação"] },
-        { c: "Elementos da Distribuição", d: "hardcore", q: "Como se chama o somatório das frequências simples de todas as classes anteriores até a classe atual na tabela?", a: "Frequência acumulada", e: ["Frequência relativa", "Frequência simples", "Ponto médio da classe"] },
-        { c: "Cálculos Estatísticos", d: "hardcore", q: "Na construção de tabelas, qual regra matemática determina o número de classes (k) com base no logaritmo do tamanho da amostra?", a: "Regra de Sturges", e: ["Fórmula de Quartil", "Cálculo de Variância", "Efeito Boxplot"] },
-        { c: "Visualização Gráfica", d: "basico", q: "Qual gráfico utiliza retângulos dispostos verticalmente ou horizontalmente onde o comprimento é proporcional à frequência do atributo qualitativo?", a: "Gráfico de barras ou colunas", e: ["Histograma", "Gráticos de linhas", "Caixa"] },
-        { c: "Visualização Gráfica", d: "intermediario", q: "Qual o gráfico formado por retângulos adjacentes, onde a base representa os intervalos de classe e a altura representa a densidade de frequência?", a: "Histograma", e: ["Gráfico de barras ou colunas", "Setor", "Gráticos de linhas"] },
-        { c: "Visualização Gráfica", d: "basico", q: "Qual tipo de gráfico é ideal para demonstrar o comportamento de uma variável contínua ao longo de um eixo temporal contínuo?", a: "Gráticos de linhas", e: ["Setor", "Histograma", "Gráfico de barras ou colunas"] },
-        { c: "Visualização Gráfica", d: "basico", q: "Qual gráfico circular é dividido em fatias proporcionais às frequências relativas dos dados, também chamado de gráfico de pizza?", a: "Setor", e: ["Histograma", "Gráticos de linhas", "Caixa"] },
-        { c: "Visualização Gráfica", d: "hardcore", q: "Qual representação gráfica geométrica exibe simultaneamente o mínimo, o primeiro quartil, a mediana, o terceiro quartil e o máximo dos dados?", a: "Caixa", e: ["Histograma", "Setor", "Gráticos de linhas"] },
-        { c: "Medidas de Tendência Central", d: "basico", q: "Como classificamos os dados que estão listados de forma bruta ou individualizada, sem estarem organizados em intervalos de classes?", a: "Não agrupados", e: ["Agrupados", "Distribuições de frequência", "Rol"] },
-        { c: "Medidas de Tendência Central", d: "basico", q: "Como classificamos os dados que foram sintetizados e ordenados em uma tabela de distribuição de frequências por intervalos?", a: "Agrupados", e: ["Não agrupados", "Dados brutos", "Rol de magnitude"] },
-        { c: "Medidas de Tendência Central", d: "intermediario", q: "Qual medida de posição representa o valor médio aritmético balanceado obtido pela divisão da soma de todos os valores pelo número total deles?", a: "Média", e: ["Mediana", "Moda", "Quartil"] },
-        { c: "Medidas de Tendência Central", d: "intermediario", q: "Qual o valor central de um conjunto de dados ordenados que divide a distribuição exatamente em duas partes iguais de cinquenta por cento?", a: "Mediana", e: ["Média", "Moda", "Decil"] },
-        { c: "Medidas de Tendência Central", d: "basico", q: "Qual a medida estatística de tendência central que representa o valor de maior ocorrência ou maior frequência dentro de uma amostra?", a: "Moda", e: ["Média", "Mediana", "Quartil"] },
-        { c: "Separatrizes", d: "hardcore", q: "Como se chamam as medidas posicionais que dividem uma série de dados ordenados em quatro partes iguais de vinte e cinco por cento cada?", a: "Quartil", e: ["Decil", "Percentil", "Mediana"] },
-        { c: "Separatrizes", d: "hardcore", q: "Como se chamam os valores posicionais que dividem o conjunto de dados ordenados em dez partes iguais de dez por cento cada?", a: "Decil", e: ["Quartil", "Mediana", "Amplitude de classe"] },
-        { c: "Medidas de Dispersão", d: "hardcore", q: "Qual medida de dispersão calcula a média dos quadrados dos desvios de cada valor em relação à média aritmética da amostra?", a: "Variância", e: ["Desvio-padrão", "Coeficiente de variação", "Amplitude total"] },
-        { c: "Medidas de Dispersão", d: "hardcore", q: "Qual a medida de variabilidade absoluta calculada como a raiz quadrada positiva da variância?", a: "Desvio-padrão", e: ["Variância", "Coeficiente de variação", "Ponto médio da classe"] },
-        { c: "Medidas de Dispersão", d: "hardcore", q: "Qual medida de dispersão relativa expressa o desvio-padrão como um percentual da média aritmética?", a: "Coeficiente de variação", e: ["Variância", "Desvio-padrão", "Amplitude total"] }
-    ];
+// Configuração global da biblioteca PDF.js de forma estática
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
-    let username = "", roomName = "", mqttClient = null, baseTopic = "";
-    const listaJogadores = new Set();
-    const scores = {};
-    let currentQuestion = null, roundActive = false, countdownInterval = null, currentTimeLeft = 0;
-    
-    let currentLevel = 1; 
-    let streakAcertos = 0; 
-    const TEMPO_RODADA = 30; 
+async function manipularUpload(event) {
+    const arquivo = event.target.files[0];
+    if (!arquivo) return;
 
-    // --- Matrizes Dinâmicas de Embaralhamento Científico para o Gerador SAVA ---
-    const SAVA_DATABASE = [
+    const loadingTxt = document.getElementById('loading-txt');
+    loadingTxt.style.display = 'block';
+
+    const leitor = new FileReader();
+    leitor.onload = async function() {
+        const dadosArray = new Uint8Array(this.result);
+        try {
+            const pdf = await pdfjsLib.getDocument({ data: dadosArray }).promise;
+            let textoCompleto = "";
+
+            // Loop por todas as páginas do PDF para extrair o texto bruto bruto
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const pagina = await pdf.getPage(i);
+                const conteudoTexto = await pagina.getTextContent();
+                const stringPagina = conteudoTexto.items.map(item => item.str).join(" ");
+                textoCompleto += stringPagina + "\n";
+            }
+
+            processarTextoPdf(textoCompleto);
+        } catch (erro) {
+            alert("Erro ao ler o arquivo PDF. Certifique-se de que não está protegido.");
+            console.error(erro);
+        } finally {
+            loadingTxt.style.display = 'none';
+        }
+    };
+    leitor.readAsArrayBuffer(arquivo);
+}
+
+function processarTextoPdf(texto) {
+    const outputDiv = document.getElementById('output');
+    outputDiv.innerHTML = '';
+
+    // Dicionário de termos chaves de patologia para busca semântica dentro do PDF
+    const dicionarioPatologia = [
         {
-            num: 1,
-            q: "A estrutura dos vasos sanguíneos apresenta adaptações específicas que permitem o desempenho de diferentes funções no sistema circulatório. Explique as principais diferenças estruturais entre artérias, veias e capilares e relacione essas características com suas respectivas funções fisiológicas.",
-            intro: ["As artérias contam com uma túnica média espessa e tecido elástico abundante,", "Sob o ponto de vista morfológico, as artérias possuem paredes altamente musculoelásticas,", "A organização vascular demonstra que vasos arteriais sustentam alta pressão por sua espessa camada muscular,"],
-            mid: ["o que permite suportar a ejeção sistólica de alta pressão. Em contrapartida, as veias possuem paredes mais finas e complacentes com válvulas,", "tornando-as aptas a guiar o fluxo sob estresse mecânico severo. Já as veias exibem túnica média delgada e complacência elevada,"],
-            fim: ["atuando como vasos de capacitância. Os capilares consistem apenas em endotélio e lâmina basal, maximizando as trocas gasosas e de nutrientes.", "funcionando como reservatórios de volume. Os capilares, formados por uma camada única de células endoteliais, facilitam a difusão celular direta."]
+            termo: "Lesão Celular",
+            nome: "Estágio de Injúria e Alterações Adaptativas",
+            desc: "Análise microscópica de estresse de membrana e homeostase celular.",
+            conteudo: "Identificado no material fornecido discussões sobre mecanismos de agressão celular.",
+            meta: "Diferenciar processos de degeneração hidrópica de danos irreversíveis à cromatina nuclear."
         },
         {
-            num: 2,
-            q: "O fluxo sanguíneo normal depende da interação entre diversos fatores físicos e fisiológicos. Descreva os mecanismos responsáveis pela manutenção do fluxo sanguíneo unidirecional e explicite a importância das válvulas nesse processo.",
-            intro: ["O gradiente de pressão gerado pela contração miocárdica e a bomba muscular esquelética", "O deslocamento anterógrado do sangue é mantido pela diferença de pressão hidrostática e a prensa muscular,", "A dinâmica circulatória unidirecional baseia-se na diferença de pressão gerada pelo coração somada à atividade muscular periférica,"],
-            mid: [" impulsionam o sangue de volta ao coração. Nesse contexto, as válvulas venosas desempenham papel crucial,", " garantem o retorno venoso eficiente contra a força da gravidade. As cúspides valvulares contidas nas veias periféricas"],
-            fim: [" impedindo o refluxo sanguíneo e a estase nas extremidades inferiores do organismo.", " atuam como barreiras anatômicas que barram o refluxo e evitam quadros congestivos periféricos."]
+            termo: "Necrose",
+            nome: "Morte Tecidual por Coagulação e Liquefação",
+            desc: "Padrões morfológicos macro e microscópicos de autólise celular.",
+            conteudo: "Encontrado no texto referências a necrose (coagulação, liquefação, caseosa ou gordurosa) com extravasamento citoplasmático e indução de resposta imunológica periférica.",
+            meta: "Reconhecer lâminas histológicas demonstrando picnose, cariorréxe e desaparecimento de núcleos funcionais."
         },
         {
-            num: 3,
-            q: "O endotélio vascular desempenha papel fundamental na homeostase circulatória. Explique como o endotélio saudável atua na prevenção da trombose e na manutenção da fluidez sanguínea.",
-            intro: ["Um endotélio íntegro e funcional age como uma barreira física e sintética protetora,", "O tecido endotelial não ativado preserva a fluidez biológica do sangue,", "As células endoteliais intactas evitam ativamente o desencadeamento da cascata de coagulação,"],
-            mid: [" secretando continuamente mediadores químicos como óxido nítrico (NO) e prostaciclina (PGI2),", " através da liberação constante de fatores antiagregantes plaquetários potentes,"],
-            fim: [" que inibem a adesão de plaquetas e promovem vasoativação benéfica, além de expressar trombomodulina.", " que barram a ancoragem plaquetária precoce e degradam ativamente filamentos iniciais de fibrina."]
+            termo: "Inflamação",
+            nome: "Fisiopatologia da Resposta Inflamatória Humoral",
+            desc: "Dinâmica vascular de exsudação leucocitária.",
+            conteudo: "Mapeado no documento o processo de resposta inflamatória aguda ou crônica. Inclui fenômenos hemodinâmicos de marginação, rolagem e diapedese leucocitária ativa.",
+            meta: "Interpretar os papéis da histamina e do infiltrado de neutrófilos vs macrófagos mononucleares."
         },
         {
-            num: 4,
-            q: "A hemostasia é um processo altamente regulado que evita perdas sanguíneas excessivas após uma lesão vascular. Descreva as etapas da formação do tampão hemostático desde a lesão vascular até a estabilização do coágulo.",
-            intro: ["Logo após o insulto endotelial, ocorre vasoconstrição reflexa local imediata.", "O processo hemostático inicia-se com o espasmo vascular decorrente da lesão.", "Diante da ruptura da parede do vaso, instala-se uma vasoconstrição neurogênica local."],
-            mid: [" Na sequência, ocorre adesão e agregação plaquetária via colágeno exposto, formando o tampão primário.", " Em seguida, plaquetas ancoram-se à matriz extracelular exposta, gerando o tampão de hemostasia primária."],
-            fim: [" Posteriormente, ativa-se a cascata de coagulação, culminando na conversão de fibrinogênio em fibrina para estabilizar o coágulo definitivo.", " Por fim, a via enzimática sequencial gera trombina, que polimeriza a fibrina, convertendo o tampão frouxo em uma malha sólida e firme."]
-        },
-        {
-            num: 5,
-            q: "O fator de Von Willebrand é considerado essencial para a hemostasia primária. Explique sua função fisiológica e as consequências clínicas decorrentes de sua deficiência.",
-            intro: ["O fator de Von Willebrand (fVW) atua como uma ponte molecular indispensável,", "A principal atribuição do fVW reside em conectar quimicamente as plaquetas circulantes,", "Fisiologicamente, o fVW liga o receptor plaquetário GpIb ao colágeno subendotelial exposto,"],
-            mid: [" permitindo a adesão das plaquetas ao colágeno subendotelial sob altas forças de cisalhamento.", " promovendo a fixação primária dos fragmentos celulares no sítio da lesão sob forte fluxo."],
-            fim: [" A sua ausência ou defeito reduz a capacidade de adesão, desencadeando hemorragias, epistaxes e sangramentos prolongados.", " Desse modo, síndromes deficitárias dessa proteína resultam em distúrbios hemorrágicos crônicos e sangramentos de mucosas."]
-        },
-        {
-            num: 6,
-            q: "A trombina é considerada uma das moléculas mais importantes da coagulação sanguínea. Explique suas principais funções durante o processo hemostático.",
-            intro: ["A trombina (Fator IIa) atua clivando o fibrinogênio solúvel em monômeros de fibrina insolúveis,", "Esta enzima chave possui um papel central ao converter o fibrinogênio circulante em redes estáveis de fibrina,", "A ação da trombina concentra-se na geração mecânica do arcabouço do coágulo ao converter fibrinogênio,"],
-            mid: [" além de exercer feedback positivo amplificando a ativação dos fatores V, VIII e XI.", " exercendo também um potente efeito de ativação sobre os receptores plaquetários PAR e estimulando cofatores."],
-            fim: [" Adicionalmente, ela ativa o Fator XIII, responsável por estabilizar e consolidar as ligações cruzadas da malha.", " Promove também a estimulação do fator estabilizador de fibrina, convertendo a rede frouxa em um gel insolúvel."]
-        },
-        {
-            num: 7,
-            q: "A Tríade de Virchow representa os principais mecanismos envolvidos na gênese da trombose. Descreva cada um dos componentes da Tríade de Virchow e explique como eles favorecem a formação de trombos.",
-            intro: ["A Tríade de Virchow é constituída pela lesão endotelial, estase ou turbulência do fluxo e hipercoagulabilidade.", "Os três eixos indutores são a disfunção/lesão do endotélio, alterações do fluxo e estados de hipercoagulabilidade plasmática.", "Este modelo conceitual engloba o dano na parede vascular, a lentificação do fluxo e as alterações na composição do sangue."],
-            mid: [" A lesão expõe o colágeno; a alteração do fluxo impede a lavagem de fatores ativados e rompe o fluxo laminar;", " O dano celular ativa plaquetas; a estase quebra a barreira física de fluxo laminar aproximando células da parede;"],
-            fim: [" e a hipercoagulabilidade acelera as vias enzimáticas. Juntos, esses fatores desviam o equilíbrio biológico para a trombogênese.", " enquanto a hipercoagulabilidade propicia a atividade enzimática pró-trombótica, culminando na formação do trombo."]
-        },
-        {
-            num: 8,
-            q: "A trombose venosa profunda (TVP) é uma condição clínica frequente e potencialmente grave. Explique os fatores que favorecem sua ocorrência e as principais complicações associadas.",
-            intro: ["A TVP é impulsionada pela imobilidade prolongada, cirurgias ortopédicas de grande porte e estados inflamatórios,", "Fatores como estase venosa por repouso no leito, traumas teciduais e disfunções genéticas da coagulação propiciam a TVP,", "A imobilização em leitos hospitalares prolongada, o tabagismo e o uso de estrogênios aumentam radicalmente a incidência de TVP,"],
-            mid: [" os quais lentificam o fluxo sanguíneo nos plexos venosos profundos das panturrilhas.", " gerando represamento sanguíneo crônico e ativação endotelial nas veias profundas dos membros inferiores."],
-            fim: [" A complicação aguda mais temida é o tromboembolismo pulmonar (TEP), além do desenvolvimento crônico da síndrome pós-trombótica.", " Isso pode culminar no desprendimento do trombo, gerando embolia pulmonar obstrutiva e insuficiência venosa pós-flebítica crônica."]
-        },
-        {
-            num: 9,
-            q: "Embora frequentemente confundidas, hiperemia e congestão são processos distintos. Compare hiperemia e congestão quanto aos seus mecanismos fisiopatológicos e características clínicas.",
-            intro: ["A hiperemia constitui um processo ativo derivado de dilatação arteriolar", "Fisiopatologicamente, a hiperemia é ativa e decorre do aumento do influxo sanguíneo por abertura de esfíncteres,", "A hiperemia apresenta caráter ativo mediado por resposta inflamatória ou demanda metabólica arterial,"],
-            mid: [" que eleva o aporte de sangue oxigenado, deixando o tecido com coloração avermelhada (eritema). Já a congestão é passiva,", " provocando coloração vermelha viva. Em contrapartida, a congestão representa um evento puramente passivo,"],
-            fim: [" resultante do comprometimento do escoamento venoso, acumulando sangue desoxigenado e causando cianose tecidual.", " decorrente da obstrução ou lentificação do outflow venoso, gerando acúmulo de hemácias desoxigenadas e cianose."]
-        },
-        {
-            num: 10,
-            q: "A isquemia pode provocar danos celulares irreversíveis e comprometer a função de órgãos vitais. Explique os principais fatores que determinam a gravidade de uma lesão isquêmica e descreva o fenômeno de lesão por isquemia-reperfusão.",
-            intro: ["A extensão do dano isquêmico depende do tempo de oclusão, da vulnerabilidade do tecido à hipóxia e da presença de circulação colateral.", "A gravidade do insulto isquêmico é ditada pela taxa metabólica intrínseca do órgão afetado e a velocidade de instalação do bloqueio vascular.", "A magnitude do infarto isquêmico varia conforme a vulnerabilidade celular específica e a eficiência anatômica de vasos colaterais."],
-            mid: [" O fenômeno de isquemia-reperfusão ocorre quando o restabelecimento abrupto do fluxo de oxigênio", " Já a injúria por isquemia-reperfusão se desenvolve no momento em que a restauração do fluxo sanguíneo arterial"],
-            fim: [" desencadeia a produção massiva de radicais livres de oxigênio, exacerbando a lesão celular inicial e gerando estresse oxidativo.", " paradoxalmente intensifica a necrose local através da liberação abrupta de espécies reativas de oxigênio e influxo de cálcio."]
+            termo: "Neoplasia",
+            nome: "Oncologia Geral e Proliferação Clonal",
+            desc: "Bases moleculares da diferenciação, anaplasia e metástase tumoral.",
+            conteudo: "Detectado no material parâmetros de oncologia clínica, diferenciação entre proliferações benignas (organizadas/encapsuladas) e malignas infiltrativas.",
+            meta: "Julgar graus histológicos de malignidade com base em critérios de anaplasia e arquitetura tecidual desregulada."
         }
     ];
 
-    function toggleSavaModal(show) {
-        document.getElementById('sava-modal').style.display = show ? 'flex' : 'none';
-        if (show) gerarVariacoesSava();
-    }
+    let blocosGerados = 0;
 
-    function gerarVariacoesSava() {
-        const container = document.getElementById('sava-output-list');
-        container.innerHTML = "";
-
-        SAVA_DATABASE.forEach(item => {
-            // Sorteio aleatório de estruturas textuais para garantir variação contínua
-            const iSel = item.intro[Math.floor(Math.random() * item.intro.length)];
-            const mSel = item.mid[Math.floor(Math.random() * item.mid.length)];
-            const fSel = item.fim[Math.floor(Math.random() * item.fim.length)];
+    // Varre o texto do PDF usando os termos chaves de patologia para gerar as seções inteligentes na tela
+    dicionarioPatologia.forEach((item, index) => {
+        // Busca ignorando maiúsculas/minúsculas
+        const expressaoRegular = new RegExp(item.termo, "i");
+        
+        if (expressaoRegular.test(texto)) {
+            blocosGerados++;
             
-            const respostaMontada = `${iSel}${mSel}${fSel}`;
+            // Tenta capturar uma frase real do próprio PDF do usuário para dar contexto real do slide dele
+            const indiceMatch = texto.search(expressaoRegular);
+            let trechoDoPdf = texto.substring(indiceMatch, indiceMatch + 250) + "...";
 
             const card = document.createElement('div');
-            card.className = "card-resposta";
+            card.className = 'card-estudio';
+            
             card.innerHTML = `
-                <h4>Questão ${item.num} - SAVA</h4>
-                <div style="font-size:9px; color:#666; margin-bottom:4px; font-style:italic;">${item.q}</div>
-                <p>${respostaMontada}</p>
+                <div class="card-header">🎯 MÓDULO DETECTADO ${String(blocosGerados).padStart(2, '0')}</div>
+                <div class="card-body">
+                    <div class="concept-title">${item.nome.toUpperCase()}</div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Foco: ${item.desc}</div>
+                    
+                    <div class="section-block">
+                        <div class="section-title">📖 Resumo Contextual Extraído do PDF</div>
+                        <div>"...${trechoDoPdf}"</div>
+                    </div>
+
+                    <div class="section-block">
+                        <div class="section-title">🔬 Correlação Teórica Geral</div>
+                        <div>${item.conteudo}</div>
+                    </div>
+
+                    <div class="section-block checklist">
+                        <div class="section-title">🎯 Meta de Retenção para Provas</div>
+                        <div><ul><li>${item.meta}</li></ul></div>
+                    </div>
+                </div>
             `;
-            container.appendChild(card);
-        });
-    }
-
-    // --- Fluxo de Jogo Original Preservado na Íntegra ---
-    function connectToGame() {
-        username = document.getElementById('input-username').value.trim();
-        roomName = document.getElementById('input-room').value.trim().toLowerCase().replace(/[^a-z0-9]/g,"");
-        if (!username || !roomName) return;
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('room-id').innerText = "Sala: " + roomName;
-        adicionarJogador(username);
-        initMqtt();
-    }
-
-    function initMqtt() {
-        baseTopic = "epidemiology_cognitive_quiz_2026/" + roomName;
-        mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
-        mqttClient.on('connect', () => {
-            mqttClient.subscribe(baseTopic + "/chat");
-            mqttClient.subscribe(baseTopic + "/presence");
-            mqttClient.subscribe(baseTopic + "/presence/echo");
-            mqttClient.subscribe(baseTopic + "/flow");
-            mqttClient.subscribe(baseTopic + "/interact");
-
-            let connectMsg = JSON.stringify({ sender: "Sistema", text: `📢 ${username} sincronizou o córtex à rede de dados.`, name: username, type: "sys" });
-            mqttClient.publish(baseTopic + "/chat", connectMsg);
-            mqttClient.publish(baseTopic + "/presence", connectMsg);
-            setTimeout(() => { checkAutoStart(); }, 1500);
-        });
-
-        mqttClient.on('message', (topic, msg) => {
-            const data = JSON.parse(msg.toString());
-            if (topic === baseTopic + "/chat") {
-                if (data.type === "sys") {
-                    addMsg('guess-messages', 'msg-system', data.text);
-                    if (data.name) { adicionarJogador(data.name); checkAutoStart(); }
-                } else if (data.type === "quiz_eval") {
-                    clearInterval(countdownInterval);
-                    if (data.isCorrect) {
-                        addMsg('guess-messages', 'msg-success', `🎯 ${data.sender} ACERTOU! Resposta: ${data.ans.toUpperCase()}`);
-                        document.getElementById('word-display').innerText = `🎉 Consolidado: ${data.ans.toUpperCase()} (Por: ${data.sender})`;
-                        addScore(data.sender, data.pts);
-                        
-                        if (data.sender === username) {
-                            streakAcertos++;
-                            if (streakAcertos >= 2) {
-                                currentLevel = Math.min(3, currentLevel + 1);
-                                streakAcertos = 0; 
-                            }
-                        }
-                    } else {
-                        addMsg('guess-messages', 'msg-wrong', `❌ ${data.sender} ERROU! Selecionou uma alternativa incorreta.`);
-                        if (data.sender === username) {
-                            streakAcertos = 0;
-                            currentLevel = Math.max(1, currentLevel - 1);
-                            addScore(username, -20);
-                        }
-                    }
-                    highlightCorrectOption(data.ans);
-                    nextRound();
-                } else if (data.type === "talk") {
-                    addChatMsg(data.sender, data.text);
-                }
-            } else if (topic === baseTopic + "/presence" && data.name !== username) {
-                adicionarJogador(data.name);
-                mqttClient.publish(baseTopic + "/presence/echo", JSON.stringify({ name: username }));
-                checkAutoStart();
-            } else if (topic === baseTopic + "/presence/echo" && data.name !== username) {
-                adicionarJogador(data.name);
-                checkAutoStart();
-            } else if (topic === baseTopic + "/flow") {
-                handleFlow(data);
-            } else if (topic === baseTopic + "/interact") {
-                triggerVisualEffect(data.type);
-            }
-        });
-    }
-
-    function checkAutoStart() {
-        if (!roundActive && listaJogadores.size > 0) {
-            if (Array.from(listaJogadores)[0] === username) { triggerNewQuestion(); }
+            outputDiv.appendChild(card);
         }
+    });
+
+    if (blocosGerados === 0) {
+        outputDiv.innerHTML = `
+            <div style="color: #ff7b72; text-align: center; font-size: 13px; padding: 20px;">
+                ⚠️ O arquivo foi lido, mas nenhum termo clássico de Patologia Geral (Lesão, Necrose, Inflamação, Neoplasia) foi identificado no texto bruto. Certifique-se de enviar o arquivo correto da matéria.
+            </div>`;
     }
-
-    function triggerNewQuestion() {
-        let diffTarget = "basico";
-        if (currentLevel === 2) diffTarget = "intermediario";
-        if (currentLevel === 3) diffTarget = "hardcore";
-
-        let filtradas = BANCO_PERGUNTAS.filter(p => p.d === diffTarget);
-        if (filtradas.length === 0) filtradas = BANCO_PERGUNTAS; 
-
-        const questaoSorteada = filtradas[Math.floor(Math.random() * filtradas.length)];
-        const indexOriginal = BANCO_PERGUNTAS.indexOf(questaoSorteada);
-
-        let opcoes = [questaoSorteada.a, ...questaoSorteada.e];
-        opcoes.sort(() => Math.random() - 0.5); 
-
-        mqttClient.publish(baseTopic + "/flow", JSON.stringify({ index: indexOriginal, nivel: currentLevel, shuffledOptions: opcoes }));
-    }
-
-    function handleFlow(data) {
-        clearInterval(countdownInterval);
-        currentQuestion = BANCO_PERGUNTAS[data.index];
-        roundActive = true;
-        
-        document.getElementById('question-category').innerText = currentQuestion.c;
-        document.getElementById('question-difficulty').innerText = "Nível: " + currentQuestion.d.toUpperCase() + " (Seq: " + streakAcertos + ")";
-        document.getElementById('question-text').innerText = currentQuestion.q;
-        document.getElementById('word-display').innerText = "💡 Múltipla Escolha: Analise com precisão cognitiva!";
-        
-        const container = document.getElementById('options-container');
-        container.innerHTML = "";
-        
-        data.shuffledOptions.forEach(opcao => {
-            const btn = document.createElement('button');
-            btn.className = "option-btn";
-            btn.innerText = opacityCheck(opcao);
-            btn.onclick = () => selectOption(opcao);
-            container.appendChild(btn);
-        });
-
-        startTimer(TEMPO_RODADA);
-    }
-
-    function opacityCheck(val) {
-        return val;
-    }
-
-    function selectOption(opcaoSelecionada) {
-        if (!roundActive) return;
-        disableAllOptions();
-        
-        const isCorrect = (opcaoSelecionada === currentQuestion.a);
-        let pts = 0;
-        if (isCorrect) {
-            let multiplier = currentLevel === 3 ? 30 : (currentLevel === 2 ? 20 : 10);
-            pts = Math.max(10, currentTimeLeft * multiplier);
-        }
-        
-        mqttClient.publish(baseTopic + "/chat", JSON.stringify({
-            sender: username,
-            isCorrect: isCorrect,
-            pts: pts,
-            ans: currentQuestion.a,
-            type: "quiz_eval"
-        }));
-    }
-
-    function disableAllOptions() {
-        const botoes = document.querySelectorAll('.option-btn');
-        botoes.forEach(b => b.disabled = true);
-    }
-
-    function highlightCorrectOption(respostaCorreta) {
-        const botoes = document.querySelectorAll('.option-btn');
-        botoes.forEach(b => {
-            b.disabled = true;
-            if (b.innerText === respostaCorreta) {
-                b.classList.add('option-correct');
-            } else {
-                b.classList.add('option-wrong');
-            }
-        });
-    }
-
-    function startTimer(secs) {
-        currentTimeLeft = secs;
-        document.getElementById('timer-display').innerText = "⏱️ Tempo: " + currentTimeLeft + "s";
-        countdownInterval = setInterval(() => {
-            currentTimeLeft--;
-            if (currentTimeLeft <= 0) {
-                clearInterval(countdownInterval);
-                addMsg('guess-messages', 'msg-system', `🛑 Tempo esgotado! Resposta correta: ${currentQuestion.a.toUpperCase()}`);
-                document.getElementById('word-display').innerText = `⏱️ Limiar estourado! Correto: ${currentQuestion.a.toUpperCase()}`;
-                
-                streakAcertos = 0;
-                currentLevel = Math.max(1, currentLevel - 1);
-                highlightCorrectOption(currentQuestion.a);
-                nextRound();
-            } else {
-                document.getElementById('timer-display').innerText = "⏱️ Tempo: " + currentTimeLeft + "s";
-            }
-        }, 1000);
-    }
-
-    function nextRound() {
-        roundActive = false;
-        clearInterval(countdownInterval);
-        if (Array.from(listaJogadores)[0] === username) {
-            setTimeout(() => { triggerNewQuestion(); }, 4000);
-        }
-    }
-
-    function sendChat() {
-        const input = document.getElementById('chat-input');
-        const text = input.value.trim();
-        if (!text) return;
-        mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text, type: "talk" }));
-        input.value = "";
-    }
-
-    function skipQuestion() {
-        if (roundActive) {
-            clearInterval(countdownInterval);
-            addMsg('guess-messages', 'msg-system', `⏭️ Rodada ignorada de forma manual.`);
-            streakAcertos = 0;
-            currentLevel = Math.max(1, currentLevel - 1);
-            highlightCorrectOption(currentQuestion.a);
-            nextRound();
-        }
-    }
-
-    function throwInteract(type) {
-        mqttClient.publish(baseTopic + "/interact", JSON.stringify({ type }));
-    }
-
-    function triggerVisualEffect(type) {
-        const el = document.createElement('div');
-        el.className = type === 'coffee' ? 'coffee-fly' : 'paper-fly';
-        el.textContent = type === 'coffee' ? '☕' : '📄';
-        el.style.left = Math.random() * (window.innerWidth - 40) + 'px';
-        el.style.top = Math.random() * (window.innerHeight - 40) + 'px';
-        el.style.setProperty('--tx', (Math.random() * 200 - 100) + 'px');
-        el.style.setProperty('--ty', (Math.random() * 200 - 100) + 'px');
-        document.body.appendChild(el);
-        setTimeout(() => el.remove(), 800);
-    }
-
-    function adicionarJogador(nome) {
-        if (listaJogadores.has(nome)) return;
-        listaJogadores.add(nome);
-        scores[nome] = 0;
-        renderScoreboard();
-    }
-
-    function addScore(nome, pts) {
-        if (scores[nome] === undefined) scores[nome] = 0;
-        scores[nome] += pts;
-        if (scores[nome] < 0) scores[nome] = 0; 
-        renderScoreboard();
-        const item = document.getElementById("p-" + nome.replace(/\s+/g,'-'));
-        if (item) {
-            const sc = item.querySelector('.player-score');
-            sc.classList.add('bump'); setTimeout(() => sc.classList.remove('bump'), 400);
-        }
-    }
-
-    function renderScoreboard() {
-        const container = document.getElementById('players-list');
-        container.innerHTML = "";
-        const sorted = Array.from(listaJogadores).sort((a,b) => scores[b] - scores[a]);
-        sorted.forEach((nome, idx) => {
-            const item = document.createElement('div');
-            item.className = "player-item";
-            item.id = "p-" + nome.replace(/\s+/g,'-');
-            item.innerHTML = `<div class="player-info"><span class="player-rank">${idx+1}º</span><span class="player-name">${nome}</span></div><span class="player-score">${scores[nome]}</span>`;
-            container.appendChild(item);
-        });
-    }
-
-    function addMsg(targetId, className, text) {
-        const c = document.getElementById(targetId);
-        const m = document.createElement('div'); m.className = `msg ${className}`; m.innerText = text;
-        c.appendChild(m); c.scrollTop = c.scrollHeight;
-    }
-
-    function addChatMsg(sender, text) {
-        const c = document.getElementById('chat-messages');
-        const m = document.createElement('div'); m.className = "msg msg-normal";
-        m.innerHTML = `<span class="username">${sender}: </span>${text}`;
-        c.appendChild(m); c.scrollTop = c.scrollHeight;
-    }
-
-    document.getElementById('chat-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendChat(); });
+}
 </script>
 </body>
 </html>
