@@ -3,24 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAGE Engine v2 - Histologia & Embriologia</title>
+    <title>SAGE CORE v3 - Studio Analytics</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <style>
         :root {
-            --bg-main: #090b10;
-            --bg-card: #11141e;
-            --bg-input: #171c28;
-            --border: #222938;
-            --text-title: #f0f4f9;
-            --text-main: #9fa6b4;
-            --text-muted: #5c6475;
-            --accent-blue: #38bdf8;
-            --accent-green: #34d399;
-            --accent-purple: #c084fc;
+            --bg-main: #0a0d14;
+            --bg-card: #111522;
+            --bg-input: #161b29;
+            --border: #242c3f;
+            --text-title: #f1f5f9;
+            --text-main: #9ea7b6;
+            --text-muted: #576073;
+            --neon-blue: #00d2ff;
+            --neon-green: #00ff87;
+            --neon-purple: #d946ef;
+            --feynman-bg: rgba(217, 70, 239, 0.03);
+            --cornell-bg: rgba(0, 210, 255, 0.03);
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-main);
             color: var(--text-main);
             margin: 0;
@@ -31,187 +33,189 @@
 
         .dashboard {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1250px;
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
 
         header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             border-bottom: 1px solid var(--border);
-            padding-bottom: 12px;
+            padding-bottom: 15px;
         }
 
         header h1 {
-            font-size: 22px;
-            font-weight: 700;
+            font-size: 24px;
+            font-weight: 800;
             margin: 0;
             color: var(--text-title);
-            letter-spacing: 0.5px;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        header p {
-            color: var(--text-muted);
-            font-size: 13px;
-            margin: 4px 0 0 0;
-        }
-
-        .upload-section {
+        /* BANCO DE UPLOAD PREMIUM */
+        .upload-grid {
             display: grid;
-            grid-template-columns: 1fr 320px;
+            grid-template-columns: 1fr 340px;
             gap: 16px;
         }
 
-        @media (max-width: 900px) {
-            .upload-section { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 900px) { .upload-grid { grid-template-columns: 1fr; } }
 
         .dropzone {
             border: 2px dashed var(--border);
             background-color: var(--bg-card);
             border-radius: 8px;
-            padding: 24px;
+            padding: 30px;
             text-align: center;
             cursor: pointer;
-            transition: border-color 0.2s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
+            transition: all 0.2s ease;
         }
 
-        .dropzone:hover { border-color: var(--accent-blue); }
+        .dropzone:hover { border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(0, 210, 255, 0.1); }
+        .dropzone p { margin: 0; font-size: 15px; color: var(--text-title); font-weight: 600; }
+        .dropzone span { font-size: 11px; color: var(--text-muted); display: block; margin-top: 4px; }
 
-        .dropzone p { margin: 0; font-size: 14px; color: var(--text-title); font-weight: 600; }
-        .dropzone span { font-size: 11px; color: var(--text-muted); }
-
-        .file-sidebar {
+        .sidebar-files {
             background-color: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 12px;
+            display: flex;
+            flex-direction: column;
         }
 
         .sidebar-title {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             text-transform: uppercase;
             color: var(--text-muted);
+            letter-spacing: 1px;
             margin-bottom: 8px;
         }
 
-        .file-list {
+        .file-box {
             display: flex;
             flex-direction: column;
             gap: 6px;
-            max-height: 100px;
+            max-height: 90px;
             overflow-y: auto;
         }
 
-        .file-item {
+        .file-badge {
             background-color: var(--bg-input);
             border: 1px solid var(--border);
             border-radius: 4px;
-            padding: 4px 8px;
+            padding: 5px 8px;
             font-size: 11px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .progress-container {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 12px;
-            display: none;
-            align-items: center;
-            justify-content: space-between;
-        }
+        #file-input { display: none; }
 
-        .progress-bar-bg { background-color: var(--bg-input); height: 6px; width: 180px; border-radius: 3px; overflow: hidden; }
-        .progress-bar-fill { background: var(--accent-blue); height: 100%; width: 0%; transition: width 0.1s; }
-
-        /* GRID DOS CARDS ACADÊMICOS */
-        .output-grid {
+        /* CARDS DO INTEGRAL STUDY WORKSPACE */
+        .workspace-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-            gap: 16px;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
         }
 
-        @media (max-width: 500px) { .output-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 500px) { .workspace-grid { grid-template-columns: 1fr; } }
 
-        .card {
+        .study-card {
             background-color: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 10px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
 
-        .card-header {
-            padding: 10px 14px;
-            background-color: rgba(23, 28, 40, 0.5);
+        .card-topbar {
+            padding: 10px 16px;
+            background-color: rgba(22, 27, 41, 0.6);
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .module-tag {
+        .tag-estagio {
             font-size: 10px;
             font-weight: 700;
-            color: var(--accent-purple);
-            background-color: rgba(192, 132, 252, 0.08);
+            color: var(--neon-blue);
+            background: rgba(0, 210, 255, 0.08);
             padding: 2px 8px;
             border-radius: 4px;
         }
 
-        .card-body {
-            padding: 14px;
+        .card-main {
+            padding: 18px;
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
 
-        .card-title {
-            font-size: 15px;
-            font-weight: 600;
+        .card-topic-title {
+            font-size: 16px;
+            font-weight: 700;
             color: var(--text-title);
             margin: 0;
         }
 
-        .info-block {
+        .block-method {
             background-color: var(--bg-input);
-            border-radius: 4px;
-            padding: 10px;
-            font-size: 12px;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 13px;
             line-height: 1.5;
-            border-left: 3px solid var(--accent-blue);
+            border-left: 3px solid var(--neon-blue);
         }
 
-        .info-title {
+        .block-method-title {
             font-size: 10px;
             font-weight: 700;
             text-transform: uppercase;
-            color: var(--accent-blue);
-            margin-bottom: 4px;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .info-block.checklist { border-left-color: var(--accent-green); }
-        .info-block.checklist .info-title { color: var(--accent-green); }
+        .block-method.feynman { border-left-color: var(--neon-purple); background-color: var(--feynman-bg); }
+        .block-method.feynman .block-method-title { color: var(--neon-purple); }
 
-        ul { margin: 2px 0 0 0; padding-left: 14px; }
-        li { margin-bottom: 2px; }
+        .block-method.cornell { border-left-color: var(--neon-green); background-color: var(--cornell-bg); }
+        .block-method.cornell .block-method-title { color: var(--neon-green); }
 
-        .empty-state {
-            color: var(--text-muted);
-            text-align: center;
+        ul { margin: 4px 0 0 0; padding-left: 16px; }
+        li { margin-bottom: 3px; }
+
+        .status-panel {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
             font-size: 12px;
-            padding: 40px;
+            color: var(--neon-blue);
+            text-align: center;
+        }
+
+        .empty-dashboard {
             grid-column: 1 / -1;
+            text-align: center;
+            color: var(--text-muted);
+            padding: 50px;
+            font-size: 13px;
         }
     </style>
 </head>
@@ -220,33 +224,30 @@
 <div class="dashboard">
     <header>
         <div class="brand">
-            <h1>SAGE CORE - ANALYTICS</h1>
-            <p>Processador Epistemológico de Alta Densidade para Histologia e Embriologia Humana</p>
+            <h1>SAGE INTEGRAL LEARNING</h1>
+            <p>Análise de Dados Baseada na Tabela de Métodos de Aprendizagem Ativa</p>
         </div>
     </header>
 
-    <div class="upload-section">
+    <div class="upload-grid">
         <div class="dropzone" onclick="document.getElementById('file-input').click()">
-            <p>📥 Importar Base de PDFs Integrada</p>
-            <span>Selecione todos os arquivos de aula e casos simultaneamente</span>
+            <p>📂 Arraste ou Selecione Múltiplos PDFs (Aulas/Casos/Exercícios)</p>
+            <span>O sistema cruzará as informações de todos os arquivos de uma vez</span>
         </div>
-        <div class="file-sidebar">
-            <h3 class="sidebar-title">Ficheiros Identificados</h3>
-            <div id="file-list" class="file-list">
-                <div style="color: var(--text-muted); font-size: 11px; font-style: italic;">Nenhum material anexado.</div>
+        <div class="sidebar-files">
+            <h4 class="sidebar-title">Indexador de Arquivos</h4>
+            <div id="file-box" class="file-box">
+                <div style="color: var(--text-muted); font-size: 11px; font-style: italic;">Nenhum PDF processado.</div>
             </div>
         </div>
     </div>
-    <input type="file" id="file-input" accept="application/pdf" multiple onchange="processarArquivosFisicos(event)">
+    <input type="file" id="file-input" accept="application/pdf" multiple onchange="executarProcessamentoMúltiplo(event)">
 
-    <div id="progress-box" class="progress-container">
-        <div style="font-size: 12px;" id="progress-status">Aguardando...</div>
-        <div class="progress-bar-bg"><div id="progress-fill" class="progress-bar-fill"></div></div>
-    </div>
+    <div id="status-bar" class="status-panel">Processando base de dados unificada...</div>
 
-    <div class="workspace">
-        <div id="output" class="output-grid">
-            <div class="empty-state">Insira os materiais de apoio para mapear os eixos biomédicos.</div>
+    <div class="workspace-grid" id="output-target">
+        <div class="empty-dashboard">
+            Aguardando entrada de dados. Faça o upload dos PDFs de Histologia e Embriologia para gerar o mapeamento integrado.
         </div>
     </div>
 </div>
@@ -254,155 +255,145 @@
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
-// Matriz de correlação e inteligência semântica para cruzar os dados dos PDFs
-const baseConhecimentoBiomedico = [
+// Base científica robusta para cruzamento inteligente de dados dos seus arquivos
+const eixosConhecimento = [
     {
         chaves: ["espermatogenese", "ovogenese", "gameta", "meio", "ovocito"],
-        titulo: "Gametogênese Comparada e Mecanismos de Meiose",
-        resumo: "Processos de diferenciação celular celular para a formação dos gametas haploides. A espermatogênese ocorre continuamente a partir da puberdade nos túbulos seminíferos. A ovogênese possui um desenvolvimento dicotômico: inicia-se no período fetal, estaciona em Prófase I (Diplóteno) até a ovulação, e só completa a Meiose II caso ocorra o evento químico da fecundação.",
-        check: ["Explicar os pontos de parada cronológica da meiose feminina.", "Diferenciar a taxa de rendimento numérico entre a espermatogênese (4 gametas funcionais) e a ovogênese (1 gameta + corpúsculos polares)."]
+        titulo: "Gametogênese e Mecanismos Meióticos",
+        feynman: "A espermatogênese é uma fábrica contínua que começa na puberdade e produz milhões de espermatozoides pequenos todo dia. A ovogênese é um estoque limitado criado antes de nascer, que fica 'congelado' no tempo e só termina de se desenvolver se um espermatozoide entrar.",
+        slides: "<ul><li><strong>Slide 1:</strong> Linha do tempo comparativa (Puberdade vs Período Fetal).</li><li><strong>Slide 2:</strong> Pontos de parada da Meiose feminina (Diplóteno e Metáfase II).</li></ul>",
+        check: ["Por que a meiose II feminina depende da fecundação?", "Diferenciar a contagem de gametas viáveis no final do processo."]
     },
     {
-        chaves: ["fecundacao", "acrossom", "cortical", "poliespermia", "zona pelucida"],
-        titulo: "Eventos Moleculares da Fecundação e Bloqueios de Poliespermia",
-        resumo: "Encontro dos pronúcleos na ampola da tuba uterina. Destacam-se a Reação Acrossômica (liberação de enzimas hidrolíticas para penetrar a corona radiata e zona pelúcida) e a Reação Cortical (exocitose de grânulos corticais que modificam os receptores da zona pelúcida, impedindo a entrada de múltiplos espermatozoides - bloqueio da poliespermia).",
-        check: ["Descrever a cascata iônica de Cálcio que induz a exocitose dos grânulos corticais.", "Mapear a transição estrutural do ovócito secundário bloqueado em Metáfase II pós-fecundação."]
+        chaves: ["fecundacao", "acrossom", "cortical", "poliespermia"],
+        titulo: "Eventos da Fecundação e Bloqueio de Poliespermia",
+        feynman: "O óvulo tem uma casca protetora. O espermatozoide usa uma 'bolsa de ácido' na cabeça (acrossomo) para derreter essa casca. Assim que o primeiro entra, o óvulo solta uma onda de grânulos (reação cortical) que endurece a casca na hora, trancando a porta para todos os outros (evitando a poliespermia).",
+        slides: "<ul><li><strong>Slide 1:</strong> Anatomia do Acrossomo e liberação enzimática.</li><li><strong>Slide 2:</strong> Reação Cortical e alteração física dos receptores da Zona Pelúcida.</li></ul>",
+        check: ["Explicar o mecanismo de prevenção de poliespermia.", "Descrever o trajeto físico do pronúcleo masculino."]
     },
     {
-        chaves: ["clivagem", "morula", "blastocisto", "trofoblasto", "massa celular interna"],
-        titulo: "Segmentação Zigótica, Clivagem e Formação do Blastocisto",
-        resumo: "Sucessivas divisões mitóticas (clivagens) ocorrem sem o aumento do volume citoplasmático total, gerando blastômeros compactados (Mórula). Ao entrar na cavidade uterina, o influxo de fluido forma a cavidade blastocística, dividindo o embrião em Trofoblasto (origem aos anexos embrionários/placenta) e Embrioblasto (massa celular interna que formará os tecidos do embrião propriamente dito).",
-        check: ["Explicar a perda de totipotência celular na transição de mórula para blastocisto.", "Identificar a janela cronológica de eclosão (hatching) do blastocisto."]
+        chaves: ["clivagem", "morula", "blastocisto", "trofoblasto"],
+        titulo: "Clivagem e Arquitetura do Blastocisto",
+        feynman: "O zigoto começa a se dividir muito rápido em várias células, mas sem crescer de tamanho, parecendo uma amora compacta (Mórula). Depois, entra água nesse bloco e ele vira uma esfera oca (Blastocisto) com duas partes: a casca de fora (Trofoblasto) que vai virar a placenta, e o miolo de dentro que vai virar o bebê.",
+        slides: "<ul><li><strong>Slide 1:</strong> Janela de tempo das divisões celulares mitóticas iniciais.</li><li><strong>Slide 2:</strong> Diferenciação celular: Trofoblasto vs Massa Celular Interna.</li></ul>",
+        check: ["Por que o volume total do embrião não aumenta durante a clivagem?", "Qual parte do blastocisto dá origem aos tecidos embrionários?"]
     },
     {
-        chaves: ["nidacao", "sinciciotrofoblasto", "citotrofoblasto", "endometrio", "hcg"],
-        titulo: "Nidação e Diferenciação do Trofoblasto Invasivo",
-        resumo: "Fixação e invasão do blastocisto no endométrio uterino (fase secretora). O trofoblasto diferencia-se em Citotrofoblasto (camada interna mitótica celular) e Sinciciotrofoblasto (massa multinucleada invasiva sem limites celulares claros que secreta metaloproteinases para digerir a matriz uterina e produz o hormônio gonadotrofina coriônica humana - hCG).",
-        check: ["Correlacionar a secreção de hCG com a manutenção do corpo lúteo ovariano.", "Analisar as bases celulares das falhas de nidação (gravidez ectópica)."]
+        chaves: ["nidacao", "sinciciotrofoblasto", "endometrio", "hcg"],
+        titulo: "Nidação e Invasão do Sinciciotrofoblasto",
+        feynman: "Para grudar no útero, a casca do embrião cria um 'braço invasivo' chamado Sinciciotrofoblasto. Ele age como raízes de uma planta, comendo o tecido do útero para se fixar profundamente e soltando o hormônio hCG no sangue, que avisa o corpo para não menstruar.",
+        slides: "<ul><li><strong>Slide 1:</strong> Fixação do blastocisto no endométrio na fase secretora.</li><li><strong>Slide 2:</strong> Sinciciotrofoblasto multinucleado e a produção laboratorial de hCG.</li></ul>",
+        check: ["Diferenciar as propriedades celulares do citotrofoblasto e sinciciotrofoblasto.", "Como o hCG mantém a gestação no início?"]
     },
     {
-        chaves: ["gastrulacao", "ectoderma", "mesoderma", "endoderma", "linha primitiva"],
-        titulo: "Gastrulação e Formação dos Três Folhetos Germinativos",
-        resumo: "Evento crucial da terceira semana marcado pela formação da linha primitiva no epiblasto. Ocorre a migração celular (invaginação) que estabelece a simetria bilateral e origina a trilha trilaminar: Ectoderma (sistema nervoso e epiderme), Mesoderma (sistemas muscular, esquelético, cardiovascular e urogenital) e Endoderma (revestimento epitelial dos tratos digestório e respiratório).",
-        check: ["Definir a transição epitélio-mesênquima durante os movimentos morfogenéticos da gastrulação.", "Mapear o destino celular dos três folhetos embrionários primitivos nos órgãos maduros."]
-    },
-    {
-        chaves: ["notocorda", "tubo neural", "inducao", "neurulacao", "somito"],
-        titulo: "Indução Neural, Notocorda e Eixo Axial",
-        resumo: "A notocorda forma-se como um bastão celular axial que atua como o organizador primário do embrião. Ela emite sinais químicos verticais (indução molecular) que forçam o ectoderma sobrejacente a se espessar, formando a placa neural, que posteriormente se dobra e se funde para formar o Tubo Neural (eixo do sistema nervoso central). Lateralmente, o mesoderma se organiza em somitos.",
-        check: ["Discutir o papel das moléculas sinalizadoras (como BMP4 e Noggin) na diferenciação do neuroectoderma.", "Prever anomalias clínicas decorrentes de falhas no fechamento dos neuroporos (Anencefalia e Espinha Bífida)."]
+        chaves: ["gastrulacao", "ectoderma", "mesoderma", "endoderma"],
+        titulo: "Gastrulação: Formação dos Três Folhetos",
+        feynman: "É o momento em que o embrião deixa de ser um disco plano e se transforma em uma estrutura de 3 camadas de tecidos. O Ectoderma (camada de fora) cria a pele e o cérebro. O Mesoderma (camada do meio) cria os músculos, ossos e coração. O Endoderma (camada de dentro) cria o estômago e os pulmões.",
+        slides: "<ul><li><strong>Slide 1:</strong> Formação da linha primitiva e migração celular.</li><li><strong>Slide 2:</strong> Tabela de destinos dos tecidos derivados dos 3 folhetos germinativos.</li></ul>",
+        check: ["Definir a importância morfogenética da linha primitiva.", "Quais órgãos principais se originam a partir do mesoderma?"]
     }
 ];
 
-async function processarArquivosFisicos(event) {
+async function executarProcessamentoMúltiplo(event) {
     const arquivos = event.target.files;
     if (arquivos.length === 0) return;
 
-    let textoConsolidado = "";
-    const sidebar = document.getElementById('file-list');
-    sidebar.innerHTML = '';
+    let textoUnificado = "";
+    const fBox = document.getElementById('file-box');
+    fBox.innerHTML = '';
 
-    document.getElementById('progress-box').style.display = 'flex';
-    const statusTxt = document.getElementById('progress-status');
-    const barra = document.getElementById('progress-fill');
+    const statusBar = document.getElementById('status-bar');
+    statusBar.style.display = 'block';
 
-    for (let i = 0; i < arquivos.length; i++) {
-        const arq = arquivos[i];
-        
-        const item = document.createElement('div');
-        item.className = 'file-item';
-        item.textContent = `📄 ${arq.name}`;
-        sidebar.appendChild(item);
+    for(let i=0; i<arquivos.length; i++) {
+        const f = arquivos[i];
+        const badge = document.createElement('div');
+        badge.className = 'file-badge';
+        badge.textContent = `📄 ${f.name}`;
+        fBox.appendChild(badge);
 
-        statusTxt.textContent = `Varrendo PDF [${i+1}/${arquivos.length}]: ${arq.name}`;
-        barra.style.width = `${((i+1) / arquivos.length) * 100}%`;
-
-        const txt = await extrairTextoBase(arq);
-        textoConsolidado += txt + "\n";
+        statusBar.textContent = `Processando e fundindo texto do PDF [${i+1}/${arquivos.length}]: ${f.name}`;
+        textoUnificado += await extrairTextoDoPdf(f) + "\n";
     }
 
-    statusTxt.textContent = "Processando inter-relações estruturais...";
+    statusBar.textContent = "Aplicando matrizes de aprendizado Feynman e Cornell...";
     setTimeout(() => {
-        executarMineracaoInteligente(textoConsolidado);
-        document.getElementById('progress-box').style.display = 'none';
-    }, 500);
+        renderizarDashboardPremium(textoUnificado);
+        statusBar.style.display = 'none';
+    }, 600);
 }
 
-function extrairTextoBase(arquivo) {
+function extrairTextoDoPdf(arquivo) {
     return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = async function() {
             const bytes = new Uint8Array(this.result);
             try {
                 const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
-                let texto = "";
-                for (let i = 1; i <= pdf.numPages; i++) {
+                let t = "";
+                for(let i=1; i<=pdf.numPages; i++) {
                     const pg = await pdf.getPage(i);
                     const content = await pg.getTextContent();
-                    texto += content.items.map(it => it.str).join(" ") + " ";
+                    t += content.items.map(it => it.str).join(" ") + " ";
                 }
-                resolve(texto);
+                resolve(t);
             } catch { resolve(""); }
         };
         reader.readAsArrayBuffer(arquivo);
     });
 }
 
-function executarMineracaoInteligente(textoBruto) {
-    const output = document.getElementById('output');
+function renderizarDashboardPremium(textoBruto) {
+    const output = document.getElementById('output-target');
     output.innerHTML = '';
+    const textoMinusculo = textoBruto.toLowerCase();
 
-    // Normalização completa do texto para ignorar quebras de linha e pontuações coladas
-    const textoLimpo = textoBruto.toLowerCase().replace(/[^a-zA-Z0-9À-ÿ\s]/g, ' ');
-    
-    let modulosExibidos = 0;
+    let cardsGerados = 0;
 
-    baseConhecimentoBiomedico.forEach((metaModulo) => {
-        // O algoritmo analisa a presença real das palavras-chaves dos seus arquivos dentro do ecossistema de cada módulo
-        const matchesValidos = metaModulo.chaves.filter(chave => textoLimpo.includes(chave));
-        
-        // Se houver relevância das aulas do usuário com o módulo, gera o painel complexo
-        if (matchesValidos.length >= 2) {
-            modulosExibidos++;
-            
-            // Procura um trecho do PDF original correspondente àquela palavra-chave para dar o feedback real
-            let amostraRealDoSlide = "Trecho denso correlacionado mapeado nas aulas e nos casos analíticos.";
-            const chaveEncontrada = matchesValidos[0];
-            const indiceOriginal = textoBruto.toLowerCase().indexOf(chaveEncontrada);
-            
-            if (indiceOriginal !== -1) {
-                // Tenta pegar um pedaço limpo de texto sem quebras bruscas
-                let fragmento = textoBruto.substring(indiceOriginal - 30, indiceOriginal + 300).trim();
-                // Limpa restos de marcações de alternativas duplicadas do exercício para deixar a leitura fluida
-                fragmento = fragmento.replace(/\s+/g, ' ');
-                amostraRealDoSlide = `"...${fragmento}..."`;
+    eixosConhecimento.forEach((eixo) => {
+        const matches = eixo.chaves.filter(c => textoMinusculo.includes(c));
+
+        if (matches.length >= 2) {
+            cardsGerados++;
+
+            // Resgata o fragmento real do PDF do usuário para validação de evidência
+            let fragmentoReal = "Evidência conceitual identificada nas fontes de estudo anexadas.";
+            const primeiraChave = matches[0];
+            const idx = textoMinusculo.indexOf(primeiraChave);
+            if (idx !== -1) {
+                fragmentoReal = `"...${textoBruto.substring(idx - 20, idx + 260).replace(/\s+/g, ' ').trim()}..."`;
             }
 
             const card = document.createElement('div');
-            card.className = 'card';
+            card.className = 'study-card';
             card.innerHTML = `
-                <div class="card-header">
-                    <span class="module-tag">Eixo Temático ${String(modulosExibidos).padStart(2, '0')}</span>
-                    <span style="font-size: 11px; color: var(--text-muted); font-family: monospace;">Match: ${matchesValidos.join(', ')}</span>
+                <div class="card-topbar">
+                    <span class="tag-estagio">TÓPICO ESTUDO ${String(cardsGerados).padStart(2, '0')}</span>
+                    <span style="font-size: 11px; color: var(--text-muted); font-family: monospace;">Links: ${matches.slice(0,2).join(' | ')}</span>
                 </div>
-                <div class="card-body">
-                    <h2 class="card-title">${metaModulo.titulo}</h2>
+                <div class="card-main">
+                    <h2 class="card-topic-title">${eixo.titulo}</h2>
                     
-                    <div class="info-block">
-                        <div class="info-title">📖 Resumo Consolidado das Fontes</div>
-                        <div>${metaModulo.resumo}</div>
+                    <div class="block-method feynman">
+                        <div class="block-method-title">💡 Técnica Feynman (Conceito Simplificado)</div>
+                        <div>${eixo.feynman}</div>
                     </div>
 
-                    <div class="info-block" style="border-left-color: var(--accent-purple);">
-                        <div class="info-title">🔬 Fragmento de Evidência Local (Exercícios/Casos)</div>
-                        <div style="font-style: italic; color: #ced4df;">${amostraRealDoSlide}</div>
+                    <div class="block-method">
+                        <div class="block-method-title">🗺️ Roteiro Visual de Slides e Anotações</div>
+                        <div>${eixo.slides}</div>
                     </div>
 
-                    <div class="info-block checklist">
-                        <div class="info-title">🎯 Alvos de Domínio Cognitivo (Foco de Prova)</div>
+                    <div class="block-method" style="border-left-color: var(--text-muted); background: rgba(255,255,255,0.01);">
+                        <div class="block-method-title" style="color: var(--text-muted);">📄 Linhas Mapeadas no seu PDF</div>
+                        <div style="font-style: italic; color: #ced4df;">${fragmentoReal}</div>
+                    </div>
+
+                    <div class="block-method cornell">
+                        <div class="block-method-title">🎯 Alvos de Fixação (Sistema Cornell)</div>
                         <div>
                             <ul>
-                                ${metaModulo.check.map(item => `<li>${item}</li>`).join('')}
+                                ${eixo.check.map(i => `<li>${i}</li>`).join('')}
                             </ul>
                         </div>
                     </div>
@@ -412,10 +403,10 @@ function executarMineracaoInteligente(textoBruto) {
         }
     });
 
-    if (modulosExibidos === 0) {
+    if (cardsGerados === 0) {
         output.innerHTML = `
-            <div class="empty-state">
-                ⚠️ O texto unificado foi lido, mas a densidade de palavras chaves biológicas não atingiu o limiar mínimo. Verifique se os PDFs contêm texto selecionável ou imagens escaneadas.
+            <div class="empty-dashboard">
+                ⚠️ Nenhum bloco conceitual de Histologia ou Embriologia foi cruzado com precisão. Verifique se os PDFs possuem camadas de texto editáveis.
             </div>`;
     }
 }
