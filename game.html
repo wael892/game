@@ -222,7 +222,20 @@
         .color-swatch:hover { transform: scale(1.2); border-color: white; }
         .color-swatch.active { border-color: white; transform: scale(1.15); box-shadow: 0 0 0 1px #ffd43b; }
 
-        #color-custom { width: 100%; height: 22px; border: none; border-radius: 4px; cursor: pointer; padding: 0; flex-shrink: 0; }
+        .color-swatch-picker-btn {
+            width: 18px; height: 18px; border-radius: 50%;
+            cursor: pointer; border: 2px solid transparent;
+            background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
+            transition: transform 0.1s, border-color 0.1s;
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .color-swatch-picker-btn:hover { transform: scale(1.2); border-color: white; }
+        .color-swatch-picker-btn.active { border-color: white; transform: scale(1.15); box-shadow: 0 0 0 1px #ffd43b; }
+
+        #color-custom {
+            opacity: 0; position: absolute; width: 0; height: 0; pointer-events: none;
+        }
         #current-color-display {
             width: 36px; height: 36px; border-radius: 8px;
             border: 3px solid white; flex-shrink: 0;
@@ -412,15 +425,15 @@
             }
             #palette-label { display: none; }
             #palette-grid {
-                grid-template-columns: repeat(14, 22px);
+                grid-template-columns: repeat(15, 22px);
                 overflow-x: auto; overflow-y: hidden;
                 height: 28px;
                 gap: 3px;
                 flex: 1;
             }
             .color-swatch { width: 22px; height: 22px; border-radius: 4px; }
+            .color-swatch-picker-btn { width: 22px; height: 22px; }
             #current-color-display { width: 28px; height: 28px; flex-shrink: 0; }
-            #color-custom { width: 26px; height: 26px; border-radius: 4px; flex-shrink: 0; }
 
             #bottom-actions { padding: 3px 6px; flex-wrap: wrap; gap: 4px; }
 
@@ -543,7 +556,6 @@
         <span id="palette-label">🎨 Cores</span>
         <div id="palette-grid"></div>
         <input type="color" id="color-custom" value="#000000" title="Cor personalizada" onchange="pickCustomColor(this)">
-        <div id="current-color-display-palette" style="width:30px;height:30px;border-radius:6px;border:2px solid white;flex-shrink:0;background:#000000;"></div>
     </div>
 
     <div id="right-chats-wrapper">
@@ -661,14 +673,31 @@
         ctx.lineWidth = size;
     }
 
+    function triggerCustomColorPicker() {
+        document.getElementById('color-custom').click();
+    }
+
     function setActiveColor(hex) {
         currentColor = hex;
         document.getElementById('current-color-display').style.background = hex;
-        document.getElementById('current-color-display-palette').style.background = hex;
         document.getElementById('color-custom').value = hex;
+        
+        let customBtnIsActive = true;
         document.querySelectorAll('.color-swatch').forEach(s => {
-            s.classList.toggle('active', s.dataset.color === hex);
+            const isMatch = s.dataset.color.toLowerCase() === hex.toLowerCase();
+            s.classList.toggle('active', isMatch);
+            if (isMatch) customBtnIsActive = false;
         });
+
+        const pickerBtn = document.getElementById('picker-swatch-btn');
+        if (pickerBtn) {
+            pickerBtn.classList.toggle('active', customBtnIsActive);
+            if (customBtnIsActive) {
+                pickerBtn.style.border = "2px solid " + hex;
+            } else {
+                pickerBtn.style.border = "2px solid transparent";
+            }
+        }
     }
 
     function pickCustomColor(input) {
@@ -692,6 +721,13 @@
             });
             grid.appendChild(swatch);
         });
+
+        const pickerBtn = document.createElement('div');
+        pickerBtn.className = 'color-swatch-picker-btn';
+        pickerBtn.id = 'picker-swatch-btn';
+        pickerBtn.title = 'Escolher tom...';
+        pickerBtn.addEventListener('click', triggerCustomColorPicker);
+        grid.appendChild(pickerBtn);
     }
     buildPalette();
 
@@ -946,7 +982,7 @@
         gameEnded = true;
         roundActive = false;
         clearInterval(countdownInterval);
-        clearTimeout(nextRoundTimeout);
+        幕clearTimeout(nextRoundTimeout);
         
         document.getElementById('btn-egg').style.display = 'none';
         document.getElementById('btn-flower').style.display = 'none';
@@ -997,14 +1033,14 @@
         if (!roundActive || isDrawer || !mqttClient || gameEnded) return;
         if (itemType === 'egg') {
             if (eggCooldown) return;
-            eggCooldown = true;
+            let eggCooldown = true;
             const btn = document.getElementById('btn-egg');
             btn.classList.add('cooldown'); btn.textContent = '🥚 Espere...';
             mqttClient.publish(baseTopic + "/interact", JSON.stringify({ thrower: username, target: currentDrawerName, type: 'egg' }));
             setTimeout(() => { eggCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '🥚 Jogar Ovo!'; }, 8000);
         } else if (itemType === 'flower') {
             if (flowerCooldown) return;
-            flowerCooldown = true;
+            let flowerCooldown = true;
             const btn = document.getElementById('btn-flower');
             btn.classList.add('cooldown'); btn.textContent = '🌹 Espere...';
             mqttClient.publish(baseTopic + "/interact", JSON.stringify({ thrower: username, target: currentDrawerName, type: 'flower' }));
