@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gartic Proibidão Realtime</title>
+    <title>Gartic Clone Realtime</title>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 
         body {
-            background-color: #ff6b6b;
+            background-color: #ffd43b;
             display: flex; flex-direction: column; align-items: center;
             height: 100vh; height: -webkit-fill-available;
             padding: 8px; overscroll-behavior: none; overflow: hidden;
@@ -17,7 +17,7 @@
 
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #ff6b6b; display: flex; justify-content: center;
+            background: #ffd43b; display: flex; justify-content: center;
             align-items: center; z-index: 1000;
         }
         .login-box {
@@ -25,20 +25,20 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             width: 100%; max-width: 400px; text-align: center;
         }
-        .login-box h2 { color: #e63946; margin-bottom: 20px; }
+        .login-box h2 { color: #118ab2; margin-bottom: 20px; }
         .login-box input {
             width: 100%; padding: 12px; margin-bottom: 15px;
             border: 2px solid #ced4da; border-radius: 8px;
             outline: none; font-size: 16px;
         }
-        .login-box input:focus { border-color: #e63946; }
+        .login-box input:focus { border-color: #118ab2; }
         .login-box textarea {
             width: 100%; padding: 12px; margin-bottom: 15px;
             border: 2px solid #ced4da; border-radius: 8px;
             outline: none; font-size: 14px; resize: vertical;
             min-height: 70px; color: #333;
         }
-        .login-box textarea:focus { border-color: #e63946; }
+        .login-box textarea:focus { border-color: #118ab2; }
         .login-box .hint { font-size: 11px; color: #888; margin-top: -10px; margin-bottom: 15px; text-align: left; }
 
         header {
@@ -49,29 +49,29 @@
             display: flex; justify-content: space-between; align-items: center;
             gap: 10px; flex-shrink: 0; position: relative;
         }
-        h1 { color: #e63946; font-size: 20px; flex-shrink: 0; }
+        h1 { color: #118ab2; font-size: 20px; flex-shrink: 0; }
         #word-display {
-            font-weight: bold; font-size: 16px; color: #d90429;
+            font-weight: bold; font-size: 16px; color: #ef476f;
             background: #f8f9fa; padding: 4px 14px; border-radius: 20px;
-            border: 2px dashed #d90429; text-align: center; word-break: break-word; flex: 1;
+            border: 2px dashed #ef476f; text-align: center; word-break: break-word; flex: 1;
         }
         #room-display {
             font-weight: bold; color: #666; font-size: 12px;
             display: flex; flex-direction: column; align-items: flex-end;
             gap: 2px; flex-shrink: 0;
         }
-        #timer-display { font-weight: bold; color: #d90429; font-size: 14px; }
+        #timer-display { font-weight: bold; color: #ef476f; font-size: 14px; }
 
         .btn-words-toggle {
-            background: #e63946; color: white; border: none; padding: 6px 12px;
+            background: #118ab2; color: white; border: none; padding: 6px 12px;
             border-radius: 20px; font-weight: bold; font-size: 12px; cursor: pointer;
             display: flex; align-items: center; gap: 4px; transition: background 0.2s;
         }
-        .btn-words-toggle:hover { background: #b7094c; }
+        .btn-words-toggle:hover { background: #0f7495; }
         #words-management-panel {
             position: absolute; top: 55px; left: 16px; background: white;
             padding: 12px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            border: 2px solid #e63946; z-index: 600; width: 280px; display: none;
+            border: 2px solid #118ab2; z-index: 600; width: 280px; display: none;
             flex-direction: column; gap: 8px; text-align: left;
         }
         #words-management-panel label { font-size: 11px; font-weight: bold; color: #333; }
@@ -79,7 +79,7 @@
             width: 100%; height: 60px; padding: 6px; font-size: 12px;
             border: 1px solid #ced4da; border-radius: 6px; resize: none; outline: none;
         }
-        #words-management-panel textarea:focus { border-color: #e63946; }
+        #words-management-panel textarea:focus { border-color: #118ab2; }
         #words-management-panel .panel-actions { display: flex; justify-content: flex-end; gap: 6px; }
 
         #main-container {
@@ -100,26 +100,26 @@
         .player-item {
             background: #f8f9fa; padding: 7px 8px; border-radius: 6px;
             font-weight: bold; color: #333; font-size: 11px;
-            border-left: 4px solid #e63946;
+            border-left: 4px solid #118ab2;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .player-item.drawing { border-left-color: #d90429; background: #ffe3e8; }
+        .player-item.drawing { border-left-color: #ef476f; background: #ffe3e8; }
         .player-info { display: flex; flex-direction: column; gap: 1px; overflow: hidden; }
         .player-rank { font-size: 9px; color: #777; font-weight: normal; }
         .player-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .player-score {
-            background: #e63946; color: white; border-radius: 10px;
+            background: #118ab2; color: white; border-radius: 10px;
             padding: 1px 7px; font-size: 11px; font-weight: bold;
             min-width: 32px; text-align: center;
             transition: transform 0.2s, background 0.3s;
             flex-shrink: 0;
         }
-        .player-item.drawing .player-score { background: #d90429; }
-        .player-score.bump { transform: scale(1.4); background: #38b000 !important; }
+        .player-item.drawing .player-score { background: #ef476f; }
+        .player-score.bump { transform: scale(1.4); background: #06d6a0 !important; }
 
         .score-popup {
             position: fixed; pointer-events: none;
-            font-size: 20px; font-weight: bold; color: #38b000;
+            font-size: 20px; font-weight: bold; color: #06d6a0;
             text-shadow: 0 2px 6px rgba(0,0,0,0.25);
             animation: floatUp 1.4s ease-out forwards; z-index: 9999;
         }
@@ -146,28 +146,28 @@
 
         #round-announcement {
             position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%) scale(0.5);
-            background: rgba(32, 10, 15, 0.95); color: white;
+            background: rgba(26, 26, 46, 0.95); color: white;
             padding: 18px 30px; border-radius: 16px; font-weight: bold; text-align: center;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4); border: 3px solid #ff6b6b;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4); border: 3px solid #ffd43b;
             z-index: 500; pointer-events: none; display: none; opacity: 0;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             max-width: 85%; width: max-content;
         }
         #round-announcement.show { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
-        #round-announcement h2 { font-size: 22px; color: #ff6b6b; margin-bottom: 4px; }
+        #round-announcement h2 { font-size: 22px; color: #ffd43b; margin-bottom: 4px; }
         #round-announcement p { font-size: 14px; color: #e6e6e6; font-weight: normal; }
 
         #tools {
-            background: #200a0f;
+            background: #1a1a2e;
             display: flex; flex-direction: column;
             padding: 8px; gap: 6px;
-            border-right: 3px solid #ff6b6b;
+            border-right: 3px solid #ffd43b;
             flex-shrink: 0; overflow-y: auto;
             width: 56px;
         }
 
         .tool-section-label {
-            font-size: 8px; color: #aa888f; text-transform: uppercase;
+            font-size: 8px; color: #888; text-transform: uppercase;
             letter-spacing: 0.5px; text-align: center; margin-top: 2px;
         }
 
@@ -175,13 +175,13 @@
             width: 38px; height: 38px; border-radius: 8px;
             border: 2px solid transparent; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            font-size: 16px; background: #3d1921;
+            font-size: 16px; background: #2a2a3e;
             color: white; transition: all 0.15s;
             flex-shrink: 0;
             -webkit-tap-highlight-color: transparent;
         }
-        .tool-btn:hover { background: #5a2833; border-color: #ff6b6b; }
-        .tool-btn.active { background: #ff6b6b; color: #200a0f; border-color: #d90429; }
+        .tool-btn:hover { background: #3a3a5e; border-color: #ffd43b; }
+        .tool-btn.active { background: #ffd43b; color: #1a1a2e; border-color: #ffa500; }
 
         .brush-sizes {
             display: flex; flex-direction: column; gap: 4px; align-items: center;
@@ -192,25 +192,25 @@
             flex-shrink: 0;
             -webkit-tap-highlight-color: transparent;
         }
-        .size-btn:hover { border-color: #ff6b6b; transform: scale(1.15); }
-        .size-btn.active { border-color: #ff6b6b; box-shadow: 0 0 0 2px rgba(255,107,107,0.5); }
+        .size-btn:hover { border-color: #ffd43b; transform: scale(1.15); }
+        .size-btn.active { border-color: #ffd43b; box-shadow: 0 0 0 2px rgba(255,212,59,0.5); }
 
-        .tool-separator { height: 1px; background: #55242f; margin: 3px 0; }
+        .tool-separator { height: 1px; background: #333; margin: 3px 0; }
 
         #palette-container {
-            flex: 0 0 46px; background: #200a0f; border-radius: 12px;
+            flex: 0 0 46px; background: #1a1a2e; border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex; flex-direction: column; overflow: hidden;
             padding: 6px 4px; gap: 4px;
         }
-        #palette-label { font-size: 8px; color: #aa888f; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
+        #palette-label { font-size: 8px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
         #palette-grid {
             display: grid; grid-template-columns: repeat(2, 1fr);
             gap: 4px; overflow-y: auto; flex: 1;
         }
         #palette-grid::-webkit-scrollbar { width: 3px; }
         #palette-grid::-webkit-scrollbar-track { background: transparent; }
-        #palette-grid::-webkit-scrollbar-thumb { background: #55242f; border-radius: 2px; }
+        #palette-grid::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
 
         .color-swatch {
             width: 18px; height: 18px; border-radius: 4px;
@@ -220,7 +220,7 @@
             -webkit-tap-highlight-color: transparent;
         }
         .color-swatch:hover { transform: scale(1.2); border-color: white; }
-        .color-swatch.active { border-color: white; transform: scale(1.15); box-shadow: 0 0 0 1px #ff6b6b; }
+        .color-swatch.active { border-color: white; transform: scale(1.15); box-shadow: 0 0 0 1px #ffd43b; }
 
         #color-custom { width: 100%; height: 22px; border: none; border-radius: 4px; cursor: pointer; padding: 0; flex-shrink: 0; }
         #current-color-display {
@@ -231,21 +231,21 @@
 
         #bottom-actions {
             display: flex; gap: 6px; padding: 4px 8px;
-            background: #200a0f; border-top: 2px solid #3d1921;
+            background: #1a1a2e; border-top: 2px solid #2a2a3e;
             align-items: center; flex-shrink: 0;
         }
         .btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
-        .btn-clear { background: #d90429; color: white; }
+        .btn-clear { background: #ef476f; color: white; }
         .btn-skip { background: #f4a261; color: white; display: none; }
         
         .action-interact-btn {
             color: white; font-size: 13px; padding: 5px 10px; border-radius: 7px; border: none; cursor: pointer; font-weight: bold; flex-shrink: 0; display: none; transition: transform 0.1s, background 0.2s; box-shadow: 0 3px 8px rgba(0,0,0,0.15);
             -webkit-tap-highlight-color: transparent;
         }
-        #btn-egg { background: #7209b7; }
-        #btn-egg:active { transform: scale(0.92); background: #560bad; }
-        #btn-flower { background: #f72585; }
-        #btn-flower:active { transform: scale(0.92); background: #b5179e; }
+        #btn-egg { background: #f4a261; }
+        #btn-egg:active { transform: scale(0.92); background: #e76f51; }
+        #btn-flower { background: #2a9d8f; }
+        #btn-flower:active { transform: scale(0.92); background: #1e7167; }
         .action-interact-btn.cooldown { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
         .egg-fly, .flower-fly {
@@ -274,7 +274,7 @@
             100%{ transform: translate(0,0); }
         }
         .shake { animation: screenShake 0.45s ease; }
-        #egg-overlay { position: fixed; inset: 0; pointer-events: none; background: rgba(114, 9, 183, 0.35); opacity: 0; z-index: 9998; transition: opacity 0.1s; }
+        #egg-overlay { position: fixed; inset: 0; pointer-events: none; background: rgba(255, 200, 0, 0.45); opacity: 0; z-index: 9998; transition: opacity 0.1s; }
         #egg-overlay.splat { animation: splatFade 1.2s ease-out forwards; }
         @keyframes splatFade { 0% { opacity: 0.7; } 100% { opacity: 0; } }
         .petal-particle { position: fixed; pointer-events: none; font-size: 18px; z-index: 9997; animation: petalFall var(--fall-duration, 2s) linear forwards; }
@@ -291,19 +291,19 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex; flex-direction: column; overflow: hidden;
         }
-        .chat-title-bar { background: #200a0f; color: white; padding: 4px 8px; font-size: 11px; font-weight: bold; text-transform: uppercase; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        .chat-title-bar { background: #1a1a2e; color: white; padding: 4px 8px; font-size: 11px; font-weight: bold; text-transform: uppercase; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
         .chat-messages-area { flex: 1; padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
         .msg { padding: 4px 6px; border-radius: 5px; font-size: 11px; word-break: break-all; line-height: 1.3; }
-        .msg-system  { background: #fae0e4; color: #7209b7; font-weight: bold; }
+        .msg-system  { background: #e2f0d9; color: #385723; font-weight: bold; }
         .msg-success { background: #d1e7dd; color: #0f5132; font-weight: bold; border: 1px solid #badbcc; }
         .msg-wrong   { background: #ffe3e8; color: #c92a2a; }
         .msg-normal  { background: #f1f3f5; color: #333; }
-        .msg-normal .username { font-weight: bold; color: #e63946; }
-        .msg-egg     { background: #f3e5f5; color: #4a148c; font-weight: bold; border: 1px solid #ce93d8; }
-        .msg-flower  { background: #fce4ec; color: #880e4f; font-weight: bold; border: 1px solid #f48fb1; }
+        .msg-normal .username { font-weight: bold; color: #118ab2; }
+        .msg-egg     { background: #fff3cd; color: #856404; font-weight: bold; border: 1px solid #ffc107; }
+        .msg-flower  { background: #e3fafc; color: #0b7285; font-weight: bold; border: 1px solid #99e9f2; }
         .chat-input-row { display: flex; padding: 5px; border-top: 1px solid #dee2e6; background: #f8f9fa; flex-shrink: 0; }
         .chat-input-field { flex: 1; padding: 6px; border: 2px solid #ced4da; border-radius: 5px; outline: none; font-size: 12px; }
-        .chat-send-btn { background: #e63946; color: white; margin-left: 4px; font-size: 11px; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .chat-send-btn { background: #118ab2; color: white; margin-left: 4px; font-size: 11px; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
         @media (max-width: 768px) {
             body { padding: 4px; overflow: hidden; }
@@ -385,7 +385,7 @@
                 flex-direction: row;
                 overflow-x: auto; overflow-y: hidden;
                 border-right: none;
-                border-top: 2px solid #ff6b6b;
+                border-top: 2px solid #ffd43b;
                 height: 50px;
                 min-height: 50px;
                 padding: 6px 10px;
@@ -394,7 +394,7 @@
                 flex-shrink: 0 !important;
             }
             .tool-section-label { display: none; }
-            .tool-separator { width: 1px; height: 32px; background: #55242f; margin: 0 2px; flex-shrink: 0; }
+            .tool-separator { width: 1px; height: 32px; background: #444; margin: 0 2px; flex-shrink: 0; }
             .brush-sizes { flex-direction: row; gap: 6px; align-items: center; }
             .tool-btn { width: 38px; height: 38px; font-size: 17px; flex-shrink: 0; }
             .size-btn { flex-shrink: 0; }
@@ -459,107 +459,107 @@
 
 <div id="login-screen">
     <div class="login-box">
-        <h2>🌶️ Gartic Proibidão</h2>
-        <input type="text" id="input-username" placeholder="👤 Seu Nome / Apelido Safado" required>
-        <input type="text" id="input-room" placeholder="🔑 Nome do Motel / Sala" required>
-        <textarea id="input-custom-words" placeholder="📝 Palavras personalizadas (opcional)&#10;Ex: Algema, Chicote, Melancia..."></textarea>
-        <p class="hint">Separe por vírgula. Se deixar em branco, o sistema usa o nosso banco de dados picante da zueira.</p>
-        <button class="btn" style="width:100%;padding:12px;font-size:16px;background:#e63946;color:white;" onclick="connectToGame()">🚀 ENTRAR NA SAFADEZA</button>
+        <h2>🎨 Gartic Clone</h2>
+        <input type="text" id="input-username" placeholder="👤 Seu Nome / Apelido" required>
+        <input type="text" id="input-room" placeholder="🔑 Nome da Sala (ex: sala123)" required>
+        <textarea id="input-custom-words" placeholder="📝 Palavras iniciais (opcional)&#10;Ex: Geladeira, Fusca, Professor, Saudade..."></textarea>
+        <p class="hint">Separe as palavras por vírgula. Se deixar vazio, usa o banco padrão.</p>
+        <button class="btn" style="width:100%;padding:12px;font-size:16px;background:#118ab2;color:white;" onclick="connectToGame()">🚀 ENTRAR NO JOGO</button>
     </div>
 </div>
 
 <header>
-    <h1>🌶️ PROIBIDÃO</h1>
+    <h1>🎨 GARTIC</h1>
     <button class="btn-words-toggle" onclick="toggleWordsPanel()">📝 Palavras</button>
     <div id="words-management-panel">
-        <label>➕ Injetar Palavras na Sala:</label>
-        <textarea id="runtime-new-words" placeholder="Ex: Cueca, Calcinha, Morango... (separe por vírgula)"></textarea>
+        <label>➕ Adicionar Palavras na Sala:</label>
+        <textarea id="runtime-new-words" placeholder="Ex: Avô, Pastel, Tubarão... (separe por vírgula)"></textarea>
         <div class="panel-actions">
-            <button class="btn" style="background:#d90429; color:white; padding:4px 8px; font-size:11px;" onclick="toggleWordsPanel()">Fechar</button>
-            <button class="btn" style="background:#38b000; color:white; padding:4px 8px; font-size:11px;" onclick="submitRuntimeWords()">Injetar</button>
+            <button class="btn" style="background:#ef476f; color:white; padding:4px 8px; font-size:11px;" onclick="toggleWordsPanel()">Fechar</button>
+            <button class="btn" style="background:#06d6a0; color:white; padding:4px 8px; font-size:11px;" onclick="submitRuntimeWords()">Adicionar</button>
         </div>
     </div>
-    <div id="word-display">⏳ Esperando os safados entrarem...</div>
+    <div id="word-display">⏳ Aguardando jogadores...</div>
     <div id="room-display">
-        <span id="room-id">Motel: —</span>
-        <span id="timer-display">⏱️ Clímax: --</span>
+        <span id="room-id">Sala: —</span>
+        <span id="timer-display">⏱️ Tempo: --</span>
     </div>
 </header>
 
 <div id="main-container">
     <div id="scoreboard">
-        <h3>🏆 Atrevidos</h3>
+        <h3>🏆 Pódio</h3>
         <div id="players-list"></div>
     </div>
 
     <div id="canvas-wrapper">
         <div id="drawing-area">
             <div id="tools">
-                <span class="tool-section-label">Estilo</span>
-                <div class="tool-btn active" id="tool-brush" title="Pincel Macio" onclick="setTool('brush')">✏️</div>
-                <div class="tool-btn" id="tool-eraser" title="Apagar Evidências" onclick="setTool('eraser')">🧹</div>
-                <div class="tool-btn" id="tool-fill" title="Arrombar Balde" onclick="setTool('fill')">🪣</div>
+                <span class="tool-section-label">Modo</span>
+                <div class="tool-btn active" id="tool-brush" title="Pincel Livre" onclick="setTool('brush')">✏️</div>
+                <div class="tool-btn" id="tool-eraser" title="Borracha" onclick="setTool('eraser')">🧹</div>
+                <div class="tool-btn" id="tool-fill" title="Preencher" onclick="setTool('fill')">🪣</div>
 
                 <div class="tool-separator"></div>
-                <span class="tool-section-label">Curvas</span>
-                <div class="tool-btn active" id="shape-free" title="Movimento Livre" onclick="setShape('free')">〰️</div>
-                <div class="tool-btn" id="shape-circle" title="Forma Redonda" onclick="setShape('circle')">⭕</div>
-                <div class="tool-btn" id="shape-square" title="Forma Quadrada" onclick="setShape('square')">⬜</div>
-                <div class="tool-btn" id="shape-triangle" title="Forma Pontuda" onclick="setShape('triangle')">🔺</div>
-                <div class="tool-btn" id="shape-spray" title="Ejaculação de Tinta" onclick="setShape('spray')">💨</div>
+                <span class="tool-section-label">Forma</span>
+                <div class="tool-btn active" id="shape-free" title="Desenho Livre" onclick="setShape('free')">〰️</div>
+                <div class="tool-btn" id="shape-circle" title="Arrastar Círculo" onclick="setShape('circle')">⭕</div>
+                <div class="tool-btn" id="shape-square" title="Arrastar Quadrado" onclick="setShape('square')">⬜</div>
+                <div class="tool-btn" id="shape-triangle" title="Arrastar Triângulo" onclick="setShape('triangle')">🔺</div>
+                <div class="tool-btn" id="shape-spray" title="Efeito Spray" onclick="setShape('spray')">💨</div>
 
                 <div class="tool-separator"></div>
-                <span class="tool-section-label">Calibre</span>
+                <span class="tool-section-label">Tam.</span>
                 <div class="brush-sizes">
-                    <div class="size-btn active" id="size-2" style="width:8px;height:8px;" title="Fininho" onclick="setBrushSize(2,this)"></div>
-                    <div class="size-btn" id="size-5" style="width:12px;height:12px;" title="Gostosinho" onclick="setBrushSize(5,this)"></div>
-                    <div class="size-btn" id="size-10" style="width:18px;height:18px;" title="Generoso" onclick="setBrushSize(10,this)"></div>
-                    <div class="size-btn" id="size-20" style="width:24px;height:24px;" title="Cavalo" onclick="setBrushSize(20,this)"></div>
-                    <div class="size-btn" id="size-40" style="width:32px;height:32px;" title="Destruidor" onclick="setBrushSize(40,this)"></div>
+                    <div class="size-btn active" id="size-2" style="width:8px;height:8px;" title="Fino" onclick="setBrushSize(2,this)"></div>
+                    <div class="size-btn" id="size-5" style="width:12px;height:12px;" title="Médio" onclick="setBrushSize(5,this)"></div>
+                    <div class="size-btn" id="size-10" style="width:18px;height:18px;" title="Grosso" onclick="setBrushSize(10,this)"></div>
+                    <div class="size-btn" id="size-20" style="width:24px;height:24px;" title="Extra grosso" onclick="setBrushSize(20,this)"></div>
+                    <div class="size-btn" id="size-40" style="width:32px;height:32px;" title="Super grosso" onclick="setBrushSize(40,this)"></div>
                 </div>
 
                 <div class="tool-separator"></div>
-                <div id="current-color-display" style="background:#000000;" title="Tom da noite"></div>
+                <div id="current-color-display" style="background:#000000;" title="Cor atual"></div>
             </div>
 
             <div id="canvas-container">
                 <div id="round-announcement">
-                    <h2 id="announcement-title">FIM DArapidinha</h2>
-                    <p id="announcement-desc">O que rolou na cama</p>
+                    <h2 id="announcement-title">FIM DE RODADA</h2>
+                    <p id="announcement-desc">Descrição do que rolou</p>
                 </div>
                 <canvas id="canvas"></canvas>
-                <div id="fill-status">🪣 Modo Preenchimento Profundo</div>
+                <div id="fill-status">🪣 Modo Preenchimento</div>
             </div>
         </div>
         <div id="bottom-actions">
-            <button class="btn btn-clear" onclick="sendClear()">🗑️ Rasgar Tela</button>
-            <button id="btn-skip" class="btn btn-skip" onclick="skipRound()">⏭️ Brochar / Passar Vez</button>
-            <button id="btn-egg" class="action-interact-btn" onclick="throwInteractItem('egg')">🍆 Jogar Berinjela!</button>
-            <button id="btn-flower" class="action-interact-btn" onclick="throwInteractItem('flower')">🍑 Dar Sarrada!</button>
+            <button class="btn btn-clear" onclick="sendClear()">🗑️ Limpar</button>
+            <button id="btn-skip" class="btn btn-skip" onclick="skipRound()">⏭️ Pular Vez</button>
+            <button id="btn-egg" class="action-interact-btn" onclick="throwInteractItem('egg')">🥚 Jogar Ovo!</button>
+            <button id="btn-flower" class="action-interact-btn" onclick="throwInteractItem('flower')">🌹 Dar Flor!</button>
         </div>
     </div>
 
     <div id="palette-container">
-        <span id="palette-label">🎨 Tons</span>
+        <span id="palette-label">🎨 Cores</span>
         <div id="palette-grid"></div>
-        <input type="color" id="color-custom" value="#000000" title="Tom exótico" onchange="pickCustomColor(this)">
+        <input type="color" id="color-custom" value="#000000" title="Cor personalizada" onchange="pickCustomColor(this)">
         <div id="current-color-display-palette" style="width:30px;height:30px;border-radius:6px;border:2px solid white;flex-shrink:0;background:#000000;"></div>
     </div>
 
     <div id="right-chats-wrapper">
         <div class="chat-box-container">
-            <div class="chat-title-bar">🎯 Gemidos / Palpites</div>
+            <div class="chat-title-bar">🎯 Palpites</div>
             <div id="guess-messages" class="chat-messages-area"></div>
             <div class="chat-input-row">
-                <input type="text" id="guess-input" class="chat-input-field" placeholder="Chute com força..." autocomplete="off">
+                <input type="text" id="guess-input" class="chat-input-field" placeholder="Chute a palavra..." autocomplete="off">
                 <button class="chat-send-btn" onclick="sendGuessMessage()">➤</button>
             </div>
         </div>
         <div class="chat-box-container">
-            <div class="chat-title-bar">💬 Conversa de Cama</div>
+            <div class="chat-title-bar">💬 Conversa</div>
             <div id="chat-messages" class="chat-messages-area"></div>
             <div class="chat-input-row">
-                <input type="text" id="chat-input" class="chat-input-field" placeholder="Sussurre algo no chat..." autocomplete="off">
+                <input type="text" id="chat-input" class="chat-input-field" placeholder="Conversar na sala..." autocomplete="off">
                 <button class="chat-send-btn" onclick="sendChatMessage()">➤</button>
             </div>
         </div>
@@ -586,7 +586,7 @@
     let gameEnded = false;
     const PONTUACAO_MAXIMA = 1000;
     
-    const PALAVRAS_PADRAO = ["Algema","Chicote","Cama de Casal","Gelatina","Berinjela","Melancia","Morango","Banana","Pepino","Creme","Calcinha","CuecaBoxer","Massagem","Censura","Sutiã","Coração","Vela","Espelho","Pegada","Gemido","Beijo Grego","Chantilly","Travesseiro","Algemas"];
+    const PALAVRAS_PADRAO = ["Cachorro","Gato","Carro","Aviao","Banana","Maca","Casa","Arvore","Bola","Computador","Celular","Caneta","Chave","Livro","Relogio","Cadeira","Garfo","Sapato","Oculos","Sol","Lua","Flor","Peixe","Passaro"];
     function getPalavras() { return customWords.length > 0 ? customWords : PALAVRAS_PADRAO; }
 
     async function salvarPalavras() {
@@ -602,7 +602,7 @@
                 const salvas = JSON.parse(result.value);
                 if (Array.isArray(salvas) && salvas.length > 0) {
                     salvas.forEach(w => { if (!customWords.includes(w)) customWords.push(w); });
-                    addSystemMessage("💾 " + customWords.length + " fantasias secretas carregadas do histórico do quarto!");
+                    addSystemMessage("💾 " + customWords.length + " palavras carregadas da memória da sala!");
                 }
             }
         } catch(e) { }
@@ -915,9 +915,9 @@
         sortedPlayers.forEach((nome, index) => {
             const rank = index + 1;
             let rankLabel = rank + "º";
-            if (rank === 1) rankLabel = "👑 1º";
-            else if (rank === 2) rankLabel = "💋 2º";
-            else if (rank === 3) rankLabel = "🍆 3º";
+            if (rank === 1) rankLabel = "🥇 1º";
+            else if (rank === 2) rankLabel = "🥈 2º";
+            else if (rank === 3) rankLabel = "🥉 3º";
             const item = document.createElement('div');
             item.className = "player-item";
             item.id = "p-" + nome.replace(/\s+/g,'-');
@@ -952,11 +952,11 @@
         document.getElementById('btn-flower').style.display = 'none';
         document.getElementById('btn-skip').style.display = 'none';
         
-        document.getElementById('word-display').innerText = `👑 FIM DO ORGIAZO! O DONO DA NOITE É ${vencedor.toUpperCase()}!`;
+        document.getElementById('word-display').innerText = `🏆 FIM DE JOGO! O CAMPEÃO É ${vencedor.toUpperCase()}!`;
         document.getElementById('timer-display').innerText = "⏱️ Fim";
         
-        showGarticAnnouncement("👑 DEU MATCH SUPREMO!", `${vencedor} atingiu a marca erótica de ${scores[vencedor]} orgasmos/pontos e dominou o quarto! 🎉`);
-        addSystemMessage(`👑 PARTIDA CONCLUÍDA! O(A) maior mestre da sedução da sala é: ${vencedor} com ${scores[vencedor]} pontos!`);
+        showGarticAnnouncement("👑 TEMOS UM CAMPEÃO!", `${vencedor} atingiu a marca de ${scores[vencedor]} pontos e venceu a partida! 🎉`);
+        addSystemMessage(`👑 FIM DE JOGO! O grande vencedor desta sala é: ${vencedor} com ${scores[vencedor]} pontos!`);
         createPetalShower();
     }
 
@@ -999,16 +999,16 @@
             if (eggCooldown) return;
             eggCooldown = true;
             const btn = document.getElementById('btn-egg');
-            btn.classList.add('cooldown'); btn.textContent = '🍆 Recarregando...';
+            btn.classList.add('cooldown'); btn.textContent = '🥚 Espere...';
             mqttClient.publish(baseTopic + "/interact", JSON.stringify({ thrower: username, target: currentDrawerName, type: 'egg' }));
-            setTimeout(() => { eggCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '🍆 Jogar Berinjela!'; }, 8000);
+            setTimeout(() => { eggCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '🥚 Jogar Ovo!'; }, 8000);
         } else if (itemType === 'flower') {
             if (flowerCooldown) return;
             flowerCooldown = true;
             const btn = document.getElementById('btn-flower');
-            btn.classList.add('cooldown'); btn.textContent = '🍑 Respirando...';
+            btn.classList.add('cooldown'); btn.textContent = '🌹 Espere...';
             mqttClient.publish(baseTopic + "/interact", JSON.stringify({ thrower: username, target: currentDrawerName, type: 'flower' }));
-            setTimeout(() => { flowerCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '🍑 Dar Sarrada!'; }, 5000);
+            setTimeout(() => { flowerCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '🌹 Dar Flor!'; }, 5000);
         }
     }
 
@@ -1021,7 +1021,7 @@
         const targetY = canvasRect.top + canvasRect.height/2 + (Math.random()-0.5)*100;
         const element = document.createElement('div');
         element.className = type === 'egg' ? 'egg-fly' : 'flower-fly';
-        element.textContent = type === 'egg' ? '🍆' : '🍑';
+        element.textContent = type === 'egg' ? '🥚' : '🌹';
         const dx = targetX - sx, dy = targetY - sy;
         const dist = Math.sqrt(dx*dx + dy*dy);
         const duration = Math.max(0.5, Math.min(1.0, dist/900));
@@ -1034,7 +1034,7 @@
             element.remove();
             const splash = document.createElement('div');
             splash.className = type === 'egg' ? 'egg-splash' : 'flower-splash';
-            splash.textContent = type === 'egg' ? '💦' : '💥';
+            splash.textContent = type === 'egg' ? '💥' : '✨';
             splash.style.left = (targetX-24)+'px'; splash.style.top = (targetY-24)+'px';
             document.body.appendChild(splash);
             setTimeout(() => splash.remove(), 900);
@@ -1054,7 +1054,7 @@
             setTimeout(() => {
                 const petal = document.createElement('div');
                 petal.className = 'petal-particle';
-                petal.textContent = ['💋','❤️','🔥'][Math.floor(Math.random() * 3)];
+                petal.textContent = ['🌸','🌹','🍃'][Math.floor(Math.random() * 3)];
                 petal.style.left = Math.random() * window.innerWidth + 'px';
                 petal.style.setProperty('--drift', (Math.random() * 160 - 80) + 'px');
                 petal.style.setProperty('--fall-duration', (Math.random() * 1.5 + 1.5) + 's');
@@ -1073,10 +1073,10 @@
         username = document.getElementById('input-username').value.trim();
         roomName = document.getElementById('input-room').value.trim().toLowerCase().replace(/[^a-z0-9]/g,"");
         const customInput = document.getElementById('input-custom-words').value.trim();
-        if (!username || !roomName) { alert("Digita o seu nome e o nome do motel pra sincronizar!"); return; }
+        if (!username || !roomName) { alert("Por favor, digite seu nome e o nome da sala!"); return; }
         if (customInput) { customWords = customInput.split(',').map(w => w.trim()).filter(w => w.length > 0); }
         document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('room-id').innerText = "Motel: " + roomName;
+        document.getElementById('room-id').innerText = "Sala: " + roomName;
         adicionarJogadorLista(username);
         initMqtt();
     }
@@ -1096,7 +1096,7 @@
             mqttClient.subscribe(baseTopic + "/customwords");
             mqttClient.subscribe(baseTopic + "/customwords/add");
             
-            const identityPayload = JSON.stringify({ sender: "Sistema", text: `📢 ${username} deitou na cama da sala.`, name: username, type: "system" });
+            const identityPayload = JSON.stringify({ sender: "Sistema", text: `📢 ${username} entrou na sala.`, name: username, type: "system" });
             mqttClient.publish(baseTopic + "/chat", identityPayload);
             mqttClient.publish(baseTopic + "/presence", identityPayload);
             
@@ -1122,7 +1122,7 @@
                         
                         if (checkEndGameConditions()) return;
                         
-                        showGarticAnnouncement("🎯 EN CAI XOU!", `${data.sender} adivinhou o fetiche secreto: ${currentWord.toUpperCase()}!`);
+                        showGarticAnnouncement("🎯 PALAVRA DESCOBERTA!", `${data.sender} acertou a palavra secreta: ${currentWord.toUpperCase()}!`);
                         handleRoundEndAutomatically();
                     } else { renderWrongGuessMessage(data.sender, data.text); }
                 } else if (data.type === "talk") { renderNormalMessage(data.sender, data.text); }
@@ -1140,8 +1140,8 @@
             } else if (topic === baseTopic + "/gameflow" && !gameEnded) {
                 handleGameFlow(data);
             } else if (topic === baseTopic + "/gameflow/skip" && !gameEnded) {
-                showGarticAnnouncement("⏭️ BROCHOU!", `${data.drawer} não deu conta e passou a vez! A palavra era: ${data.word.toUpperCase()}`);
-                addSystemMessage(`⏭️ Voltou pra trás: ${data.drawer}. O fetiche era: ${data.word.toUpperCase()}`);
+                showGarticAnnouncement("⏭️ VEZ PULADA!", `${data.drawer} decidiu passar a vez! A palavra era: ${data.word.toUpperCase()}`);
+                addSystemMessage(`⏭️ Vez pulada por ${data.drawer}. A palavra era: ${data.word.toUpperCase()}`);
                 handleRoundEndAutomatically();
             } else if (topic === baseTopic + "/scores") {
                 if (data.scores) { 
@@ -1158,13 +1158,13 @@
             } else if (topic === baseTopic + "/customwords") {
                 if (data.words && data.words.length > 0 && customWords.length === 0) {
                     customWords = data.words;
-                    addSystemMessage(`📝 Dicionário proibido de ${data.sender} injetado! (${data.words.length})`);
+                    addSystemMessage(`📝 Palavras de ${data.sender} carregadas! (${data.words.length})`);
                     salvarPalavras();
                 }
             } else if (topic === baseTopic + "/customwords/add") {
                 if (data.words && data.words.length > 0) {
                     data.words.forEach(w => { if(!customWords.includes(w)) customWords.push(w); });
-                    addSystemMessage(`📝 ${data.sender} colocou mais +${data.words.length} fantasias quentes na lista da rodada!`);
+                    addSystemMessage(`📝 ${data.sender} adicionou +${data.words.length} novas palavras à lista da sala!`);
                     salvarPalavras();
                 }
             }
@@ -1206,15 +1206,15 @@
         if (currentDrawerName === username) {
             isDrawer = true; eggBtn.style.display = 'none'; flowerBtn.style.display = 'none';
             skipBtn.style.display = 'inline-flex';
-            document.getElementById('word-display').innerText = "✏️ Seu fetiche secreto: " + currentWord.toUpperCase();
-            addSystemMessage(`✏️ É a sua vez na cama! Desenhe: ${currentWord.toUpperCase()}`);
+            document.getElementById('word-display').innerText = "✏️ Sua Palavra: " + currentWord.toUpperCase();
+            addSystemMessage(`✏️ Sua vez! Palavra: ${currentWord.toUpperCase()}`);
         } else {
             isDrawer = false; skipBtn.style.display = 'none';
-            eggBtn.style.display = 'inline-flex'; eggBtn.classList.remove('cooldown'); eggBtn.textContent = '🍆 Jogar Berinjela!';
-            flowerBtn.style.display = 'inline-flex'; flowerBtn.classList.remove('cooldown'); flowerBtn.textContent = '🍑 Dar Sarrada!';
+            eggBtn.style.display = 'inline-flex'; eggBtn.classList.remove('cooldown'); eggBtn.textContent = '🥚 Jogar Ovo!';
+            flowerBtn.style.display = 'inline-flex'; flowerBtn.classList.remove('cooldown'); flowerBtn.textContent = '🌹 Dar Flor!';
             const u = "_ ".repeat(currentWord.length).trim();
-            document.getElementById('word-display').innerText = `🎨 Esfregando pincel: ${currentDrawerName} (${u})`;
-            addSystemMessage(`🎨 ${currentDrawerName} está rebolando no traço...`);
+            document.getElementById('word-display').innerText = `🎨 Desenho de ${currentDrawerName} (${u})`;
+            addSystemMessage(`🎨 ${currentDrawerName} está desenhando...`);
         }
         startLocalTimer(TEMPO_RODADA);
     }
@@ -1222,21 +1222,21 @@
     function startLocalTimer(seconds) {
         if (gameEnded) return;
         currentTimeLeft = seconds;
-        document.getElementById('timer-display').innerText = "⏱️ Clímax: " + currentTimeLeft + "s";
+        document.getElementById('timer-display').innerText = "⏱️ Tempo: " + currentTimeLeft + "s";
         countdownInterval = setInterval(() => {
             if (gameEnded) { clearInterval(countdownInterval); return; }
             currentTimeLeft--;
             if (currentTimeLeft <= 0) {
                 clearInterval(countdownInterval);
-                document.getElementById('timer-display').innerText = "⏱️ Clímax: 0s";
-                addSystemMessage(`🛑 Deu ruim! Tempo esgotado. A palavra oculta era: ${currentWord.toUpperCase()}`);
-                showGarticAnnouncement("⏳ BROCHOU GERAL!", `Ninguém conseguiu desvendar o mistério! Era: ${currentWord.toUpperCase()}`);
+                document.getElementById('timer-display').innerText = "⏱️ Tempo: 0s";
+                addSystemMessage(`🛑 Tempo esgotado! A palavra era: ${currentWord.toUpperCase()}`);
+                showGarticAnnouncement("⏳ TEMPO ESGOTADO!", `Ninguém acertou a palavra secreta! Ela era: ${currentWord.toUpperCase()}`);
                 document.getElementById('btn-egg').style.display = 'none';
                 document.getElementById('btn-flower').style.display = 'none';
                 document.getElementById('btn-skip').style.display = 'none';
                 handleRoundEndAutomatically();
             } else {
-                document.getElementById('timer-display').innerText = "⏱️ Clímax: " + currentTimeLeft + "s";
+                document.getElementById('timer-display').innerText = "⏱️ Tempo: " + currentTimeLeft + "s";
             }
         }, 1000);
     }
@@ -1275,7 +1275,7 @@
         const respostaLimpa = currentWord.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
         if (palpiteLimpo === respostaLimpa) {
             const pts = calcPoints(currentTimeLeft);
-            mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: `Gemeu certinho: ${currentWord.toUpperCase()}! 🎯`, isCorrect: true, pts, type: "guess" }));
+            mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: `Acertou: ${currentWord.toUpperCase()}! 🎯`, isCorrect: true, pts, type: "guess" }));
         } else {
             mqttClient.publish(baseTopic + "/chat", JSON.stringify({ sender: username, text: msgText, isCorrect: false, type: "guess" }));
         }
@@ -1297,7 +1297,7 @@
     }
     function addSuccessMessage(sender, text) {
         const c = document.getElementById('guess-messages'); const m = document.createElement('div'); m.className = "msg msg-success"; m.innerText = `🎯 ${sender} ${text}`; c.appendChild(m); c.scrollTop = c.scrollHeight;
-        if (!gameEnded) document.getElementById('word-display').innerText = "🎉 No alvo! Preparando próxima rodada...";
+        if (!gameEnded) document.getElementById('word-display').innerText = "🎉 Adivinhado! Próxima rodada...";
     }
     function renderWrongGuessMessage(sender, text) {
         const c = document.getElementById('guess-messages'); const m = document.createElement('div'); m.className = "msg msg-wrong"; m.innerText = `${sender}: ${text}`; c.appendChild(m); c.scrollTop = m.scrollHeight;
@@ -1307,10 +1307,10 @@
         m.appendChild(s); m.appendChild(document.createTextNode(text)); c.appendChild(m); c.scrollTop = c.scrollHeight;
     }
     function addEggMessage(thrower, target) {
-        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-egg"; m.innerText = `🍆 ${thrower} atirou uma berinjela violenta em ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
+        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-egg"; m.innerText = `🥚 ${thrower} jogou um ovo em ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
     }
     function addFlowerMessage(thrower, target) {
-        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-flower"; m.innerText = `🍑 ${thrower} encaixou uma sarrada de apoio em ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
+        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-flower"; m.innerText = `🌹 ${thrower} enviou uma flor de apoio para ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
     }
 
     setActiveColor('#000000');
