@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAGE - Notebook Local Analytics</title>
-    <!-- Carrega a biblioteca de extração de PDF da Mozilla -->
+    <title>SAGE - NotebookLM Universal</title>
+    <!-- Engine de Processamento de PDF da Mozilla -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <style>
         :root {
@@ -16,7 +16,8 @@
             --accent: #58a6ff;
             --accent-success: #2ea44f;
             --content-bg: #1f242c;
-            --container-width: 1100px;
+            --check-bg: rgba(46, 164, 79, 0.04);
+            --accent-check: #3fb950;
         }
 
         body {
@@ -24,27 +25,27 @@
             background-color: var(--bg-primary);
             color: var(--text-main);
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             justify-content: center;
         }
 
         .container {
             width: 100%;
-            max-width: var(--container-width);
+            max-width: 1100px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
         }
 
         header {
             border-bottom: 1px solid var(--border-color);
-            padding-bottom: 15px;
+            padding-bottom: 10px;
             text-align: center;
         }
 
         h1 {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 600;
             margin: 0;
             color: #f0f6fc;
@@ -54,83 +55,76 @@
         p.subtitle {
             color: var(--text-muted);
             font-size: 13px;
-            margin: 5px 0 0 0;
+            margin: 3px 0 0 0;
         }
 
-        /* ÁREA DE UPLOAD ESTILO NOTEBOOKLM */
+        /* ÁREA DE PROCESSO DE ARQUIVOS */
         .upload-zone {
             border: 2px dashed var(--border-color);
             background-color: var(--bg-secondary);
-            border-radius: 8px;
-            padding: 30px;
+            border-radius: 6px;
+            padding: 25px;
             text-align: center;
             cursor: pointer;
-            transition: border-color 0.2s, background-color 0.2s;
+            transition: border-color 0.2s;
         }
 
         .upload-zone:hover {
             border-color: var(--accent);
-            background-color: rgba(88, 166, 255, 0.02);
         }
 
         .upload-zone p {
             margin: 0;
             font-size: 14px;
             color: var(--text-main);
+            font-weight: 500;
         }
 
         .upload-zone span {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-muted);
             display: block;
-            margin-top: 5px;
+            margin-top: 4px;
         }
 
-        #file-input {
+        #file-input { display: none; }
+
+        .status-loading {
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 8px;
             display: none;
-        }
-
-        .workspace {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
         }
 
         .panel {
             background-color: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 16px;
+            padding: 14px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 12px;
         }
 
         .panel-title {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: var(--text-muted);
             border-bottom: 1px solid var(--border-color);
-            padding-bottom: 8px;
+            padding-bottom: 6px;
             margin: 0;
-        }
-
-        /* ESTILIZAÇÃO DOS ENVIOS PROCESSADOS */
-        .status-loading {
-            color: var(--accent);
-            font-size: 13px;
-            font-weight: 500;
-            display: none;
         }
 
         .output-container {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 16px;
         }
 
+        /* CARD DE CONCEITOS DINÂMICOS */
         .card-estudio {
             border: 1px solid var(--border-color);
             border-radius: 6px;
@@ -139,43 +133,33 @@
         }
 
         .card-header {
-            background-color: rgba(88, 166, 255, 0.08);
+            background-color: rgba(88, 166, 255, 0.06);
             border-bottom: 1px solid var(--border-color);
-            padding: 10px 14px;
-            font-size: 13px;
+            padding: 8px 12px;
+            font-size: 12px;
             font-weight: bold;
             color: var(--accent);
         }
 
-        .card-body {
-            padding: 15px;
-        }
+        .card-body { padding: 14px; }
 
         .concept-title {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             color: #f0f6fc;
             margin-bottom: 8px;
+            text-transform: uppercase;
         }
 
         .section-block {
             background-color: var(--content-bg);
             border-left: 3px solid var(--accent);
-            padding: 10px 12px;
+            padding: 10px;
             border-radius: 0 4px 4px 0;
             font-size: 13px;
-            line-height: 1.6;
-            margin-bottom: 12px;
+            line-height: 1.5;
+            margin-bottom: 10px;
             color: #e6edf3;
-        }
-
-        .section-block ul {
-            margin: 5px 0 0 0;
-            padding-left: 18px;
-        }
-
-        .section-block li {
-            margin-bottom: 3px;
         }
 
         .section-title {
@@ -188,35 +172,38 @@
         }
 
         .section-block.checklist {
-            border-left-color: #3fb950;
+            border-left-color: var(--accent-check);
+            background-color: var(--check-bg);
+            margin-bottom: 0;
         }
-        .section-block.checklist .section-title {
-            color: #3fb950;
-        }
+        .section-block.checklist .section-title { color: var(--accent-check); }
+
+        ul { margin: 4px 0 0 0; padding-left: 16px; }
+        li { margin-bottom: 3px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>SAGE - INTELLECT COMPANION</h1>
-        <p class="subtitle">Análise de Documentos e Geração Estruturada de Estudos Local (Sem API)</p>
+        <h1>SAGE - UNIVERSAL NOTEBOOK</h1>
+        <p class="subtitle">Análise Algorítmica e Engenharia de Conteúdo para Qualquer Matéria</p>
     </header>
 
-    <!-- ÁREA NOTEBOOKLM DE SOLTAR ARQUIVO -->
+    <!-- DROPZONE DE ARQUIVOS -->
     <div class="upload-zone" onclick="document.getElementById('file-input').click()">
-        <p>📊 Selecione ou Arraste o PDF de Patologia / Slides da Faculdade</p>
-        <span>Formatos suportados: .pdf (Processamento interno instantâneo)</span>
-        <div id="loading-txt" class="status-loading">🔄 Extraindo dados e mapeando conceitos ementares...</div>
+        <p>📂 ARRASTE OU CLIQUE PARA FAZER UPLOAD DO SEU PDF</p>
+        <span>Aceita qualquer PDF de faculdade, artigos científicos ou slides salvos</span>
+        <div id="loading-txt" class="status-loading">🔄 PROCESSANDO INTELECTO: Extraindo texto, minerando tópicos centrais e gerando guias...</div>
     </div>
-    <input type="file" id="file-input" accept="application/pdf" onchange="manipularUpload(event)">
+    <input type="file" id="file-input" accept="application/pdf" onchange="processarUpload(event)">
 
     <div class="workspace">
         <div class="panel">
-            <h2 class="panel-title">Guia de Estudo Gerado Automaticamente</h2>
+            <h2 class="panel-title">Módulos de Estudo e Retenção Cognitiva</h2>
             <div id="output" class="output-container">
-                <div style="color: var(--text-muted); text-align: center; font-size: 13px; padding: 20px;">
-                    Nenhum documento carregado. Suba um PDF acima para estruturar os tópicos e os objetivos de aprendizagem.
+                <div style="color: var(--text-muted); text-align: center; font-size: 13px; padding: 30px;">
+                    Nenhum documento detectado no sistema. Suba qualquer arquivo de estudo acima.
                 </div>
             </div>
         </div>
@@ -224,16 +211,14 @@
 </div>
 
 <script>
-// Configuração global da biblioteca PDF.js de forma estática
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
-async function manipularUpload(event) {
+async function processarUpload(event) {
     const arquivo = event.target.files[0];
     if (!arquivo) return;
 
-    const loadingTxt = document.getElementById('loading-txt');
-    loadingTxt.style.display = 'block';
-
+    document.getElementById('loading-txt').style.display = 'block';
+    
     const leitor = new FileReader();
     leitor.onload = async function() {
         const dadosArray = new Uint8Array(this.result);
@@ -241,110 +226,82 @@ async function manipularUpload(event) {
             const pdf = await pdfjsLib.getDocument({ data: dadosArray }).promise;
             let textoCompleto = "";
 
-            // Loop por todas as páginas do PDF para extrair o texto bruto bruto
             for (let i = 1; i <= pdf.numPages; i++) {
                 const pagina = await pdf.getPage(i);
                 const conteudoTexto = await pagina.getTextContent();
-                const stringPagina = conteudoTexto.items.map(item => item.str).join(" ");
-                textoCompleto += stringPagina + "\n";
+                textoCompleto += conteudoTexto.items.map(item => item.str).join(" ") + "\n";
             }
 
-            processarTextoPdf(textoCompleto);
+            gerarNotebookUniversal(textoCompleto);
         } catch (erro) {
-            alert("Erro ao ler o arquivo PDF. Certifique-se de que não está protegido.");
+            alert("Erro no processamento mecânico do PDF.");
             console.error(erro);
         } finally {
-            loadingTxt.style.display = 'none';
+            document.getElementById('loading-txt').style.display = 'none';
         }
     };
     leitor.readAsArrayBuffer(arquivo);
 }
 
-function processarTextoPdf(texto) {
+function gerarNotebookUniversal(textoBruto) {
     const outputDiv = document.getElementById('output');
     outputDiv.innerHTML = '';
 
-    // Dicionário de termos chaves de patologia para busca semântica dentro do PDF
-    const dicionarioPatologia = [
-        {
-            termo: "Lesão Celular",
-            nome: "Estágio de Injúria e Alterações Adaptativas",
-            desc: "Análise microscópica de estresse de membrana e homeostase celular.",
-            conteudo: "Identificado no material fornecido discussões sobre mecanismos de agressão celular.",
-            meta: "Diferenciar processos de degeneração hidrópica de danos irreversíveis à cromatina nuclear."
-        },
-        {
-            termo: "Necrose",
-            nome: "Morte Tecidual por Coagulação e Liquefação",
-            desc: "Padrões morfológicos macro e microscópicos de autólise celular.",
-            conteudo: "Encontrado no texto referências a necrose (coagulação, liquefação, caseosa ou gordurosa) com extravasamento citoplasmático e indução de resposta imunológica periférica.",
-            meta: "Reconhecer lâminas histológicas demonstrando picnose, cariorréxe e desaparecimento de núcleos funcionais."
-        },
-        {
-            termo: "Inflamação",
-            nome: "Fisiopatologia da Resposta Inflamatória Humoral",
-            desc: "Dinâmica vascular de exsudação leucocitária.",
-            conteudo: "Mapeado no documento o processo de resposta inflamatória aguda ou crônica. Inclui fenômenos hemodinâmicos de marginação, rolagem e diapedese leucocitária ativa.",
-            meta: "Interpretar os papéis da histamina e do infiltrado de neutrófilos vs macrófagos mononucleares."
-        },
-        {
-            termo: "Neoplasia",
-            nome: "Oncologia Geral e Proliferação Clonal",
-            desc: "Bases moleculares da diferenciação, anaplasia e metástase tumoral.",
-            conteudo: "Detectado no material parâmetros de oncologia clínica, diferenciação entre proliferações benignas (organizadas/encapsuladas) e malignas infiltrativas.",
-            meta: "Julgar graus histológicos de malignidade com base em critérios de anaplasia e arquitetura tecidual desregulada."
-        }
-    ];
+    // Limpeza preliminar de espaçamentos duplos comuns em PDFs
+    const textoLimpo = textoBruto.replace(/\s+/g, ' ').trim();
 
-    let blocosGerados = 0;
+    // Algoritmo de Mineração Epistemológica: 
+    // Quebra o texto por marcadores comuns de novos tópicos acadêmicos
+    const delimitadores = /(?=\b(?:Módulo|Capítulo|Tópico|Introdução|Estudo|Conceito|Definição|Fisiopatologia|Estrutura|Mecanismo|Análise|Classificação|Importância)\b|(?:\d\.\s+[A-Z]))/g;
+    let blocosCrus = textoLimpo.split(delimitadores);
 
-    // Varre o texto do PDF usando os termos chaves de patologia para gerar as seções inteligentes na tela
-    dicionarioPatologia.forEach((item, index) => {
-        // Busca ignorando maiúsculas/minúsculas
-        const expressaoRegular = new RegExp(item.termo, "i");
+    // Filtra blocos muito pequenos para evitar ruídos de paginação
+    let blocosValidos = blocosCrus.filter(bloco => bloco.trim().length > 120).slice(0, 8);
+
+    if (blocosValidos.length === 0) {
+        // Fallback: Se o texto não tiver delimitadores óbvios, divide por parágrafos longos por amostragem
+        blocosValidos = textoLimpo.match(/.{1,500}(?=\s|$)/g).slice(0, 6) || [];
+    }
+
+    blocosValidos.forEach((bloco, index) => {
+        const palavras = bloco.trim().split(' ');
         
-        if (expressaoRegular.test(texto)) {
-            blocosGerados++;
-            
-            // Tenta capturar uma frase real do próprio PDF do usuário para dar contexto real do slide dele
-            const indiceMatch = texto.search(expressaoRegular);
-            let trechoDoPdf = texto.substring(indiceMatch, indiceMatch + 250) + "...";
+        // Extrai as primeiras palavras para servir como título do conceito de forma dinâmica
+        let tituloConceito = palavras.slice(0, 4).join(' ').replace(/[^\w\sÀ-ÿ]/gi, '');
+        if (tituloConceito.length < 10) tituloConceito = `CONCEITO ACADÊMICO ${index + 1}`;
+        
+        const corpoResumo = palavras.slice(4).join(' ');
 
-            const card = document.createElement('div');
-            card.className = 'card-estudio';
-            
-            card.innerHTML = `
-                <div class="card-header">🎯 MÓDULO DETECTADO ${String(blocosGerados).padStart(2, '0')}</div>
-                <div class="card-body">
-                    <div class="concept-title">${item.nome.toUpperCase()}</div>
-                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Foco: ${item.desc}</div>
-                    
-                    <div class="section-block">
-                        <div class="section-title">📖 Resumo Contextual Extraído do PDF</div>
-                        <div>"...${trechoDoPdf}"</div>
-                    </div>
+        // Gera tópicos de fixação baseados nos verbos mais comuns de questões de faculdade
+        const termosVerbo = ["Definir", "Explicar", "Diferenciar", "Identificar os mecanismos de"];
+        const verboSelecionado = termosVerbo[index % termosVerbo.length];
 
-                    <div class="section-block">
-                        <div class="section-title">🔬 Correlação Teórica Geral</div>
-                        <div>${item.conteudo}</div>
-                    </div>
+        const card = document.createElement('div');
+        card.className = 'card-estudio';
+        
+        card.innerHTML = `
+            <div class="card-header">🧠 MÓDULO DE ANÁLISE DINÂMICA ${String(index + 1).padStart(2, '0')}</div>
+            <div class="card-body">
+                <div class="concept-title">📘 ${tituloConceito}</div>
+                
+                <div class="section-block">
+                    <div class="section-title">📖 Núcleo Teórico e Evidências do Arquivo</div>
+                    <div>"...${corpoResumo.substring(0, 450)}..."</div>
+                </div>
 
-                    <div class="section-block checklist">
-                        <div class="section-title">🎯 Meta de Retenção para Provas</div>
-                        <div><ul><li>${item.meta}</li></ul></div>
+                <div class="section-block checklist">
+                    <div class="section-title">🎯 Checklist de Retenção (O que deve fixar)</div>
+                    <div>
+                        <ul>
+                            <li><strong>${verboSelecionado}</strong> as propriedades centrais apresentadas no bloco "${tituloConceito.toLowerCase()}".</li>
+                            <li>Correlacionar a aplicação clínica/prática desses conceitos com a ementa geral da disciplina.</li>
+                        </ul>
                     </div>
                 </div>
-            `;
-            outputDiv.appendChild(card);
-        }
+            </div>
+        `;
+        outputDiv.appendChild(card);
     });
-
-    if (blocosGerados === 0) {
-        outputDiv.innerHTML = `
-            <div style="color: #ff7b72; text-align: center; font-size: 13px; padding: 20px;">
-                ⚠️ O arquivo foi lido, mas nenhum termo clássico de Patologia Geral (Lesão, Necrose, Inflamação, Neoplasia) foi identificado no texto bruto. Certifique-se de enviar o arquivo correto da matéria.
-            </div>`;
-    }
 }
 </script>
 </body>
