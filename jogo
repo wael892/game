@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fashion Stylist - Jogo de Vestir</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #ffe5ec, #ffc2d1);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #fb6f92;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            font-size: 2.5rem;
+            text-align: center;
+        }
+
+        .game-container {
+            display: flex;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            width: 900px;
+            max-width: 100%;
+            height: 600px;
+            overflow: hidden;
+            border: 4px solid #ffe5ec;
+        }
+
+        /* Área da Modelo */
+        .preview-area {
+            flex: 1;
+            background: #fff0f3;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            border-right: 2px solid #ffe5ec;
+            transition: background 0.5s ease;
+        }
+
+        .background-scene {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            z-index: 1;
+        }
+
+        .character-container {
+            position: relative;
+            width: 250px;
+            height: 500px;
+            z-index: 2;
+        }
+
+        .layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: all 0.3s ease;
+        }
+
+        /* SVG da Modelo Base (feita com vetores limpos) */
+        .base-model {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Guarda-roupa */
+        .closet-area {
+            width: 450px;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+        }
+
+        .categories {
+            display: flex;
+            background: #ffe5ec;
+            padding: 10px;
+            gap: 10px;
+            overflow-x: auto;
+        }
+
+        .category-btn {
+            background: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 15px;
+            color: #fb6f92;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .category-btn.active, .category-btn:hover {
+            background: #fb6f92;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .items-grid {
+            flex: 1;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            overflow-y: auto;
+            align-content: start;
+        }
+
+        .item-card {
+            background: #fff0f3;
+            border: 2px solid transparent;
+            border-radius: 15px;
+            padding: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 110px;
+            transition: all 0.2s;
+        }
+
+        .item-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(251, 111, 146, 0.2);
+            border-color: #ffb3c6;
+        }
+
+        .item-card.selected {
+            border-color: #fb6f92;
+            background: #ffe5ec;
+        }
+
+        .item-card svg {
+            width: 100%;
+            height: 100%;
+            max-height: 90px;
+        }
+
+        /* Controles Inferiores */
+        .controls {
+            padding: 15px;
+            background: #fff0f3;
+            display: flex;
+            justify-content: space-around;
+            border-top: 2px solid #ffe5ec;
+        }
+
+        .action-btn {
+            background: #fb6f92;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #ffb3c6;
+        }
+
+        /* Responsividade Básica */
+        @media (max-width: 920px) {
+            .game-container {
+                flex-direction: column;
+                height: auto;
+                width: 100%;
+            }
+            .preview-area {
+                height: 450px;
+            }
+            .closet-area {
+                width: 100%;
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>✨ Fashion Stylist Studio ✨</h1>
+
+    <div class="game-container">
+        <div class="preview-area" id="previewArea">
+            <div class="background-scene" id="bgScene"></div>
+            <div class="character-container">
+                <svg class="base-model" viewBox="0 0 200 400">
+                    <rect x="90" y="130" width="20" height="80" fill="#ffe0cc" rx="10"/> <circle cx="100" cy="90" r="25" fill="#ffe0cc"/> <path d="M 75 140 Q 100 130 125 140 L 120 240 L 80 240 Z" fill="#ffe0cc"/> <path d="M 75 140 Q 60 190 65 240" stroke="#ffe0cc" stroke-width="12" stroke-linecap="round" fill="none"/>
+                    <path d="M 125 140 Q 140 190 135 240" stroke="#ffe0cc" stroke-width="12" stroke-linecap="round" fill="none"/>
+                    <rect x="82" y="240" width="14" height="130" fill="#ffe0cc" rx="7"/>
+                    <rect x="104" y="240" width="14" height="130" fill="#ffe0cc" rx="7"/>
+                    <circle cx="93" cy="88" r="2" fill="#333"/>
+                    <circle cx="107" cy="88" r="2" fill="#333"/>
+                    <path d="M 96 98 Q 100 102 104 98" stroke="#ff4d6d" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    <path d="M 78 145 Q 100 155 122 145 L 120 180 Q 100 185 80 180 Z" fill="#ffb3c6"/>
+                    <path d="M 80 210 L 120 210 L 115 240 Q 100 250 85 240 Z" fill="#ffb3c6"/>
+                </svg>
+
+                <div id="layer-hair" class="layer"></div>
+                <div id="layer-tops" class="layer"></div>
+                <div id="layer-bottoms" class="layer"></div>
+                <div id="layer-shoes" class="layer"></div>
+                <div id="layer-accessories" class="layer"></div>
+            </div>
+        </div>
+
+        <div class="closet-area">
+            <div class="categories">
+                <button class="category-btn active" onclick="changeCategory('hair')">Cabelos</button>
+                <button class="category-btn" onclick="changeCategory('tops')">Blusas</button>
+                <button class="category-btn" onclick="changeCategory('bottoms')">Finas</button>
+                <button class="category-btn" onclick="changeCategory('shoes')">Sapatos</button>
+                <button class="category-btn" onclick="changeCategory('accessories')">Acessórios</button>
+            </div>
+
+            <div class="items-grid" id="itemsGrid">
+                </div>
+
+            <div class="controls">
+                <button class="action-btn" onclick="changeBackground()">Mudar Cenário</button>
+                <button class="action-btn" onclick="resetLook()">Resetar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados dos itens de moda em vetores SVG lindíssimos e coloridos
+        const clothesData = {
+            hair: [
+                { id: 'hair1', name: 'Canela Moderno', svg: `<svg viewBox="0 0 200 400"><path d="M 70 80 Q 100 40 130 80 Q 140 120 135 150 Q 100 110 65 150 Z" fill="#ffb703"/><path d="M 65 80 Q 100 70 125 85" stroke="#fb8500" stroke-width="3" fill="none"/></svg>` },
+                { id: 'hair2', name: 'Rosa Pop', svg: `<svg viewBox="0 0 200 400"><circle cx="75" cy="80" r="20" fill="#ff4d6d"/><circle cx="125" cy="80" r="20" fill="#ff4d6d"/><path d="M 70 85 Q 100 50 130 85 Q 135 110 125 130 Q 100 100 75 130 Z" fill="#ff758f"/></svg>` },
+                { id: 'hair3', name: 'Lilás Longo', svg: `<svg viewBox="0 0 200 400"><path d="M 70 75 Q 100 45 130 75 L 140 220 Q 120 200 115 140 L 85 140 Q 80 200 60 220 Z" fill="#b5179e"/></svg>` }
+            ],
+            tops: [
+                { id: 'top1', name: 'Top Confort', svg: `<svg viewBox="0 0 200 400"><path d="M 76 140 L 124 140 L 122 190 Q 100 200 78 190 Z" fill="#4ea8de"/><path d="M 85 140 L 85 130 M 115 140 L 115 130" stroke="#4ea8de" stroke-width="4"/></svg>` },
+                { id: 'top2', name: 'Blusa de Babado', svg: `<svg viewBox="0 0 200 400"><path d="M 74 140 Q 100 130 126 140 L 125 195 L 75 195 Z" fill="#ffb703"/><path d="M 70 150 Q 100 160 130 150" stroke="#fff" stroke-width="3" fill="none"/></svg>` },
+                { id: 'top3', name: 'Jaqueta Descolada', svg: `<svg viewBox="0 0 200 400"><path d="M 74 140 L 126 140 L 125 200 L 75 200 Z" fill="#7209b7"/><path d="M 74 140 L 60 200 M 126 140 L 140 200" stroke="#7209b7" stroke-width="12" stroke-linecap="round"/></svg>` }
+            ],
+            bottoms: [
+                { id: 'bottom1', name: 'Saia Rodada', svg: `<svg viewBox="0 0 200 400"><path d="M 78 190 L 122 190 L 140 260 Q 100 275 60 260 Z" fill="#ff4d6d"/></svg>` },
+                { id: 'bottom2', name: 'Shorts Jeans', svg: `<svg viewBox="0 0 200 400"><path d="M 78 190 L 122 190 L 125 230 L 102 230 L 100 210 L 98 230 L 75 230 Z" fill="#48cae4"/></svg>` },
+                { id: 'bottom3', name: 'Calça Pantalona', svg: `<svg viewBox="0 0 200 400"><path d="M 78 190 L 122 190 L 130 340 L 104 340 L 100 230 L 96 340 L 70 340 Z" fill="#2a9d8f"/></svg>` }
+            ],
+            shoes: [
+                { id: 'shoe1', name: 'Botinha Fashion', svg: `<svg viewBox="0 0 200 400"><path d="M 80 345 L 96 345 L 96 365 L 75 365 Z M 104 345 L 120 345 L 125 365 L 104 365 Z" fill="#f72585"/></svg>` },
+                { id: 'shoe2', name: 'Tênis Casual', svg: `<svg viewBox="0 0 200 400"><path d="M 80 350 L 96 350 L 96 365 L 80 365 Z M 104 350 L 120 350 L 120 365 L 104 365 Z" fill="#fff" stroke="#ccc"/><path d="M 80 360 L 96 360 M 104 360 L 120 360" stroke="#ff4d6d" stroke-width="3"/></svg>` }
+            ],
+            accessories: [
+                { id: 'acc1', name: 'Óculos Estiloso', svg: `<svg viewBox="0 0 200 400"><circle cx="90" cy="88" r="10" fill="rgba(0,180,216,0.6)" stroke="#333" stroke-width="2"/><circle cx="110" cy="88" r="10" fill="rgba(0,180,216,0.6)" stroke="#333" stroke-width="2"/><path d="M 100 88 L 100 88" stroke="#333" stroke-width="2"/></svg>` },
+                { id: 'acc2', name: 'Laço de Cabelo', svg: `<svg viewBox="0 0 200 400"><path d="M 85 60 Q 100 70 100 60 Q 100 70 115 60 Q 125 50 110 45 Q 100 55 90 45 Z" fill="#ff758f"/></svg>` },
+                { id: 'acc3', name: 'Bolsa de Ombro', svg: `<svg viewBox="0 0 200 400"><path d="M 130 190 L 155 190 L 150 230 L 135 230 Z" fill="#4ea8de"/><path d="M 135 190 Q 142 140 132 145" stroke="#4ea8de" stroke-width="3" fill="none"/></svg>` }
+            ]
+        };
+
+        // Cenários de fundo bonitos (Gradients simulando ambientes)
+        const backgrounds = [
+            'linear-gradient(to top, #e6e6fa, #fff0f5)', // Quarto fofo
+            'linear-gradient(to top, #ffcad4, #b5e2fa)', // Parque ensolarado
+            'linear-gradient(to top, #90e0ef, #03045e)', // Noite de Gala
+            'linear-gradient(to top, #fcd5ce, #ffb5a7)'  // Desfile de Moda
+        ];
+        
+        let currentBgIndex = 0;
+        let currentCategory = 'hair';
+
+        // Inicializar o jogo
+        function initGame() {
+            renderItems('hair');
+            changeBackground();
+        }
+
+        // Renderizar os itens no guarda-roupa baseado na categoria
+        function renderItems(category) {
+            const grid = document.getElementById('itemsGrid');
+            grid.innerHTML = '';
+            
+            clothesData[category].forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.id = `card-${item.id}`;
+                card.innerHTML = item.svg;
+                
+                // Verifica se o item já está equipado para destacar
+                const currentLayer = document.getElementById(`layer-${category}`).innerHTML;
+                if (currentLayer && currentLayer.includes(item.id)) {
+                    card.classList.add('selected');
+                }
+
+                card.onclick = () => selectItem(category, item);
+                grid.appendChild(card);
+            });
+        }
+
+        // Trocar de categoria no menu
+        function changeCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderItems(category);
+        }
+
+        // Vestir a peça na modelo
+        function selectItem(category, item) {
+            const layer = document.getElementById(`layer-${category}`);
+            const cards = document.querySelectorAll('.item-card');
+            
+            // Se clicar no que já está selecionado, ele tira a roupa (retira o item)
+            if (layer.getAttribute('data-equipped') === item.id) {
+                layer.innerHTML = '';
+                layer.removeAttribute('data-equipped');
+                document.getElementById(`card-${item.id}`).classList.remove('selected');
+            } else {
+                // Remove seleção visual dos outros da mesma categoria no closet
+                cards.forEach(c => c.classList.remove('selected'));
+                
+                // Coloca o SVG na camada correta do manequim
+                layer.innerHTML = item.svg;
+                layer.setAttribute('data-equipped', item.id);
+                document.getElementById(`card-${item.id}`).classList.add('selected');
+            }
+        }
+
+        // Alterar o cenário de fundo
+        function changeBackground() {
+            const previewArea = document.getElementById('previewArea');
+            previewArea.style.background = backgrounds[currentBgIndex];
+            currentBgIndex = (currentBgIndex + 1) % backgrounds.length;
+        }
+
+        // Resetar todo o visual da modelo
+        function resetLook() {
+            const layers = ['hair', 'tops', 'bottoms', 'shoes', 'accessories'];
+            layers.forEach(l => {
+                const layer = document.getElementById(`layer-${l}`);
+                layer.innerHTML = '';
+                layer.removeAttribute('data-equipped');
+            });
+            renderItems(currentCategory);
+        }
+
+        // Iniciar ao carregar a página
+        window.onload = initGame;
+    </script>
+</body>
+</html>
