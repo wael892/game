@@ -259,9 +259,13 @@
         #btn-egg:active { transform: scale(0.92); background: #e76f51; }
         #btn-flower { background: #2a9d8f; }
         #btn-flower:active { transform: scale(0.92); background: #1e7167; }
+        #btn-dumbbell { background: #4a4a4a; }
+        #btn-dumbbell:active { transform: scale(0.92); background: #2b2b2b; }
+        #btn-muscle { background: #d93838; }
+        #btn-muscle:active { transform: scale(0.92); background: #b02323; }
         .action-interact-btn.cooldown { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
-        .egg-fly, .flower-fly {
+        .egg-fly, .flower-fly, .dumbbell-fly, .muscle-fly {
             position: fixed; font-size: 36px; pointer-events: none; z-index: 9999;
             animation: itemFly var(--duration, 0.9s) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
         }
@@ -271,7 +275,7 @@
             85%  { opacity: 1; transform: translate(var(--tx2), var(--ty2)) rotate(var(--rot)) scale(1.3); }
             100% { opacity: 0; transform: translate(var(--tx2), var(--ty2)) rotate(var(--rot)) scale(0.5); }
         }
-        .egg-splash, .flower-splash { position: fixed; font-size: 48px; pointer-events: none; z-index: 9999; animation: itemSplash 0.8s ease-out forwards; }
+        .egg-splash, .flower-splash, .dumbbell-splash, .muscle-splash { position: fixed; font-size: 48px; pointer-events: none; z-index: 9999; animation: itemSplash 0.8s ease-out forwards; }
         @keyframes itemSplash {
             0%   { opacity: 1; transform: scale(0.5); }
             40%  { opacity: 1; transform: scale(1.6); }
@@ -314,6 +318,8 @@
         .msg-normal .username { font-weight: bold; color: #118ab2; }
         .msg-egg     { background: #fff3cd; color: #856404; font-weight: bold; border: 1px solid #ffc107; }
         .msg-flower  { background: #e3fafc; color: #0b7285; font-weight: bold; border: 1px solid #99e9f2; }
+        .msg-dumbbell { background: #e5e5e5; color: #2d2d2d; font-weight: bold; border: 1px solid #b2b2b2; }
+        .msg-muscle   { background: #fce8e6; color: #a81c1c; font-weight: bold; border: 1px solid #f5c2c2; }
         .chat-input-row { display: flex; padding: 5px; border-top: 1px solid #dee2e6; background: #f8f9fa; flex-shrink: 0; }
         .chat-input-field { flex: 1; padding: 6px; border: 2px solid #ced4da; border-radius: 5px; outline: none; font-size: 12px; }
         .chat-send-btn { background: #118ab2; color: white; margin-left: 4px; font-size: 11px; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
@@ -550,6 +556,8 @@
             <button id="btn-skip" class="btn btn-skip" onclick="skipRound()">⏭️ Pular Vez</button>
             <button id="btn-egg" class="action-interact-btn" onclick="throwInteractItem('egg')">🥚 Jogar Ovo!</button>
             <button id="btn-flower" class="action-interact-btn" onclick="throwInteractItem('flower')">🌹 Dar Flor!</button>
+            <button id="btn-dumbbell" class="action-interact-btn" onclick="throwInteractItem('dumbbell')">🏋️‍♂️ Desafiar Ogrão!</button>
+            <button id="btn-muscle" class="action-interact-btn" onclick="throwInteractItem('muscle')">💪 Rugido Alpha</button>
         </div>
     </div>
 
@@ -594,7 +602,7 @@
     let roundActive = false, currentDrawerIndex = -1;
     let countdownInterval = null, nextRoundTimeout = null, currentTimeLeft = 0;
     const TEMPO_RODADA = 60;
-    let eggCooldown = false, flowerCooldown = false;
+    let eggCooldown = false, flowerCooldown = false, dumbbellCooldown = false, muscleCooldown = false;
     let customWords = [];
     let gameEnded = false;
     const PONTUACAO_MAXIMA = 1000;
@@ -990,8 +998,7 @@
         clearInterval(countdownInterval);
         clearTimeout(nextRoundTimeout);
         
-        document.getElementById('btn-egg').style.display = 'none';
-        document.getElementById('btn-flower').style.display = 'none';
+        document.getElementById('bottom-actions').querySelectorAll('.action-interact-btn').forEach(b => b.style.display = 'none');
         document.getElementById('btn-skip').style.display = 'none';
         
         document.getElementById('word-display').innerText = `🏆 FIM DE JOGO! O CAMPEÃO É ${vencedor.toUpperCase()}!`;
@@ -1051,6 +1058,20 @@
             btn.classList.add('cooldown'); btn.textContent = '🌹 Espere...';
             mqttClient.publish(baseTopic + "/interact", JSON.stringify({ thrower: username, target: currentDrawerName, type: 'flower' }));
             setTimeout(() => { flowerCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '🌹 Dar Flor!'; }, 5000);
+        } else if (itemType === 'dumbbell') {
+            if (dumbbellCooldown) return;
+            dumbbellCooldown = true;
+            const btn = document.getElementById('btn-dumbbell');
+            btn.classList.add('cooldown'); btn.textContent = '🏋️‍♂️ Espere...';
+            mqttClient.publish(baseTopic + "/interact", JSON.stringify({ thrower: username, target: currentDrawerName, type: 'dumbbell' }));
+            setTimeout(() => { dumbbellCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '🏋️‍♂️ Desafiar Ogrão!'; }, 9000);
+        } else if (itemType === 'muscle') {
+            if (muscleCooldown) return;
+            muscleCooldown = true;
+            const btn = document.getElementById('btn-muscle');
+            btn.classList.add('cooldown'); btn.textContent = '💪 Espere...';
+            mqttClient.publish(baseTopic + "/interact", JSON.stringify({ thrower: username, target: currentDrawerName, type: 'muscle' }));
+            setTimeout(() => { muscleCooldown = false; btn.classList.remove('cooldown'); btn.textContent = '💪 Rugido Alpha'; }, 6000);
         }
     }
 
@@ -1062,8 +1083,14 @@
         const targetX = canvasRect.left + canvasRect.width/2 + (Math.random()-0.5)*120;
         const targetY = canvasRect.top + canvasRect.height/2 + (Math.random()-0.5)*100;
         const element = document.createElement('div');
-        element.className = type === 'egg' ? 'egg-fly' : 'flower-fly';
-        element.textContent = type === 'egg' ? '🥚' : '🌹';
+        
+        let itemEmoji = '🥚';
+        if (type === 'flower') itemEmoji = '🌹';
+        if (type === 'dumbbell') itemEmoji = '🏋️‍♂️';
+        if (type === 'muscle') itemEmoji = '💪';
+        
+        element.className = type + '-fly';
+        element.textContent = itemEmoji;
         const dx = targetX - sx, dy = targetY - sy;
         const dist = Math.sqrt(dx*dx + dy*dy);
         const duration = Math.max(0.5, Math.min(1.0, dist/900));
@@ -1075,18 +1102,24 @@
         setTimeout(() => {
             element.remove();
             const splash = document.createElement('div');
-            splash.className = type === 'egg' ? 'egg-splash' : 'flower-splash';
-            splash.textContent = type === 'egg' ? '💥' : '✨';
+            splash.className = type + '-splash';
+            splash.textContent = (type === 'egg' || type === 'dumbbell') ? '💥' : '✨';
             splash.style.left = (targetX-24)+'px'; splash.style.top = (targetY-24)+'px';
             document.body.appendChild(splash);
             setTimeout(() => splash.remove(), 900);
             if (target === username) {
-                if (type === 'egg') {
-                    const overlay = document.getElementById('egg-overlay');
-                    overlay.classList.remove('splat'); void overlay.offsetWidth; overlay.classList.add('splat');
+                if (type === 'egg' || type === 'dumbbell') {
+                    if (type === 'egg') {
+                        const overlay = document.getElementById('egg-overlay');
+                        overlay.classList.remove('splat'); void overlay.offsetWidth; overlay.classList.add('splat');
+                    }
                     document.getElementById('canvas-container').classList.add('shake');
                     setTimeout(() => document.getElementById('canvas-container').classList.remove('shake'), 500);
-                } else if (type === 'flower') { createPetalShower(); }
+                } else if (type === 'flower') { 
+                    createPetalShower(); 
+                } else if (type === 'muscle') {
+                    createMuscleShower();
+                }
             }
         }, duration * 1000);
     }
@@ -1106,6 +1139,21 @@
         }
     }
 
+    function createMuscleShower() {
+        for (let i = 0; i < 15; i++) {
+            setTimeout(() => {
+                const particle = document.createElement('div');
+                particle.className = 'petal-particle';
+                particle.textContent = ['💪', '🔥', '⚡'][Math.floor(Math.random() * 3)];
+                particle.style.left = Math.random() * window.innerWidth + 'px';
+                particle.style.setProperty('--drift', (Math.random() * 180 - 90) + 'px');
+                particle.style.setProperty('--fall-duration', (Math.random() * 1.2 + 1.0) + 's');
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 3000);
+            }, i * 100);
+        }
+    }
+
     function skipRound() {
         if (!roundActive || !isDrawer || !mqttClient || gameEnded) return;
         mqttClient.publish(baseTopic + "/gameflow/skip", JSON.stringify({ drawer: username, word: currentWord }));
@@ -1121,6 +1169,10 @@
         document.getElementById('room-id').innerText = "Sala: " + roomName;
         adicionarJogadorLista(username);
         initMqtt();
+        
+        setTimeout(() => {
+            showGarticAnnouncement("🎂 PARABÉNS GEO! 🎉", "Feliz Aniversário, Geo! Muita saúde, conquistas e foco total nos treinos! 💪🏋️‍♀️");
+        }, 3500);
     }
 
     function initMqtt() {
@@ -1197,6 +1249,8 @@
                 animateInteractThrow(data.thrower, data.target, data.type);
                 if (data.type === 'egg') addEggMessage(data.thrower, data.target);
                 else if (data.type === 'flower') addFlowerMessage(data.thrower, data.target);
+                else if (data.type === 'dumbbell') addDumbbellMessage(data.thrower, data.target);
+                else if (data.type === 'muscle') addMuscleMessage(data.thrower, data.target);
             } else if (topic === baseTopic + "/customwords") {
                 if (data.words && data.words.length > 0 && customWords.length === 0) {
                     customWords = data.words;
@@ -1243,18 +1297,28 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         snapshot = null; lastFormCoordinates = null;
         renderScoreboard();
-        const eggBtn = document.getElementById('btn-egg');
-        const flowerBtn = document.getElementById('btn-flower');
+        
         const skipBtn = document.getElementById('btn-skip');
+        const interactBtns = document.getElementById('bottom-actions').querySelectorAll('.action-interact-btn');
+        
         if (currentDrawerName === username) {
-            isDrawer = true; eggBtn.style.display = 'none'; flowerBtn.style.display = 'none';
+            isDrawer = true; 
+            interactBtns.forEach(b => b.style.display = 'none');
             skipBtn.style.display = 'inline-flex';
             document.getElementById('word-display').innerText = "✏️ Sua Palavra: " + currentWord.toUpperCase();
             addSystemMessage(`✏️ Sua vez! Palavra: ${currentWord.toUpperCase()}`);
         } else {
-            isDrawer = false; skipBtn.style.display = 'none';
-            eggBtn.style.display = 'inline-flex'; eggBtn.classList.remove('cooldown'); eggBtn.textContent = '🥚 Jogar Ovo!';
-            flowerBtn.style.display = 'inline-flex'; flowerBtn.classList.remove('cooldown'); flowerBtn.textContent = '🌹 Dar Flor!';
+            isDrawer = false; 
+            skipBtn.style.display = 'none';
+            interactBtns.forEach(b => {
+                b.style.display = 'inline-flex';
+                b.classList.remove('cooldown');
+            });
+            document.getElementById('btn-egg').textContent = '🥚 Jogar Ovo!';
+            document.getElementById('btn-flower').textContent = '🌹 Dar Flor!';
+            document.getElementById('btn-dumbbell').textContent = '🏋️‍♂️ Desafiar Ogrão!';
+            document.getElementById('btn-muscle').textContent = '💪 Rugido Alpha';
+            
             const u = "_ ".repeat(currentWord.length).trim();
             document.getElementById('word-display').innerText = `🎨 Desenho de ${currentDrawerName} (${u})`;
             addSystemMessage(`🎨 ${currentDrawerName} está desenhando...`);
@@ -1274,8 +1338,7 @@
                 document.getElementById('timer-display').innerText = "⏱️ Tempo: 0s";
                 addSystemMessage(`🛑 Tempo esgotado! A palavra era: ${currentWord.toUpperCase()}`);
                 showGarticAnnouncement("⏳ TEMPO ESGOTADO!", `Ninguém acertou a palavra secreta! Ela era: ${currentWord.toUpperCase()}`);
-                document.getElementById('btn-egg').style.display = 'none';
-                document.getElementById('btn-flower').style.display = 'none';
+                document.getElementById('bottom-actions').querySelectorAll('.action-interact-btn').forEach(b => b.style.display = 'none');
                 document.getElementById('btn-skip').style.display = 'none';
                 handleRoundEndAutomatically();
             } else {
@@ -1286,8 +1349,7 @@
 
     function handleRoundEndAutomatically() {
         roundActive = false; clearInterval(countdownInterval);
-        document.getElementById('btn-egg').style.display = 'none';
-        document.getElementById('btn-flower').style.display = 'none';
+        document.getElementById('bottom-actions').querySelectorAll('.action-interact-btn').forEach(b => b.style.display = 'none');
         document.getElementById('btn-skip').style.display = 'none';
         if (gameEnded) return;
         if (currentDrawerName === username) { nextRoundTimeout = setTimeout(() => { if (!gameEnded) drawNewRound(); }, 4000); }
@@ -1355,6 +1417,12 @@
     }
     function addFlowerMessage(thrower, target) {
         const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-flower"; m.innerText = `🌹 ${thrower} enviou uma flor de apoio para ${target}!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
+    }
+    function addDumbbellMessage(thrower, target) {
+        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-dumbbell"; m.innerText = `🏋️‍♂️ ${thrower} jogou um halter pesado para desafiar ${target}! ESMAGA QUE CRESCE!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
+    }
+    function addMuscleMessage(thrower, target) {
+        const c = document.getElementById('chat-messages'); const m = document.createElement('div'); m.className = "msg msg-muscle"; m.innerText = `💪 ${thrower} soltou um RUGIDO ALPHA para motivar ${target}! BORA CUMPADE!`; c.appendChild(m); c.scrollTop = c.scrollHeight;
     }
 
     setActiveColor('#000000');
