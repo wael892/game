@@ -3,240 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador: Criação de Porcos</title>
+    <title>Xadrez Simples</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: monospace; font-size: 11px; }
-        body { padding: 8px; background: #f4f4f4; color: #333; }
-        h2 { font-size: 13px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: monospace; }
+        body { padding: 10px; background: #f4f4f4; color: #333; display: flex; flex-direction: column; align-items: center; }
         
-        .grid-container { display: flex; flex-direction: column; gap: 8px; max-width: 800px; }
-        .painel { background: #fff; border: 1px solid #ccc; padding: 6px; }
+        #status { font-size: 12px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; background: #fff; padding: 4px 8px; border: 1px solid #ccc; }
         
-        table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
-        th, td { border: 1px solid #bbb; padding: 3px 5px; text-align: left; }
-        th { background: #eaeaea; font-weight: bold; }
-        td.num, th.num { text-align: right; }
+        .tabuleiro { display: grid; grid-template-columns: repeat(8, 40px); grid-template-rows: repeat(8, 40px); border: 2px solid #333; }
         
-        .btn { background: #222; color: #fff; border: none; padding: 3px 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
-        .btn:hover { background: #444; }
-        .btn:disabled { background: #ccc; cursor: not-allowed; }
-        .btn-venda { background: #2e7d32; }
-        .btn-venda:hover { background: #1b5e20; }
+        .casa { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; user-select: none; }
         
-        .flex-row { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
-        .destaque { font-weight: bold; background: #fff9c4; padding: 2px 4px; border: 1px dashed #fbc02d; }
-        .status-badge { font-weight: bold; text-transform: uppercase; font-size: 10px; }
+        .branca { background-color: #f0d9b5; }
+        .preta { background-color: #b58863; }
+        
+        .selecionada { background-color: #7fffd4 !important; }
+        .destino-valido { background-color: #98fb98 !important; }
     </style>
 </head>
 <body>
 
-<div class="grid-container">
-    
-    <!-- DASHBOARD COMPACTO -->
-    <div class="painel">
-        <div class="flex-row">
-            <div><strong>CAIXA:</strong> <span id="txt-caixa" class="destaque">R$ 5.000,00</span></div>
-            <div><strong>PREÇO ATUAL DO KG:</strong> <span id="txt-preco-kg">R$ 8,50</span></div>
-            <div><button class="btn" onclick="passarMes()">+ Passar Mês</button></div>
-        </div>
-    </div>
-
-    <!-- TABELA DE GERENCIAMENTO (ESTILO EXCEL) -->
-    <div class="painel">
-        <h2>Lotes em Crescimento</h2>
-        <table id="tabela-porcos">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th class="num">Qtd</th>
-                    <th class="num">Idade (Meses)</th>
-                    <th class="num">Peso Médio (kg)</th>
-                    <th class="num">Custo/Mês (Saca)</th>
-                    <th>Status</th>
-                    <th>Ação</th>
-                </tr>
-            </thead>
-            <tbody id="lista-porcos">
-                <!-- Inserido via JS -->
-            </tbody>
-        </table>
-        <div class="flex-row">
-            <button class="btn" onclick="comprarLeitoes()">+ Comprar Lote (10 Leitões por R$ 1.500)</button>
-            <span>* Ponto ideal de venda: 6 meses (~100kg)</span>
-        </div>
-    </div>
-
-    <!-- HISTÓRICO DE VENDAS -->
-    <div class="painel">
-        <h2>Histórico de Vendas / Resultados</h2>
-        <table id="tabela-historico">
-            <thead>
-                <tr>
-                    <th>Lote</th>
-                    <th class="num">Qtd Vendida</th>
-                    <th class="num">Peso Total</th>
-                    <th class="num">Preço/Kg</th>
-                    <th class="num">Faturamento</th>
-                </tr>
-            </thead>
-            <tbody id="lista-historico">
-                <tr><td colspan="5" style="text-align:center; color:#999;">Nenhuma venda realizada ainda.</td></tr>
-            </tbody>
-        </table>
-    </div>
-
-</div>
+<div id="status">Turno: Brancas (Selecione uma peça)</div>
+<div class="tabuleiro" id="tabuleiro"></div>
 
 <script>
-    // Estado da aplicação
-    let caixa = 5000.00;
-    let precoKgConstante = 8.50; // Preço base do KG do porco vivo
-    let proximoId = 1;
-    
-    // Configurações zootécnicas baseadas em ciclo médio
-    const CUSTO_COMPRA_LOTE = 1500.00; // 10 leitões desmamados
-    const QTD_PORCOS_LOTE = 10;
-    
-    let lotes = [
-        { id: proximoId++, qtd: 10, idade: 2, peso: 25, custoRacao: 45.00, pronto: false }
+    // Representação inicial do tabuleiro (Maiúsculas = Brancas, Minúsculas = Pretas)
+    // T/t = Torre, C/c = Cavalo, B/b = Bispo, D/d = Dama, R/r = Rei, P/p = Peão, '.' = Vazio
+    let tabuleiro = [
+        ['t','c','b','d','r','b','c','t'],
+        ['p','p','p','p','p','p','p','p'],
+        ['.','.','.','.','.','.','.','.'],
+        ['.','.','.','.','.','.','.','.'],
+        ['.','.','.','.','.','.','.','.'],
+        ['.','.','.','.','.','.','.','.'],
+        ['P','P','P','P','P','P','P','P'],
+        ['T','C','B','D','R','B','C','T']
     ];
 
-    let historicoVendas = [];
+    const pecasUnicode = {
+        't': '♜', 'c': '♞', 'b': '♝', 'd': '♛', 'r': '♚', 'p': '♟',
+        'T': '♖', 'C': '♘', 'B': '♗', 'D': '♕', 'R': '♔', 'P': '♙',
+        '.': ''
+    };
 
-    // Formatação
-    const fmtMoeda = (v) => "R$ " + v.toFixed(2).replace('.', ',');
-    const fmtPeso = (v) => v.toFixed(1) + " kg";
+    let turno = 'B'; // 'B' para Brancas, 'P' para Pretas
+    let casaSelecionada = null;
 
-    function atualizarTela() {
-        // Atualiza Dashboard
-        document.getElementById('txt-caixa').innerText = fmtMoeda(caixa);
-        document.getElementById('txt-preco-kg').innerText = fmtMoeda(precoKgConstante);
+    function criarTabuleiro() {
+        const divTabuleiro = document.getElementById('tabuleiro');
+        divTabuleiro.innerHTML = '';
 
-        // Atualiza Tabela Principal
-        const tbody = document.getElementById('lista-porcos');
-        tbody.innerHTML = '';
+        for (let r = 0; r < 8; r++) {
+            for (let c = 0; c < 8; c++) {
+                const casa = document.createElement('div');
+                casa.classList.add('casa');
+                casa.classList.add((r + c) % 2 === 0 ? 'branca' : 'preta');
+                casa.dataset.row = r;
+                casa.dataset.col = c;
+                casa.innerText = pecasUnicode[tabuleiro[r][c]];
 
-        if (lotes.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#999;">Nenhum porco no momento. Compre um novo lote!</td></tr>`;
-        } else {
-            lotes.forEach(lote => {
-                let statusText = lote.idade < 6 ? "Em crescimento" : "Pronto p/ Abate";
-                let statusCor = lote.idade < 6 ? "#0288d1" : "#2e7d32";
-                
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>Lote #${lote.id}</td>
-                    <td class="num">${lote.qtd}</td>
-                    <td class="num">${lote.idade} m</td>
-                    <td class="num">${fmtPeso(lote.peso)}</td>
-                    <td class="num">${fmtMoeda(lote.custoRacao)}</td>
-                    <td style="color: ${statusCor}; font-weight:bold;"><span class="status-badge">${statusText}</span></td>
-                    <td><button class="btn btn-venda" onclick="venderLote(${lote.id})">Vender</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        // Atualiza Tabela Histórico
-        const tbodyHist = document.getElementById('lista-historico');
-        if (historicoVendas.length > 0) {
-            tbodyHist.innerHTML = '';
-            historicoVendas.forEach(h => {
-                let tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>Lote #${h.id}</td>
-                    <td class="num">${h.qtd}</td>
-                    <td class="num">${fmtPeso(h.pesoTotal)}</td>
-                    <td class="num">${fmtMoeda(h.precoKg)}</td>
-                    <td class="num" style="color:green; font-weight:bold;">${fmtMoeda(h.faturamento)}</td>
-                `;
-                tbodyHist.appendChild(tr);
-            });
+                casa.addEventListener('click', () => clicarCasa(r, c));
+                divTabuleiro.appendChild(casa);
+            }
         }
     }
 
-    function comprarLeitoes() {
-        if (caixa >= CUSTO_COMPRA_LOTE) {
-            caixa -= CUSTO_COMPRA_LOTE;
-            lotes.push({
-                id: proximoId++,
-                qtd: QTD_PORCOS_LOTE,
-                idade: 2, // começam com 2 meses (desmame)
-                peso: 20.0, // peso inicial médio
-                custoRacao: 45.00, // custo de ração inicial por porco/mês
-                pronto: false
-            });
-            atualizarTela();
-        } else {
-            alert("Saldo insuficiente no Caixa para comprar mais leitões!");
-        }
-    }
+    function clicarCasa(r, c) {
+        const peca = tabuleiro[r][c];
+        
+        // Se já tem uma peça selecionada e clicou em um movimento válido (qualquer casa diferente por enquanto nesta versão simples)
+        if (casaSelecionada) {
+            if (casaSelecionada.r === r && casaSelecionada.c === c) {
+                // Cancelar seleção ao clicar na mesma peça
+                casaSelecionada = null;
+                atualizarInterface();
+                return;
+            }
 
-    function passarMes() {
-        if (lotes.length === 0) {
-            alert("Sem lotes ativos. Compre leitões para iniciar a simulação.");
+            // Realiza o movimento simples (sem validação complexa de regras de xadrez)
+            tabuleiro[r][c] = tabuleiro[casaSelecionada.r][casaSelecionada.c];
+            tabuleiro[casaSelecionada.r][casaSelecionada.c] = '.';
+            
+            // Alterna o turno
+            turno = turno === 'B' ? 'P' : 'B';
+            casaSelecionada = null;
+            atualizarInterface();
             return;
         }
 
-        let custoTotalRacaoMes = 0;
-
-        // Calcula custos e evolução biológica de cada lote
-        lotes.forEach(lote => {
-            custoTotalRacaoMes += (lote.custoRacao * lote.qtd);
-            
-            lote.idade += 1;
-            
-            // Simulação de ganho de peso padrão (Curva de crescimento)
-            if (lote.idade <= 4) {
-                lote.peso += 15; // crescimento inicial lento
-                lote.custoRacao = 55.00;
-            } else if (lote.idade <= 6) {
-                lote.peso += 25; // explosão de engorda (fase de terminação)
-                lote.custoRacao = 75.00; 
-            } else {
-                lote.peso += 8; // estabiliza após o ponto ideal e consome muita ração
-                lote.custoRacao = 95.00;
+        // Selecionar uma peça do turno atual
+        if (peca !== '.') {
+            const ehMaiuscula = peca === peca.toUpperCase();
+            if ((turno === 'B' && ehMaiuscula) || (turno === 'P' && !ehMaiuscula)) {
+                casaSelecionada = { r, c };
+                atualizarInterface();
+                destacarCasaSelecionada(r, c);
             }
-        });
-
-        // Deduz do caixa o valor gasto com alimentação do mês inteiro
-        caixa -= custoTotalRacaoMes;
-        
-        // Pequena oscilação de mercado no preço do KG (simulando oscilação do mercado real de suínos)
-        precoKgConstante = 8.50 + (Math.random() * 1.4 - 0.7);
-
-        alert(`Resumo do Mês:\nGasto total com ração: ${fmtMoeda(custoTotalRacaoMes)}`);
-        atualizarTela();
-    }
-
-    function venderLote(id) {
-        let index = lotes.findIndex(l => l.id === id);
-        if (index !== -1) {
-            let lote = lotes[index];
-            
-            let pesoTotalLote = lote.peso * lote.qtd;
-            let faturamento = pesoTotalLote * precoKgConstante;
-            
-            caixa += faturamento;
-            
-            // Guarda no histórico de vendas
-            historicoVendas.push({
-                id: lote.id,
-                qtd: lote.qtd,
-                pesoTotal: pesoTotalLote,
-                precoKg: precoKgConstante,
-                faturamento: faturamento
-            });
-            
-            // Remove do gerenciamento ativo
-            lotes.splice(index, 1);
-            
-            atualizarTela();
         }
     }
 
-    // Inicialização da primeira renderização
-    atualizarTela();
+    function destacarCasaSelecionada(r, c) {
+        const index = r * 8 + c;
+        const casas = document.querySelectorAll('.casa');
+        casas[index].classList.add('selecionada');
+    }
+
+    function atualizarInterface() {
+        criarTabuleiro();
+        document.getElementById('status').innerText = `Turno: ${turno === 'B' ? 'Brancas' : 'Pretas'} ${casaSelecionada ? '(Escolha o destino)' : '(Selecione uma peça)'}`;
+    }
+
+    // Inicializa o jogo
+    criarTabuleiro();
 </script>
 
 </body>
