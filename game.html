@@ -1,1 +1,554 @@
 
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sua Criaturinha Fofa</title>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --creature-color: #ff6b81;
+            --creature-shadow: #e04d63;
+            --eye-color: #2ed573;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: white;
+            user-select: none;
+        }
+
+        /* Container Principal */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        /* Balão de Diálogo */
+        .dialogue-box {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 12px 20px;
+            border-radius: 20px;
+            font-size: 1.1rem;
+            min-height: 54px;
+            display: flex;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            width: 100%;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+        }
+
+        .dialogue-box::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: rgba(255, 255, 255, 0.1) transparent;
+            display: block;
+            width: 0;
+        }
+
+        /* Palco da Criatura */
+        .stage {
+            position: relative;
+            width: 250px;
+            height: 320px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        /* Corpo Estilizado e Curvilíneo (Bonito e Fofo) */
+        .creature {
+            position: relative;
+            width: 160px;
+            height: 240px;
+            background: linear-gradient(135deg, var(--creature-color), var(--creature-shadow));
+            border-radius: 80px 80px 60px 60px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5), inset -10px -10px 20px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.2s ease, filter 0.3s ease;
+            animation: idle 4s ease-in-out infinite;
+            transform-origin: bottom center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        @keyframes idle {
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.03, 0.97) translateY(5px); }
+        }
+
+        .creature.laughing {
+            animation: laugh 0.15s ease-in-out infinite alternate !important;
+        }
+
+        @keyframes laugh {
+            0% { transform: scale(1.05, 0.95) translateY(5px) rotate(-2deg); }
+            100% { transform: scale(0.95, 1.05) translateY(-5px) rotate(2deg); }
+        }
+
+        /* Curvas do Corpo (Silhueta Bonita) */
+        .creature::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 180px;
+            height: 100px;
+            background: inherit;
+            border-radius: 50%;
+            z-index: -1;
+            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Olhos Verdes Hipnotizantes */
+        .eyes-container {
+            display: flex;
+            gap: 25px;
+            margin-top: 55px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .eye {
+            width: 38px;
+            height: 38px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: height 0.1s ease;
+        }
+
+        .pupil {
+            width: 20px;
+            height: 20px;
+            background: var(--eye-color);
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+        }
+
+        .pupil::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: black;
+            border-radius: 50%;
+        }
+
+        .pupil::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 5px;
+            height: 5px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        /* Estado de Piscar/Rir do Olho */
+        .eye.blink {
+            height: 2px;
+        }
+
+        /* Boca */
+        .mouth {
+            width: 30px;
+            height: 15px;
+            border-bottom: 4px solid #333;
+            border-radius: 0 0 15px 15px;
+            margin-top: 15px;
+            transition: all 0.2s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .mouth.open {
+            width: 35px;
+            height: 22px;
+            background: #801323;
+            border-bottom: none;
+            border-radius: 50% 50% 50% 50% / 20% 20% 80% 80%;
+            overflow: hidden;
+        }
+
+        .mouth.open::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            width: 25px;
+            height: 12px;
+            background: #ff7675;
+            border-radius: 50%;
+            left: 5px;
+        }
+
+        /* Bochechas Coradas */
+        .blushes {
+            position: absolute;
+            top: 90px;
+            width: 130px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+
+        .blush {
+            width: 20px;
+            height: 12px;
+            background: rgba(255, 0, 100, 0.4);
+            border-radius: 50%;
+            filter: blur(2px);
+            opacity: 0.6;
+            transition: opacity 0.5s ease;
+        }
+
+        .creature.blushing .blush {
+            opacity: 1;
+            background: rgba(255, 0, 50, 0.8);
+        }
+
+        /* Braços Charmosos */
+        .arms {
+            position: absolute;
+            top: 120px;
+            width: 190px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+
+        .arm {
+            width: 25px;
+            height: 50px;
+            background: var(--creature-color);
+            border-radius: 20px;
+            box-shadow: inset -3px -3px 10px rgba(0,0,0,0.2);
+        }
+
+        .arm.left {
+            transform: rotate(25deg);
+            transform-origin: top right;
+        }
+
+        .arm.right {
+            transform: rotate(-25deg);
+            transform-origin: top left;
+        }
+
+        /* Barra de Relacionamento / Amor */
+        .love-container {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .love-label {
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            color: #aaa;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .love-bar {
+            width: 100%;
+            height: 12px;
+            background: #111;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .love-fill {
+            width: 15%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff4757, #ff6b81);
+            box-shadow: 0 0 10px #ff4757;
+            transition: width 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Botões de Ação */
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: white;
+            color: var(--bg-color);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Efeito de Corações flutuantes */
+        .heart-particle {
+            position: absolute;
+            color: #ff4757;
+            font-size: 24px;
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+            z-index: 10;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <div class="dialogue-box" id="dialogue">
+            Oi... você por aqui? Eu estava mesmo pensando em você...
+        </div>
+
+        <div class="stage">
+            <div class="arms">
+                <div class="arm left" id="armL"></div>
+                <div class="arm right" id="armR"></div>
+            </div>
+            
+            <div class="creature" id="creature" onclick="triggerTickle()">
+                <div class="eyes-container">
+                    <div class="eye" id="eyeL"><div class="pupil"></div></div>
+                    <div class="eye" id="eyeR"><div class="pupil"></div></div>
+                </div>
+                <div class="mouth" id="mouth"></div>
+                <div class="blushes">
+                    <div class="blush"></div>
+                    <div class="blush"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="love-container">
+            <div class="love-label">
+                <span>Nível de Afeto</span>
+                <span id="love-status">Gosta um pouco 💕</span>
+            </div>
+            <div class="love-bar">
+                <div class="love-fill" id="loveFill"></div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button onclick="interact('elogio')">Elogiar Silhueta</button>
+            <button onclick="interact('piada')">Contar Piada</button>
+            <button onclick="interact('carinho')">Fazer Carinho</button>
+            <button onclick="interact('olhar')">Olhar nos Olhos</button>
+        </div>
+    </div>
+
+    <script>
+        const creature = document.getElementById('creature');
+        const mouth = document.getElementById('mouth');
+        const dialogue = document.getElementById('dialogue');
+        const loveFill = document.getElementById('loveFill');
+        const loveStatus = document.getElementById('love-status');
+        const eyeL = document.getElementById('eyeL');
+        const eyeR = document.getElementById('eyeR');
+
+        let loveLevel = 15; 
+        let isLaughing = false;
+
+        // Diálogos dinâmicos baseados no nível de afeto
+        const lines = {
+            elogio: [
+                "Hihi assim você me deixa sem graça... Repara muito não! 🤭",
+                "Gostou das minhas curvas? Eu cuido bem delas... para você. 💖",
+                "Nossa... ninguém nunca elogiou meu corpo desse jeito antes..."
+            ],
+            piada: [
+                "HAHAHA você é muito bobo! Para, minha barriga vai doer! 😂",
+                "Kkkk não aguento seu senso de humor, você me quebra!",
+                "Hahaha! Só você para me fazer rir assim!"
+            ],
+            carinho: [
+                "Isso é tão bom... continua? 🥰",
+                "Hmm... meu coração disparou um pouquinho agora.",
+                "Seu toque é tão caloroso..."
+            ],
+            olhar: [
+                "Seus olhos estão me deixando hipnotizada... 🟢_🟢",
+                "Dizem que meus olhos verdes brilham mais quando você chega...",
+                "Fica me olhando assim que eu acabo me apaixonando de vez."
+            ]
+        };
+
+        // Seguir o cursor sutilmente com os olhos
+        document.addEventListener('mousemove', (e) => {
+            if (isLaughing) return;
+            const eyes = document.querySelectorAll('.pupil');
+            eyes.forEach(pupil => {
+                const rect = pupil.getBoundingClientRect();
+                const x = (rect.left + rect.width / 2);
+                const y = (rect.top + rect.height / 2);
+                const rad = Math.atan2(e.pageX - x, e.pageY - y);
+                const rot = (rad * (180 / Math.PI) * -1) + 180;
+                
+                // Limita o movimento da pupila
+                const distance = 4;
+                const moveX = Math.sin(rad) * distance;
+                const moveY = Math.cos(rad) * distance;
+                pupil.style.transform = `translate(${moveX}px, ${moveY}px)`;
+            });
+        });
+
+        // Função de Piscar Aleatória
+        setInterval(() => {
+            if (!isLaughing) {
+                eyeL.classList.add('blink');
+                eyeR.classList.add('blink');
+                setTimeout(() => {
+                    eyeL.classList.remove('blink');
+                    eyeR.classList.remove('blink');
+                }, 150);
+            }
+        }, 4000);
+
+        // Ação de Cócegas ao clicar diretamente nela (Faz Rir)
+        function triggerTickle() {
+            if (isLaughing) return;
+            isLaughing = true;
+            
+            creature.classList.add('laughing');
+            mouth.classList.add('open');
+            eyeL.classList.add('blink');
+            eyeR.classList.add('blink');
+            
+            dialogue.innerText = "Hahaha! Para! Da cócegas!! Kkkkkk 😂❤️";
+            
+            createHeart();
+            addLove(2);
+
+            setTimeout(() => {
+                creature.classList.remove('laughing');
+                mouth.classList.remove('open');
+                eyeL.classList.remove('blink');
+                eyeR.classList.remove('blink');
+                isLaughing = false;
+            }, 1500);
+        }
+
+        // Interações dos Botões
+        function interact(type) {
+            if (isLaughing) return;
+
+            // Escolhe uma fala aleatória do tipo clicado
+            const randomLine = lines[type][Math.floor(Math.random() * lines[type].length)];
+            dialogue.innerText = randomLine;
+
+            // Reações visuais baseadas no tipo
+            if (type === 'piada') {
+                isLaughing = true;
+                creature.classList.add('laughing');
+                mouth.classList.add('open');
+                setTimeout(() => {
+                    creature.classList.remove('laughing');
+                    mouth.classList.add('open');
+                    isLaughing = false;
+                    setTimeout(() => mouth.classList.remove('open'), 1000);
+                }, 1200);
+                addLove(5);
+            } else {
+                creature.classList.add('blushing');
+                mouth.classList.add('open');
+                createHeart();
+                setTimeout(() => {
+                    creature.classList.remove('blushing');
+                    mouth.classList.remove('open');
+                }, 2000);
+                addLove(6);
+            }
+        }
+
+        // Sistema de Evolução do Afeto
+        function addLove(amount) {
+            loveLevel = Math.min(loveLevel + amount, 100);
+            loveFill.style.width = `${loveLevel}%`;
+
+            if (loveLevel >= 100) {
+                loveStatus.innerText = "Completamente Apaixonada! 🛐❤️";
+                dialogue.innerText = "Pronto... Você me conquistou por inteiro. Não consigo mais parar de pensar em você! 💋";
+            } else if (loveLevel > 75) {
+                loveStatus.innerText = "Te ama muito! 💖";
+            } else if (loveLevel > 45) {
+                loveStatus.innerText = "Gostando cada vez mais! 🥰";
+            } else if (loveLevel > 25) {
+                loveStatus.innerText = "Interessada... 😏";
+            }
+        }
+
+        // Partículas de Coração
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('heart-particle');
+            heart.innerHTML = '❤️';
+            heart.style.left = `${Math.random() * 60 + 20}%`;
+            heart.style.top = `40%`;
+            creature.parentElement.appendChild(heart);
+            
+            setTimeout(() => {
+                heart.remove();
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
