@@ -3,364 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Desafio do Olhar</title>
+    <title>Simulador: Criação de Porcos</title>
     <style>
-        :root {
-            --bg-color: #090a0f;
-            --card-bg: #121620;
-            --accent-green: #00ff87;
-            --text-color: #e2e8f0;
-            --border-color: #242f41;
-            --glass-color: rgba(255, 255, 255, 0.12);
-            --glass-border: rgba(255, 255, 255, 0.25);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
-            color: var(--text-color);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            overflow: hidden;
-            user-select: none;
-        }
-
-        .container {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            width: 100%;
-            max-width: 500px;
-            padding: 35px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7);
-            position: relative;
-            transition: all 0.5s ease;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 35px;
-        }
-
-        h2 {
-            font-size: 1.5rem;
-            color: #ffffff;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-        }
-
-        .subtitle {
-            font-size: 0.95rem;
-            color: #94a3b8;
-            line-height: 1.4;
-        }
-
-        .subtitle span {
-            color: var(--accent-green);
-            font-weight: bold;
-        }
-
-        /* Área do Jogo */
-        .game-area {
-            display: flex;
-            justify-content: space-around;
-            align-items: flex-end;
-            height: 180px;
-            margin-bottom: 35px;
-            position: relative;
-        }
-
-        /* Copo de Vidro Transparente */
-        .cup-container {
-            position: absolute;
-            bottom: 0;
-            width: 100px;
-            height: 130px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end;
-            cursor: pointer;
-            transition: left 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045), transform 0.2s ease;
-        }
-
-        .glass-cup {
-            width: 80px;
-            height: 110px;
-            background: var(--glass-color);
-            border: 1px solid var(--glass-border);
-            border-top: none;
-            border-radius: 0 0 16px 16px;
-            backdrop-filter: blur(3px);
-            position: relative;
-            z-index: 2;
-            box-shadow: inset 0 -10px 20px rgba(255,255,255,0.05), 0 8px 16px rgba(0,0,0,0.4);
-            transition: transform 0.3s ease;
-        }
-
-        /* Detalhe da borda superior do copo de vidro */
-        .glass-cup::before {
-            content: '';
-            position: absolute;
-            top: -5px;
-            left: -1px;
-            width: 80px;
-            height: 10px;
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid var(--glass-border);
-            border-radius: 50%;
-        }
-
-        /* Os Olhos Verdes Marcantes */
-        .green-eyes {
-            display: flex;
-            gap: 10px;
-            position: absolute;
-            bottom: 25px;
-            z-index: 1;
-            opacity: 0;
-            transform: scale(0.5);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-
-        .eye {
-            width: 18px;
-            height: 18px;
-            background: #ffffff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 12px rgba(0, 255, 135, 0.8);
-        }
-
-        .pupil {
-            width: 10px;
-            height: 10px;
-            background: linear-gradient(135deg, #00ff87, #00b354);
-            border-radius: 50%;
-            box-shadow: 0 0 5px var(--accent-green);
-        }
-
-        /* Exibir os olhos */
-        .cup-container.has-eyes .green-eyes {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        /* Estado levantado ao revelar */
-        .cup-container.lifted .glass-cup {
-            transform: translateY(-35px);
-        }
-
-        /* Botão principal de controle */
-        .btn-action {
-            background: transparent;
-            border: 1px solid var(--accent-green);
-            color: var(--accent-green);
-            padding: 15px;
-            width: 100%;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-action:hover {
-            background: rgba(0, 255, 135, 0.08);
-            box-shadow: 0 0 15px rgba(0, 255, 135, 0.2);
-        }
-
-        /* Painel da Surpresa Final */
-        .revelation-overlay {
-            display: none;
-            text-align: center;
-            animation: clearFade 0.6s ease forwards;
-        }
-
-        @keyframes clearFade {
-            from { opacity: 0; transform: scale(0.97); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .revelation-overlay h1 {
-            font-size: 2rem;
-            color: #ffffff;
-            line-height: 1.3;
-            margin-bottom: 20px;
-        }
-
-        .revelation-overlay h1 span {
-            color: var(--accent-green);
-            display: block;
-            font-size: 2.3rem;
-            margin-top: 5px;
-            text-shadow: 0 0 15px rgba(0, 255, 135, 0.3);
-        }
-
-        .revelation-overlay p {
-            font-size: 1.05rem;
-            color: #94a3b8;
-            line-height: 1.6;
-            margin-bottom: 25px;
-        }
-
-        .decision-text {
-            font-weight: 600;
-            color: #ffffff;
-            font-size: 1.1rem;
-            border-top: 1px solid var(--border-color);
-            padding-top: 20px;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: monospace; font-size: 11px; }
+        body { padding: 8px; background: #f4f4f4; color: #333; }
+        h2 { font-size: 13px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .grid-container { display: flex; flex-direction: column; gap: 8px; max-width: 800px; }
+        .painel { background: #fff; border: 1px solid #ccc; padding: 6px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+        th, td { border: 1px solid #bbb; padding: 3px 5px; text-align: left; }
+        th { background: #eaeaea; font-weight: bold; }
+        td.num, th.num { text-align: right; }
+        
+        .btn { background: #222; color: #fff; border: none; padding: 3px 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        .btn:hover { background: #444; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-venda { background: #2e7d32; }
+        .btn-venda:hover { background: #1b5e20; }
+        
+        .flex-row { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+        .destaque { font-weight: bold; background: #fff9c4; padding: 2px 4px; border: 1px dashed #fbc02d; }
+        .status-badge { font-weight: bold; text-transform: uppercase; font-size: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="container" id="mainCard">
-        <div id="gamePanel">
-            <div class="header">
-                <h2>Onde estão os Olhos Verdes?</h2>
-                <p class="subtitle" id="gameInstruction">
-                    O trato é simples: <span>Se você acertar, a gente casa.</span> <br>Preste atenção no movimento dos vidros.
-                </p>
-            </div>
-
-            <div class="game-area" id="gameArea">
-                <div class="cup-container" id="cup0" onclick="chooseCup(0)" style="left: 10%;">
-                    <div class="glass-cup"></div>
-                    <div class="green-eyes">
-                        <div class="eye"><div class="pupil"></div></div>
-                        <div class="eye"><div class="pupil"></div></div>
-                    </div>
-                </div>
-
-                <div class="cup-container" id="cup1" onclick="chooseCup(1)" style="left: 40%;">
-                    <div class="glass-cup"></div>
-                    <div class="green-eyes">
-                        <div class="eye"><div class="pupil"></div></div>
-                        <div class="eye"><div class="pupil"></div></div>
-                    </div>
-                </div>
-
-                <div class="cup-container" id="cup2" onclick="chooseCup(2)" style="left: 70%;">
-                    <div class="glass-cup"></div>
-                    <div class="green-eyes">
-                        <div class="eye"><div class="pupil"></div></div>
-                        <div class="eye"><div class="pupil"></div></div>
-                    </div>
-                </div>
-            </div>
-
-            <button class="btn-action" id="startBtn" onclick="shuffleCups()">Embaralhar Copos</button>
-        </div>
-
-        <div class="revelation-overlay" id="revealPanel">
-            <h1>Análise Concluída. <span>Você Acertou!</span></h1>
-            <p>
-                Não adiantava tentar fugir com o olhar, o destino já estava traçado desde o início. Que visão linda que seus olhos lindos têm.
-            </p>
-            <p class="decision-text">
-                O combinado foi feito: acertou, a gente casa. 😏💍 <br>
-                <span style="font-size: 0.85rem; color: #64748b; font-weight: normal; margin-top: 10px; display: block;">
-                    (Se não quiser ou ficou com vergonha... tanto faz, o que vale é que eu ganhei o jogo kkkk)
-                </span>
-            </p>
+<div class="grid-container">
+    
+    <!-- DASHBOARD COMPACTO -->
+    <div class="painel">
+        <div class="flex-row">
+            <div><strong>CAIXA:</strong> <span id="txt-caixa" class="destaque">R$ 5.000,00</span></div>
+            <div><strong>PREÇO ATUAL DO KG:</strong> <span id="txt-preco-kg">R$ 8,50</span></div>
+            <div><button class="btn" onclick="passarMes()">+ Passar Mês</button></div>
         </div>
     </div>
 
-    <script>
-        const cupContainers = [
-            document.getElementById('cup0'),
-            document.getElementById('cup1'),
-            document.getElementById('cup2')
-        ];
-        const startBtn = document.getElementById('startBtn');
-        const instruction = document.getElementById('gameInstruction');
+    <!-- TABELA DE GERENCIAMENTO (ESTILO EXCEL) -->
+    <div class="painel">
+        <h2>Lotes em Crescimento</h2>
+        <table id="tabela-porcos">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th class="num">Qtd</th>
+                    <th class="num">Idade (Meses)</th>
+                    <th class="num">Peso Médio (kg)</th>
+                    <th class="num">Custo/Mês (Saca)</th>
+                    <th>Status</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody id="lista-porcos">
+                <!-- Inserido via JS -->
+            </tbody>
+        </table>
+        <div class="flex-row">
+            <button class="btn" onclick="comprarLeitoes()">+ Comprar Lote (10 Leitões por R$ 1.500)</button>
+            <span>* Ponto ideal de venda: 6 meses (~100kg)</span>
+        </div>
+    </div>
 
-        let targetCup = 1; // Inicialmente no meio
-        let isShuffling = false;
-        let gameStarted = false;
+    <!-- HISTÓRICO DE VENDAS -->
+    <div class="painel">
+        <h2>Histórico de Vendas / Resultados</h2>
+        <table id="tabela-historico">
+            <thead>
+                <tr>
+                    <th>Lote</th>
+                    <th class="num">Qtd Vendida</th>
+                    <th class="num">Peso Total</th>
+                    <th class="num">Preço/Kg</th>
+                    <th class="num">Faturamento</th>
+                </tr>
+            </thead>
+            <tbody id="lista-historico">
+                <tr><td colspan="5" style="text-align:center; color:#999;">Nenhuma venda realizada ainda.</td></tr>
+            </tbody>
+        </table>
+    </div>
 
-        // Mostrar os olhos no início para ela ver onde estão
-        cupContainers[targetCup].classList.add('has-eyes');
+</div>
 
-        function shuffleCups() {
-            if (isShuffling) return;
-            isShuffling = true;
-            gameStarted = true;
-            startBtn.style.display = 'none';
-            instruction.innerHTML = "Acompanhe os copos transparentes com atenção...";
+<script>
+    // Estado da aplicação
+    let caixa = 5000.00;
+    let precoKgConstante = 8.50; // Preço base do KG do porco vivo
+    let proximoId = 1;
+    
+    // Configurações zootécnicas baseadas em ciclo médio
+    const CUSTO_COMPRA_LOTE = 1500.00; // 10 leitões desmamados
+    const QTD_PORCOS_LOTE = 10;
+    
+    let lotes = [
+        { id: proximoId++, qtd: 10, idade: 2, peso: 25, custoRacao: 45.00, pronto: false }
+    ];
 
-            // Esconde os olhos temporariamente para dar o efeito de movimento
-            cupContainers.forEach(cup => cup.classList.remove('has-eyes', 'lifted'));
+    let historicoVendas = [];
 
-            let shuffles = 0;
-            const positions = ["10%", "40%", "70%"];
-            let currentMapping = [0, 1, 2];
+    // Formatação
+    const fmtMoeda = (v) => "R$ " + v.toFixed(2).replace('.', ',');
+    const fmtPeso = (v) => v.toFixed(1) + " kg";
 
-            const interval = setInterval(() => {
-                // Sorteia dois copos para trocar de posição na tela
-                let idxA = Math.floor(Math.random() * 3);
-                let idxB = Math.floor(Math.random() * 3);
-                while (idxA === idxB) {
-                    idxB = Math.floor(Math.random() * 3);
-                }
+    function atualizarTela() {
+        // Atualiza Dashboard
+        document.getElementById('txt-caixa').innerText = fmtMoeda(caixa);
+        document.getElementById('txt-preco-kg').innerText = fmtMoeda(precoKgConstante);
 
-                // Troca as posições no mapeamento visual
-                let temp = currentMapping[idxA];
-                currentMapping[idxA] = currentMapping[idxB];
-                currentMapping[idxB] = temp;
+        // Atualiza Tabela Principal
+        const tbody = document.getElementById('lista-porcos');
+        tbody.innerHTML = '';
 
-                // Aplica as novas posições CSS inline de forma fluida
-                cupContainers[0].style.left = positions[currentMapping.indexOf(0)];
-                cupContainers[1].style.left = positions[currentMapping.indexOf(1)];
-                cupContainers[2].style.left = positions[currentMapping.indexOf(2)];
-
-                shuffles++;
-                if (shuffles >= 6) {
-                    clearInterval(interval);
-                    isShuffling = false;
-                    instruction.innerHTML = "Onde eles estão agora? <span>Escolha um copo.</span>";
-                }
-            }, 450);
+        if (lotes.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#999;">Nenhum porco no momento. Compre um novo lote!</td></tr>`;
+        } else {
+            lotes.forEach(lote => {
+                let statusText = lote.idade < 6 ? "Em crescimento" : "Pronto p/ Abate";
+                let statusCor = lote.idade < 6 ? "#0288d1" : "#2e7d32";
+                
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>Lote #${lote.id}</td>
+                    <td class="num">${lote.qtd}</td>
+                    <td class="num">${lote.idade} m</td>
+                    <td class="num">${fmtPeso(lote.peso)}</td>
+                    <td class="num">${fmtMoeda(lote.custoRacao)}</td>
+                    <td style="color: ${statusCor}; font-weight:bold;"><span class="status-badge">${statusText}</span></td>
+                    <td><button class="btn btn-venda" onclick="venderLote(${lote.id})">Vender</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
-        function chooseCup(index) {
-            if (isShuffling || !gameStarted) return;
+        // Atualiza Tabela Histórico
+        const tbodyHist = document.getElementById('lista-historico');
+        if (historicoVendas.length > 0) {
+            tbodyHist.innerHTML = '';
+            historicoVendas.forEach(h => {
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>Lote #${h.id}</td>
+                    <td class="num">${h.qtd}</td>
+                    <td class="num">${fmtPeso(h.pesoTotal)}</td>
+                    <td class="num">${fmtMoeda(h.precoKg)}</td>
+                    <td class="num" style="color:green; font-weight:bold;">${fmtMoeda(h.faturamento)}</td>
+                `;
+                tbodyHist.appendChild(tr);
+            });
+        }
+    }
 
-            // Logica infalível: se ela escolher o vazio, os olhos migram para lá instantaneamente
-            if (index !== targetCup) {
-                cupContainers[targetCup].classList.remove('has-eyes');
-                targetCup = index; // O copo escolhido passa a ser o dono dos olhos
+    function comprarLeitoes() {
+        if (caixa >= CUSTO_COMPRA_LOTE) {
+            caixa -= CUSTO_COMPRA_LOTE;
+            lotes.push({
+                id: proximoId++,
+                qtd: QTD_PORCOS_LOTE,
+                idade: 2, // começam com 2 meses (desmame)
+                peso: 20.0, // peso inicial médio
+                custoRacao: 45.00, // custo de ração inicial por porco/mês
+                pronto: false
+            });
+            atualizarTela();
+        } else {
+            alert("Saldo insuficiente no Caixa para comprar mais leitões!");
+        }
+    }
+
+    function passarMes() {
+        if (lotes.length === 0) {
+            alert("Sem lotes ativos. Compre leitões para iniciar a simulação.");
+            return;
+        }
+
+        let custoTotalRacaoMes = 0;
+
+        // Calcula custos e evolução biológica de cada lote
+        lotes.forEach(lote => {
+            custoTotalRacaoMes += (lote.custoRacao * lote.qtd);
+            
+            lote.idade += 1;
+            
+            // Simulação de ganho de peso padrão (Curva de crescimento)
+            if (lote.idade <= 4) {
+                lote.peso += 15; // crescimento inicial lento
+                lote.custoRacao = 55.00;
+            } else if (lote.idade <= 6) {
+                lote.peso += 25; // explosão de engorda (fase de terminação)
+                lote.custoRacao = 75.00; 
+            } else {
+                lote.peso += 8; // estabiliza após o ponto ideal e consome muita ração
+                lote.custoRacao = 95.00;
             }
+        });
 
-            // Levanta o copo e exibe os olhos de surpresa
-            cupContainers[targetCup].classList.add('has-eyes');
-            cupContainers[targetCup].classList.add('lifted');
+        // Deduz do caixa o valor gasto com alimentação do mês inteiro
+        caixa -= custoTotalRacaoMes;
+        
+        // Pequena oscilação de mercado no preço do KG (simulando oscilação do mercado real de suínos)
+        precoKgConstante = 8.50 + (Math.random() * 1.4 - 0.7);
 
-            // Aguarda o impacto visual e destrava a tela final
-            setTimeout(() => {
-                document.getElementById('gamePanel').style.display = 'none';
-                
-                const card = document.getElementById('mainCard');
-                card.style.borderColor = 'var(--accent-green)';
-                card.style.boxShadow = '0 0 35px rgba(0, 255, 135, 0.25)';
-                
-                document.getElementById('revealPanel').style.display = 'block';
-            }, 1200);
+        alert(`Resumo do Mês:\nGasto total com ração: ${fmtMoeda(custoTotalRacaoMes)}`);
+        atualizarTela();
+    }
+
+    function venderLote(id) {
+        let index = lotes.findIndex(l => l.id === id);
+        if (index !== -1) {
+            let lote = lotes[index];
+            
+            let pesoTotalLote = lote.peso * lote.qtd;
+            let faturamento = pesoTotalLote * precoKgConstante;
+            
+            caixa += faturamento;
+            
+            // Guarda no histórico de vendas
+            historicoVendas.push({
+                id: lote.id,
+                qtd: lote.qtd,
+                pesoTotal: pesoTotalLote,
+                precoKg: precoKgConstante,
+                faturamento: faturamento
+            });
+            
+            // Remove do gerenciamento ativo
+            lotes.splice(index, 1);
+            
+            atualizarTela();
         }
-    </script>
+    }
+
+    // Inicialização da primeira renderização
+    atualizarTela();
+</script>
+
 </body>
 </html>
