@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Para Ela</title>
+    <title>Desafio de Lógica e Precisão</title>
     <style>
         :root {
-            --bg-color: #0b0c10;
-            --card-bg: #1f2833;
+            --bg-color: #0d0e12;
+            --card-bg: #161a22;
             --accent-green: #00ff87;
-            --shadow-green: rgba(0, 255, 135, 0.3);
-            --creature-color: #2c3539;
+            --text-color: #e2e8f0;
+            --border-color: #2d3748;
         }
 
         * {
@@ -21,461 +21,230 @@
 
         body {
             background-color: var(--bg-color);
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            height: 100vh;
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            color: var(--text-color);
+            min-height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 450px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            transition: all 0.5s ease;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
             color: #ffffff;
-            user-select: none;
         }
 
-        /* Container Principal com pegada Premium/Moderna */
-        .game-container {
+        p.subtitle {
+            font-size: 0.9rem;
+            color: #a0aec0;
+            margin-bottom: 25px;
+        }
+
+        .math-box {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 25px;
-            width: 100%;
-            max-width: 420px;
-            padding: 25px;
-            background: linear-gradient(145deg, #11141a, #1f2833);
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+            gap: 20px;
+            margin-bottom: 25px;
         }
 
-        /* Caixa de Diálogo com tom provocante/envolvente */
-        .dialogue-box {
-            background: rgba(0, 0, 0, 0.4);
-            border-left: 4px solid var(--accent-green);
-            padding: 15px 20px;
-            border-radius: 12px;
-            font-size: 1.05rem;
-            min-height: 70px;
-            display: flex;
-            align-items: center;
-            text-align: left;
-            position: relative;
-            width: 100%;
-            justify-content: flex-start;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
-            line-height: 1.4;
-            color: #e0e0e0;
-        }
-
-        /* Palco */
-        .stage {
-            position: relative;
-            width: 260px;
-            height: 300px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-        }
-
-        /* Avatar com Silhueta Imponente e Atraente */
-        .creature {
-            position: relative;
-            width: 140px;
-            height: 240px;
-            background: linear-gradient(135deg, #34495e, #1a252f);
-            border-radius: 70px 70px 50px 50px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset -5px -5px 15px rgba(0,0,0,0.4);
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            animation: breathe 4s ease-in-out infinite;
-            transform-origin: bottom center;
+        .equation-row {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid var(--border-color);
         }
 
-        @keyframes breathe {
-            0%, 100% { transform: scale(1) translateY(0); }
-            50% { transform: scale(1.02, 0.98) translateY(3px); }
+        .equation-row.active {
+            border-left-color: var(--accent-green);
         }
 
-        .creature.dynamic-react {
-            animation: vibrance 0.15s ease-in-out infinite alternate !important;
-        }
-
-        @keyframes vibrance {
-            0% { transform: scale(1.04, 0.96) rotate(-1deg); }
-            100% { transform: scale(0.96, 1.04) rotate(1deg); }
-        }
-
-        /* Curvas Marcantes e Atraentes no Corpo */
-        .creature::before {
-            content: '';
-            position: absolute;
-            top: 55%;
-            width: 165px;
-            height: 90px;
-            background: inherit;
-            border-radius: 50%;
-            z-index: -1;
-            box-shadow: inset 0 5px 10px rgba(255,255,255,0.05);
-        }
-
-        /* Olhos Verdes Intensos e Magnéticos */
-        .eyes-container {
-            display: flex;
-            gap: 28px;
-            margin-top: 50px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .eye {
-            width: 34px;
-            height: 34px;
-            background: #ffffff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 15px var(--shadow-green);
-            transition: height 0.1s ease;
-        }
-
-        .pupil {
-            width: 20px;
-            height: 20px;
-            background: linear-gradient(135deg, #00ff87, #60efff);
-            border-radius: 50%;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 8px var(--accent-green);
-        }
-
-        .pupil::after {
-            content: '';
-            width: 10px;
-            height: 10px;
-            background: #0b0c10;
-            border-radius: 50%;
-        }
-
-        .eye.blink {
-            height: 2px;
-        }
-
-        /* Expressão da Boca */
-        .mouth {
-            width: 24px;
-            height: 4px;
-            background: #ffffff;
-            border-radius: 2px;
-            margin-top: 25px;
-            transition: all 0.2s ease;
-            z-index: 2;
-        }
-
-        .mouth.smile {
-            width: 28px;
-            height: 12px;
-            background: transparent;
-            border-bottom: 3px solid var(--accent-green);
-            border-radius: 0 0 14px 14px;
-        }
-
-        /* Ombros/Braços Posturados */
-        .arms {
-            position: absolute;
-            top: 120px;
-            width: 180px;
-            display: flex;
-            justify-content: space-between;
-            pointer-events: none;
-        }
-
-        .arm {
-            width: 22px;
-            height: 60px;
-            background: linear-gradient(to bottom, #34495e, #1a252f);
-            border-radius: 11px;
-        }
-
-        .arm.left { transform: rotate(15deg); }
-        .arm.right { transform: rotate(-15deg); }
-
-        /* Barra de Tensão e Atração */
-        .attraction-container {
-            width: 100%;
-            background: rgba(0,0,0,0.3);
-            border-radius: 12px;
-            padding: 12px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .attraction-label {
-            font-size: 0.85rem;
-            margin-bottom: 8px;
-            color: #95a5a6;
-            display: flex;
-            justify-content: space-between;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .equation-text {
+            font-size: 1.1rem;
             font-weight: 600;
+            letter-spacing: 1px;
         }
 
-        .attraction-bar {
+        input[type="number"] {
+            background-color: #0d0e12;
+            border: 1px solid var(--border-color);
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 1rem;
             width: 100%;
-            height: 8px;
-            background: #111;
-            border-radius: 4px;
-            overflow: hidden;
+            outline: none;
+            transition: border-color 0.2s;
         }
 
-        .attraction-fill {
-            width: 20%;
-            height: 100%;
-            background: linear-gradient(90deg, #00ff87, #60efff);
-            box-shadow: 0 0 10px var(--accent-green);
-            transition: width 0.6s cubic-bezier(0.1, 0.8, 0.3, 1);
+        input[type="number"]:focus {
+            border-color: var(--accent-green);
         }
 
-        /* Botões de Ação com Postura e Atitude */
-        .actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            width: 100%;
+        /* Remove as setinhas padrão do input number */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
         button {
-            background: #1f2833;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #ffffff;
+            background: transparent;
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
             padding: 14px;
-            border-radius: 10px;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
             transition: all 0.2s ease;
-            letter-spacing: 0.5px;
         }
 
         button:hover {
-            border-color: var(--accent-green);
-            background: rgba(0, 255, 135, 0.05);
-            box-shadow: 0 0 15px rgba(0, 255, 135, 0.1);
-            transform: translateY(-2px);
+            background: rgba(0, 255, 135, 0.1);
+            box-shadow: 0 0 15px rgba(0, 255, 135, 0.2);
         }
 
-        button:active {
-            transform: translateY(0);
+        /* Tela de Revelação Final Impactante */
+        .revelation {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.8s ease forwards;
         }
 
-        /* Efeito visual de faíscas/energia de atração */
-        .spark-particle {
-            position: absolute;
+        .revelation h1 {
+            font-size: 2.2rem;
+            color: #ffffff;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+
+        .revelation h1 span {
             color: var(--accent-green);
-            font-size: 14px;
-            pointer-events: none;
-            animation: pulseUp 0.8s ease-out forwards;
-            z-index: 10;
+            display: block;
+            font-size: 2.5rem;
+            margin-top: 10px;
+            text-shadow: 0 0 20px rgba(0, 255, 135, 0.4);
         }
 
-        @keyframes pulseUp {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-80px) scale(1.3); opacity: 0; }
+        .revelation p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #cbd5e0;
+            margin-bottom: 30px;
+        }
+
+        .eyes-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
         }
     </style>
 </head>
 <body>
 
-    <div class="game-container">
-        <!-- Balão de Fala Dinâmico -->
-        <div class="dialogue-box" id="dialogue">
-            Você chegou... Sabe que sua presença aqui muda totalmente o clima, não sabe? Descubra o que acontece se souber me dominar...
-        </div>
-
-        <!-- O Palco Visual -->
-        <div class="stage">
-            <div class="arms">
-                <div class="arm left"></div>
-                <div class="arm right"></div>
-            </div>
+    <div class="container" id="mainCard">
+        <!-- Painel Inicial do Desafio -->
+        <div id="gamePanel">
+            <h2>Métricas de Resolução</h2>
+            <p class="subtitle">Insira os valores exatos para validar o sistema.</p>
             
-            <div class="creature" id="creature" onclick="triggerLaugh()">
-                <div class="eyes-container">
-                    <div class="eye" id="eyeL"><div class="pupil"></div></div>
-                    <div class="eye" id="eyeR"><div class="pupil"></div></div>
+            <div class="math-box">
+                <!-- Conta 1 -->
+                <div class="equation-row">
+                    <div class="equation-text">1) &nbsp; 14 &times; 4 - 18 = ?</div>
+                    <input type="number" id="ans1" placeholder="Resultado">
                 </div>
-                <div class="mouth" id="mouth"></div>
+
+                <!-- Conta 2 -->
+                <div class="equation-row">
+                    <div class="equation-text">2) &nbsp; (81 &div; 9) &times; 7 = ?</div>
+                    <input type="number" id="ans2" placeholder="Resultado">
+                </div>
+
+                <!-- Conta 3 (A chave final) -->
+                <div class="equation-row" id="finalRow">
+                    <div class="equation-text">3) &nbsp; 3x + 12 = 90 &nbsp; (Ache o X)</div>
+                    <input type="number" id="ans3" placeholder="Valor de X">
+                </div>
             </div>
+
+            <button onclick="verificarRespostas()">Processar Dados</button>
         </div>
 
-        <!-- Medidor de Atração Magnética -->
-        <div class="attraction-container">
-            <div class="attraction-label">
-                <span>Conexão e Magnetismo</span>
-                <span id="status-label">Interessada... 😏</span>
-            </div>
-            <div class="attraction-bar">
-                <div class="attraction-fill" id="barFill"></div>
-            </div>
-        </div>
-
-        <!-- Comandos com Postura e Presença Masculina -->
-        <div class="actions">
-            <button onclick="interact('elogio')">Elogiar com Atitude</button>
-            <button onclick="interact('provocacao')">Provocar e Fazer Rir</button>
-            <button onclick="interact('toque')">Toque Audacioso</button>
-            <button onclick="interact('olhar')">Olhar Firme e Convicto</button>
+        <!-- Painel Oculto da Revelação de Atitude -->
+        <div class="revelation" id="revealPanel">
+            <div class="eyes-icon">🟢 🟢</div>
+            <h1>Cálculo Encerrado.<br>Resultado:<span>Você foi a escolhida.</span></h1>
+            <p>
+                A matemática é exata, mas a química é imediata. Parei de fazer contas quando percebi que a única certeza que eu precisava já estava bem na minha frente. 
+            </p>
+            <p style="font-weight: bold; color: #ffffff;">
+                Você foi a escolhida para casar comigo. E eu não costumo errar meus diagnósticos. 😏💍
+            </p>
         </div>
     </div>
 
     <script>
-        const creature = document.getElementById('creature');
-        const mouth = document.getElementById('mouth');
-        const dialogue = document.getElementById('dialogue');
-        const barFill = document.getElementById('barFill');
-        const statusLabel = document.getElementById('status-label');
-        const eyeL = document.getElementById('eyeL');
-        const eyeR = document.getElementById('eyeR');
+        function verificarRespostas() {
+            // Valores corretos das equações
+            const r1 = parseInt(document.getElementById('ans1').value);
+            const r2 = parseInt(document.getElementById('ans2').value);
+            const r3 = parseInt(document.getElementById('ans3').value);
 
-        let energyLevel = 20; 
-        let isAnimating = false;
-
-        // Respostas que demonstram envolvimento dela frente à sua atitude
-        const responses = {
-            elogio: [
-                "Nossa... você fala com uma segurança que me deixa até sem palavras. Gostei. 🖤",
-                "Você repara exatamente onde deve, não é? Esse seu olhar focado me ganha fácil...",
-                "Adoro homem que sabe o que quer e não tem medo de falar o que pensa."
-            ],
-            provocacao: [
-                "Hahaha! Você é ridículo! Adoro como você me faz rir e me deixa desarmada ao mesmo tempo! 😂",
-                "Bobo! Kkkkk com essa sua marra toda eu não achei que você seria tão divertido.",
-                "Hahaha para! Desse jeito você vai me fazer confessar coisas que não deveria..."
-            ],
-            toque: [
-                "Seu toque tem uma firmeza... arrepiou tudo por aqui. Não para. 🔥",
-                "Humm, direto e decidido. Exatamente do jeito que eu acho mais atraente...",
-                "Você sabe jogar o jogo muito bem. Sinto a química daqui."
-            ],
-            olhar: [
-                "Esse seu olhar firme... Olhar nos meus olhos verdes assim só me faz querer você mais perto.",
-                "Sua energia é forte. Quando você me olha desse jeito, parece que lê minha mente.",
-                "Ok, você venceu essa encarada... Seu magnetismo é perigoso."
-            ]
-        };
-
-        // Seguir o cursor do mouse sutilmente (foco total em você)
-        document.addEventListener('mousemove', (e) => {
-            if (isAnimating) return;
-            const pupils = document.querySelectorAll('.pupil');
-            pupils.forEach(pupil => {
-                const rect = pupil.getBoundingClientRect();
-                const x = (rect.left + rect.width / 2);
-                const y = (rect.top + rect.height / 2);
-                const rad = Math.atan2(e.pageX - x, e.pageY - y);
+            // Respostas exatas: 1) 38, 2) 63, 3) 26
+            if (r1 === 38 && r2 === 63 && r3 === 26) {
+                // Transição com atitude para a surpresa
+                document.getElementById('gamePanel').style.display = 'none';
                 
-                const distance = 3;
-                const moveX = Math.sin(rad) * distance;
-                const moveY = Math.cos(rad) * distance;
-                pupil.style.transform = `translate(${moveX}px, ${moveY}px)`;
-            });
-        });
-
-        // Piscar sutil automático
-        setInterval(() => {
-            if (!isAnimating) {
-                eyeL.classList.add('blink');
-                eyeR.classList.add('blink');
-                setTimeout(() => {
-                    eyeL.classList.remove('blink');
-                    eyeR.classList.remove('blink');
-                }, 120);
-            }
-        }, 3500);
-
-        // Quando ela clica para interagir/fazer rir de perto
-        function triggerLaugh() {
-            if (isAnimating) return;
-            isAnimating = true;
-            
-            creature.classList.add('dynamic-react');
-            mouth.classList.add('smile');
-            
-            dialogue.innerText = "Hahaha! Você sabe exatamente como me dominar e me fazer rir! Adoro essa sua audácia... 🔥✨";
-            
-            createSpark();
-            updateBar(4);
-
-            setTimeout(() => {
-                creature.classList.remove('dynamic-react');
-                mouth.classList.remove('smile');
-                isAnimating = false;
-            }, 1400);
-        }
-
-        // Sistema de interações
-        function interact(type) {
-            if (isAnimating) return;
-
-            const selection = responses[type][Math.floor(Math.random() * responses[type].length)];
-            dialogue.innerText = selection;
-
-            if (type === 'provocacao') {
-                isAnimating = true;
-                creature.classList.add('dynamic-react');
-                mouth.classList.add('smile');
-                setTimeout(() => {
-                    creature.classList.remove('dynamic-react');
-                    isAnimating = false;
-                }, 1200);
-                updateBar(6);
+                const card = document.getElementById('mainCard');
+                card.style.borderColor = 'var(--accent-green)';
+                card.style.boxShadow = '0 0 30px rgba(0, 255, 135, 0.2)';
+                
+                document.getElementById('revealPanel').style.display = 'block';
             } else {
-                mouth.classList.add('smile');
-                createSpark();
-                setTimeout(() => {
-                    mouth.classList.remove('smile');
-                }, 1500);
-                updateBar(8);
+                // Feedback simples caso ela erre alguma conta por distração
+                alert("Verifique os cálculos e tente novamente. A precisão é fundamental.");
             }
         }
 
-        // Atualizador da barra de conexão
-        function updateBar(amount) {
-            energyLevel = Math.min(energyLevel + amount, 100);
-            barFill.style.width = `${energyLevel}%`;
-
-            if (energyLevel >= 100) {
-                statusLabel.innerText = "Totalmente Conquistada 👑";
-                dialogue.innerText = "Sua postura e sua atitude me venceram. Você tem uma energia incrível... O que fazemos agora? 😏";
-            } else if (energyLevel > 75) {
-                statusLabel.innerText = "Fascinada por você... 🔥";
-            } else if (energyLevel > 45) {
-                statusLabel.innerText = "Atração em alta! ⚡";
-            } else if (energyLevel > 25) {
-                statusLabel.innerText = "Envolvida... 😏";
-            }
-        }
-
-        // Partículas de energia e faíscas
-        function createSpark() {
-            const spark = document.createElement('div');
-            spark.classList.add('spark-particle');
-            spark.innerHTML = '⚡';
-            spark.style.left = `${Math.random() * 50 + 25}%`;
-            spark.style.top = `45%`;
-            creature.parentElement.appendChild(spark);
-            
-            setTimeout(() => {
-                spark.remove();
-            }, 800);
-        }
+        // Adiciona um efeito visual focado quando o input final ganha destaque
+        document.getElementById('ans3').addEventListener('focus', () => {
+            document.getElementById('finalRow').classList.add('active');
+        });
+        document.getElementById('ans3').addEventListener('blur', () => {
+            document.getElementById('finalRow').classList.remove('active');
+        });
     </script>
 </body>
 </html>
