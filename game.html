@@ -3,119 +3,264 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xadrez Simples</title>
+    <title>Sudoku Ultra Fácil</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: monospace; }
-        body { padding: 10px; background: #f4f4f4; color: #333; display: flex; flex-direction: column; align-items: center; }
-        
-        #status { font-size: 12px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; background: #fff; padding: 4px 8px; border: 1px solid #ccc; }
-        
-        .tabuleiro { display: grid; grid-template-columns: repeat(8, 40px); grid-template-rows: repeat(8, 40px); border: 2px solid #333; }
-        
-        .casa { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; user-select: none; }
-        
-        .branca { background-color: #f0d9b5; }
-        .preta { background-color: #b58863; }
-        
-        .selecionada { background-color: #7fffd4 !important; }
-        .destino-valido { background-color: #98fb98 !important; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 1.5rem;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        /* Tabuleiro Compacto */
+        .sudoku-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 35px);
+            grid-template-rows: repeat(9, 35px);
+            border: 3px solid #000;
+            background-color: #000;
+            gap: 1px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .cell {
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+            user-select: none;
+        }
+
+        /* Inputs para as células vazias */
+        .cell input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #1e88e5;
+            background-color: #e3f2fd;
+            outline: none;
+        }
+
+        .cell input:focus {
+            background-color: #bbdefb;
+        }
+
+        /* Bordas das subgrades 3x3 */
+        .cell:nth-child(3n) { border-right: 2px solid #000; }
+        .cell:nth-child(9n) { border-right: none; }
+        .sudoku-grid > .cell-row-3 { border-bottom: 2px solid #000; }
+
+        /* Modal de Recompensa */
+        .reward-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .reward-content {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 90%;
+            width: 320px;
+        }
+
+        .reward-content h2 {
+            color: #4caf50;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .reward-content .badge {
+            font-size: 4rem;
+            margin: 15px 0;
+            animation: spin 1s ease-in-out infinite alternate;
+        }
+
+        .reward-content p {
+            font-size: 1rem;
+            color: #444;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .btn:hover { background-color: #43a047; }
+
+        @keyframes popUp {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(-5deg) scale(1); }
+            to { transform: rotate(5deg) scale(1.1); }
+        }
     </style>
 </head>
 <body>
 
-<div id="status">Turno: Brancas (Selecione uma peça)</div>
-<div class="tabuleiro" id="tabuleiro"></div>
+    <h1>Sudoku Express</h1>
+    <p>Complete as 3 células azuis que faltam para ganhar!</p>
 
-<script>
-    // Representação inicial do tabuleiro (Maiúsculas = Brancas, Minúsculas = Pretas)
-    // T/t = Torre, C/c = Cavalo, B/b = Bispo, D/d = Dama, R/r = Rei, P/p = Peão, '.' = Vazio
-    let tabuleiro = [
-        ['t','c','b','d','r','b','c','t'],
-        ['p','p','p','p','p','p','p','p'],
-        ['.','.','.','.','.','.','.','.'],
-        ['.','.','.','.','.','.','.','.'],
-        ['.','.','.','.','.','.','.','.'],
-        ['.','.','.','.','.','.','.','.'],
-        ['P','P','P','P','P','P','P','P'],
-        ['T','C','B','D','R','B','C','T']
-    ];
+    <div id="grid" class="sudoku-grid"></div>
 
-    const pecasUnicode = {
-        't': '♜', 'c': '♞', 'b': '♝', 'd': '♛', 'r': '♚', 'p': '♟',
-        'T': '♖', 'C': '♘', 'B': '♗', 'D': '♕', 'R': '♔', 'P': '♙',
-        '.': ''
-    };
+    <div id="rewardModal" class="reward-modal">
+        <div class="reward-content">
+            <h2>Parabéns! 🎉</h2>
+            <div class="badge">🏆</div>
+            <p>Você completou o Sudoku e ganhou o troféu de Mestre Relâmpago!</p>
+            <button class="btn" onclick="resetGame()">Jogar de Novo</button>
+        </div>
+    </div>
 
-    let turno = 'B'; // 'B' para Brancas, 'P' para Pretas
-    let casaSelecionada = null;
-
-    function criarTabuleiro() {
-        const divTabuleiro = document.getElementById('tabuleiro');
-        divTabuleiro.innerHTML = '';
-
-        for (let r = 0; r < 8; r++) {
-            for (let c = 0; c < 8; c++) {
-                const casa = document.createElement('div');
-                casa.classList.add('casa');
-                casa.classList.add((r + c) % 2 === 0 ? 'branca' : 'preta');
-                casa.dataset.row = r;
-                casa.dataset.col = c;
-                casa.innerText = pecasUnicode[tabuleiro[r][c]];
-
-                casa.addEventListener('click', () => clicarCasa(r, c));
-                divTabuleiro.appendChild(casa);
-            }
-        }
-    }
-
-    function clicarCasa(r, c) {
-        const peca = tabuleiro[r][c];
-        
-        // Se já tem uma peça selecionada e clicou em um movimento válido (qualquer casa diferente por enquanto nesta versão simples)
-        if (casaSelecionada) {
-            if (casaSelecionada.r === r && casaSelecionada.c === c) {
-                // Cancelar seleção ao clicar na mesma peça
-                casaSelecionada = null;
-                atualizarInterface();
-                return;
-            }
-
-            // Realiza o movimento simples (sem validação complexa de regras de xadrez)
-            tabuleiro[r][c] = tabuleiro[casaSelecionada.r][casaSelecionada.c];
-            tabuleiro[casaSelecionada.r][casaSelecionada.c] = '.';
+    <script>
+        // Tabuleiro gabarito completo
+        const solution = [
+            [5,3,4, 6,7,8, 9,1,2],
+            [6,7,2, 1,9,5, 3,4,8],
+            [1,9,8, 3,4,2, 5,6,7],
             
-            // Alterna o turno
-            turno = turno === 'B' ? 'P' : 'B';
-            casaSelecionada = null;
-            atualizarInterface();
-            return;
-        }
+            [8,5,9, 7,6,1, 4,2,3],
+            [4,2,6, 8,5,3, 7,9,1],
+            [7,1,3, 9,2,4, 8,5,6],
+            
+            [9,6,1, 5,3,7, 2,8,4],
+            [2,8,7, 4,1,9, 6,3,5],
+            [3,4,5, 2,8,6, 1,7,9]
+        ];
 
-        // Selecionar uma peça do turno atual
-        if (peca !== '.') {
-            const ehMaiuscula = peca === peca.toUpperCase();
-            if ((turno === 'B' && ehMaiuscula) || (turno === 'P' && !ehMaiuscula)) {
-                casaSelecionada = { r, c };
-                atualizarInterface();
-                destacarCasaSelecionada(r, c);
+        // Apenas 3 posições vazias (definidas como 0) para ser ridiculamente fácil
+        const initialBoard = [
+            [5,3,4, 6,7,8, 9,1,2],
+            [6,7,2, 1,9,5, 3,4,8],
+            [1,9,8, 3,4,2, 5,6,7],
+            
+            [8,5,9, 7,6,1, 4,2,3],
+            [4,2,6, 8,5,3, 7,9,1],
+            [7,1,3, 9,2,4, 8,5,6],
+            
+            [9,6,1, 5,3,7, 2,8,4],
+            [2,8,7, 4,1,9, 6,3,0], // Último elemento é 5 (vazio aqui)
+            [3,4,0, 2,8,6, 1,7,9]  // Terceiro elemento é 5 (vazio aqui)
+        ];
+        // Deixando a primeira célula vazia também para somar 3 vazias
+        initialBoard[0][0] = 0; // Primeiro elemento é 5 (vazio aqui)
+
+        const gridElement = document.getElementById('grid');
+        const modal = document.getElementById('rewardModal');
+
+        function createGrid() {
+            gridElement.innerHTML = '';
+            for (let r = 0; r < 9; r++) {
+                for (let c = 0; c < 9; c++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    
+                    // Aplica classe de borda inferior para os blocos 3x3
+                    if (r === 2 || r === 5) {
+                        cell.classList.add('cell-row-3');
+                    }
+
+                    if (initialBoard[r][c] !== 0) {
+                        cell.innerText = initialBoard[r][c];
+                    } else {
+                        // Cria o input editável para as poucas células vazias
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.maxLength = 1;
+                        input.dataset.row = r;
+                        input.dataset.col = c;
+                        
+                        // Valida a digitação em tempo real
+                        input.addEventListener('input', (e) => {
+                            let val = e.target.value;
+                            // Permite apenas números de 1 a 9
+                            if (!/^[1-9]$/.test(val)) {
+                                e.target.value = '';
+                                return;
+                            }
+                            checkWin();
+                        });
+
+                        cell.appendChild(input);
+                    }
+                    gridElement.appendChild(cell);
+                }
             }
         }
-    }
 
-    function destacarCasaSelecionada(r, c) {
-        const index = r * 8 + c;
-        const casas = document.querySelectorAll('.casa');
-        casas[index].classList.add('selecionada');
-    }
+        function checkWin() {
+            const inputs = gridElement.querySelectorAll('input');
+            let allCorrect = true;
 
-    function atualizarInterface() {
-        criarTabuleiro();
-        document.getElementById('status').innerText = `Turno: ${turno === 'B' ? 'Brancas' : 'Pretas'} ${casaSelecionada ? '(Escolha o destino)' : '(Selecione uma peça)'}`;
-    }
+            inputs.forEach(input => {
+                const r = parseInt(input.dataset.row);
+                const c = parseInt(input.dataset.col);
+                if (parseInt(input.value) !== solution[r][c]) {
+                    allCorrect = false;
+                }
+            });
 
-    // Inicializa o jogo
-    criarTabuleiro();
-</script>
+            if (allCorrect && inputs.length > 0) {
+                // Dispara a recompensa instantaneamente
+                modal.style.display = 'flex';
+            }
+        }
 
+        function resetGame() {
+            modal.style.display = 'none';
+            createGrid();
+        }
+
+        // Inicializa o jogo ao carregar a página
+        createGrid();
+    </script>
 </body>
 </html>
