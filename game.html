@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mente Poluída Teste</title>
+    <title>Complete a Palavra (Mente Poluída)</title>
     <style>
         * {
             box-sizing: border-box;
@@ -13,7 +13,7 @@
         }
 
         body {
-            background-color: #1a1a2e;
+            background-color: #0f0c1b;
             color: #fff;
             display: flex;
             flex-direction: column;
@@ -24,105 +24,113 @@
         }
 
         .game-container {
-            background-color: #162447;
-            border-radius: 15px;
-            padding: 30px;
+            background-color: #1a162b;
+            border-radius: 12px;
+            padding: 25px;
             width: 100%;
-            max-width: 450px;
+            max-width: 420px;
             text-align: center;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-            border: 2px solid #e94560;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+            border: 2px solid #ff0055;
         }
 
         h1 {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-            color: #e94560;
+            font-size: 1.6rem;
+            margin-bottom: 5px;
+            color: #ff0055;
             text-transform: uppercase;
-            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
         }
 
         .status-container {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             font-size: 0.9rem;
-            color: #bfa3ff;
+            color: #00ffcc;
             font-weight: bold;
         }
 
-        .question-box {
-            background-color: #1f4068;
-            padding: 20px;
-            border-radius: 10px;
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-            min-height: 80px;
+        .hint-box {
+            background-color: #241f3d;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            margin-bottom: 25px;
+            border-left: 4px solid #00ffcc;
+            text-align: left;
+            line-height: 1.4;
+        }
+
+        /* Layout das letras completáveis */
+        .word-display {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .letter-box {
+            width: 38px;
+            height: 45px;
+            border-bottom: 3px solid #ff0055;
+            font-size: 1.6rem;
+            font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            line-height: 1.5;
-        }
-
-        .input-container {
-            margin-bottom: 20px;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            font-size: 1.1rem;
-            border: 2px solid #1f4068;
-            border-radius: 8px;
-            background-color: #1a1a2e;
+            text-transform: uppercase;
             color: #fff;
-            text-align: center;
-            outline: none;
-            transition: border-color 0.3s;
         }
 
-        input[type="text"]:focus {
-            border-color: #e94560;
+        .letter-box.fixed {
+            border-bottom: 3px solid #555;
+            color: #ff0055;
+        }
+
+        .letter-box input {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: none;
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #00ffcc;
+            text-transform: uppercase;
+            outline: none;
         }
 
         .btn {
-            background-color: #e94560;
+            background-color: #ff0055;
             color: white;
             border: none;
-            padding: 12px 25px;
-            font-size: 1rem;
-            border-radius: 8px;
+            padding: 12px;
+            font-size: 1.1rem;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
             width: 100%;
-            transition: background 0.2s, transform 0.1s;
+            transition: background 0.2s;
+            text-transform: uppercase;
         }
 
         .btn:hover {
-            background-color: #ff4a68;
+            background-color: #ff3377;
         }
 
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        /* Feedback de Erro ou Acerto */
-        .feedback {
-            margin-top: 15px;
-            font-size: 1rem;
-            font-weight: bold;
-            min-height: 24px;
-        }
-
-        .text-danger { color: #ff4757; }
-        .text-success { color: #2ed573; }
-
-        /* Telas Finais (Modal) */
+        /* Modais de fim de jogo */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.85);
+            background-color: rgba(0,0,0,0.9);
             align-items: center;
             justify-content: center;
             z-index: 10;
@@ -130,226 +138,206 @@
         }
 
         .modal-content {
-            background: #162447;
-            padding: 40px 30px;
-            border-radius: 15px;
+            background: #1a162b;
+            padding: 35px 25px;
+            border-radius: 12px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            max-width: 400px;
+            max-width: 380px;
             width: 100%;
-            border: 3px solid #2ed573;
+            border: 3px solid #00ffcc;
         }
 
         .modal-content.gameover {
-            border-color: #ff4757;
+            border-color: #ff0055;
         }
 
         .modal-content h2 {
-            font-size: 2rem;
-            margin-bottom: 15px;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
         }
 
         .modal-content p {
-            font-size: 1.1rem;
-            margin-bottom: 25px;
-            color: #cdcdcd;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            color: #ccc;
             line-height: 1.4;
         }
 
-        .big-icon {
-            font-size: 4.5rem;
-            margin-bottom: 15px;
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
 
     <div class="game-container">
-        <h1>Teste de Pureza</h1>
-        <p style="color: #8a8a8a; font-size: 0.85rem; margin-bottom: 15px;">Cuidado com as aparências... Responda com lógica!</p>
+        <h1>Mente Poluída</h1>
+        <div class="subtitle">Preencha as lacunas com a palavra certa!</div>
         
         <div class="status-container">
-            <span id="levelDisplay">Pergunta: 1/5</span>
+            <span id="levelDisplay">Fase: 1/4</span>
             <span id="livesDisplay">Vidas: ❤️ ❤️ ❤️</span>
         </div>
 
-        <div class="question-box" id="questionText">
-            Carregando pergunta...
+        <div class="hint-box" id="hintText">
+            Dica: ...
         </div>
 
-        <div class="input-container">
-            <input type="text" id="answerInput" placeholder="Sua resposta aqui..." autocomplete="off">
-        </div>
+        <div class="word-display" id="wordDisplay"></div>
 
-        <button class="btn" id="submitBtn" onclick="checkAnswer()">Enviar Resposta</button>
-        
-        <div class="feedback" id="feedbackText"></div>
+        <button class="btn" onclick="verifyWord()">Verificar Resposta</button>
     </div>
 
-    <!-- Tela de Vitória / Recompensa -->
     <div id="winModal" class="modal">
         <div class="modal-content">
-            <div class="big-icon">😇🏆</div>
-            <h2 class="text-success">Mente Pura!</h2>
-            <p>Incrível! Você provou que não tem a mente poluída e resistiu a todas as pegadinhas safadas.</p>
-            <p style="color: #ffd700; font-weight: bold;">Sua recompensa: O título de Anjinho Inocente da Internet!</p>
-            <button class="btn" style="background-color: #2ed573;" onclick="restartGame()">Jogar Novamente</button>
+            <div class="icon">😇🥇</div>
+            <h2 style="color: #00ffcc;">Mente Pura Detectada!</h2>
+            <p>Impressionante! Você passou por todas as armadilhas visuais e provou que foca apenas no lado correto das coisas.</p>
+            <button class="btn" style="background-color: #00ffcc; color: #000;" onclick="restartGame()">Jogar de Novo</button>
         </div>
     </div>
 
-    <!-- Tela de Game Over -->
     <div id="loseModal" class="modal">
         <div class="modal-content gameover">
-            <div class="big-icon">😈❌</div>
-            <h2 class="text-danger">Mente Poluída!</h2>
-            <p id="loseMessage">Você caiu na pegadinha e pensou besteira!</p>
-            <button class="btn" style="background-color: #ff4757;" onclick="restartGame()">Tentar Limpar a Mente</button>
+            <div class="icon">😈❌</div>
+            <h2 style="color: #ff0055;">Mente Muito Poluída!</h2>
+            <p id="loseReason">Você tentou digitar safadeza e foi pego no flagra!</p>
+            <button class="btn" onclick="restartGame()">Tentar Limpar a Mente</button>
         </div>
     </div>
 
     <script>
-        // Banco de perguntas capciosas
-        // Cada objeto tem a pergunta, a resposta certa (inocente) e pegadinhas comuns (para mandar mensagens personalizadas se ele errar)
-        const quizData = [
+        // Banco de fases focado no layout visual falso vs resposta real
+        // Onde tem underline '_' vira um campo de input para o usuário digitar
+        const levels = [
             {
-                question: "O que é que entra duro, esticado e seco, e sai mole, murcho e pingando?",
-                correct: "macarrao", // Trataremos acentos e maiúsculas por código
-                alternatives: ["macarrão", "espaguete"],
-                wrongHint: "Se você pensou naquilo... Errou feio! É apenas o bom e velho Macarrão na panela!"
+                hint: "Grande massa de gelo flutuante que se forma nas regiões polares.",
+                displayPattern: ['B', '_', 'N', 'Q', '_', '_', 'S', 'A'], // Induz a ler B.C.T.A
+                correctWord: "BANQUISA",
+                scold: "Você tentou preencher outra coisa, né? A palavra certa era BANQUISA!"
             },
             {
-                question: "O que é comprido, tem pelos nas duas pontas, e trabalha sempre em uma cavidade úmida e quente?",
-                correct: "escova de dente",
-                alternatives: ["escova de dentes", "escova"],
-                wrongHint: "Que mente é essa? É a Escova de Dentes limpando a boca!"
+                hint: "Pequeno recipiente ou gaveta de balcões onde se guarda dinheiro.",
+                displayPattern: ['B', '_', 'D', '_', 'C', 'A'], // Induz a ler B.D.C.A
+                correctWord: "BODEGA",
+                scold: "Que feio! O nome correto do comércio ou caixa de moedas antigo é BODEGA!"
             },
             {
-                question: "Começa com 'B' e termina com 'CTA'. Tem uma fenda no meio, e quando está bem excitada ou com calor, verte líquido. O que é?",
-                correct: "banquisa",
-                alternatives: ["banquisas"],
-                wrongHint: "Que absurdo! B-A-N-Q-U-I-S-A. É uma grande massa de gelo flutuante no oceano!"
+                hint: "Utensílio de cozinha comprido usado para mexer ou bater massas e sopas.",
+                displayPattern: ['C', 'A', 'R', '_', 'A', '_', 'H', 'O'], // Induz a ler C.A.R.A.L.H.O
+                correctWord: "CARANCHO",
+                scold: "Olha o respeito! É CARANCHO (ou uma colher grande dependendo da região)!"
             },
             {
-                question: "O que é que o homem tem no meio das pernas que começa com 'C', tem 5 letras e as mulheres adoram usar de vez em quando?",
-                correct: "calca",
-                alternatives: ["calça"],
-                wrongHint: "Cruzes! A resposta é C-A-L-Ç-A. Homens usam no meio das pernas e mulheres também!"
-            },
-            {
-                question: "O que é que entra na boca com facilidade, é comprido e gostoso, e se você chupar rápido demais começa a pingar?",
-                correct: "sorvete",
-                alternatives: ["picolé", "picole"],
-                wrongHint: "Vá tomar um banho frio! É só um Picolé ou Sorvete no calor!"
+                hint: "Ação de raspar ou limpar o fundo de um tacho ou panela para comer o resto de doce.",
+                displayPattern: ['P', '_', 'P', 'E', '_', 'A'], // Induz a ler P.P.C.A
+                correctWord: "PAPEADA",
+                scold: "Pensou besteira de novo! Limpar o resto raspando a panela é fazer uma PAPEADA!"
             }
         ];
 
-        let currentQuestionIndex = 0;
+        let currentLevel = 0;
         let lives = 3;
 
-        const questionText = document.getElementById('questionText');
-        const answerInput = document.getElementById('answerInput');
-        const feedbackText = document.getElementById('feedbackText');
+        const hintText = document.getElementById('hintText');
+        const wordDisplay = document.getElementById('wordDisplay');
         const levelDisplay = document.getElementById('levelDisplay');
         const livesDisplay = document.getElementById('livesDisplay');
         const winModal = document.getElementById('winModal');
         const loseModal = document.getElementById('loseModal');
-        const loseMessage = document.getElementById('loseMessage');
+        const loseReason = document.getElementById('loseReason');
 
-        // Função para remover acentos e deixar tudo minúsculo para facilitar o acerto do jogador
-        function cleanString(str) {
-            return str.normalize("NFD")
-                      .replace(/[\u0300-\u036f]/g, "")
-                      .toLowerCase()
-                      .trim();
-        }
-
-        function loadQuestion() {
-            feedbackText.innerText = "";
-            answerInput.value = "";
-            answerInput.focus();
+        function loadLevel() {
+            wordDisplay.innerHTML = '';
+            const lvl = levels[currentLevel];
             
-            levelDisplay.innerText = `Pergunta: ${currentQuestionIndex + 1}/${quizData.length}`;
+            levelDisplay.innerText = `Fase: ${currentLevel + 1}/${levels.length}`;
             updateLivesDisplay();
+            hintText.innerText = `Dica: ${lvl.hint}`;
 
-            questionText.innerText = quizData[currentQuestionIndex].question;
+            // Cria os quadradinhos na tela baseados no pattern fixo/vazio
+            lvl.displayPattern.forEach((char, index) => {
+                const box = document.createElement('div');
+                box.classList.add('letter-box');
+
+                if (char !== '_') {
+                    box.classList.add('fixed');
+                    box.innerText = char;
+                    box.setAttribute('data-fixed', 'true');
+                } else {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.maxLength = 1;
+                    input.id = `input-${index}`;
+                    
+                    // Pula automaticamente para o próximo input ao digitar
+                    input.addEventListener('input', (e) => {
+                        if (e.target.value.length === 1) {
+                            const nextInput = document.getElementById(`input-${index + 1}`);
+                            if (nextInput) nextInput.focus();
+                        }
+                    });
+
+                    box.appendChild(input);
+                }
+                wordDisplay.appendChild(box);
+            });
         }
 
         function updateLivesDisplay() {
             let hearts = "";
-            for (let i = 0; i < lives; i++) {
-                hearts += "❤️ ";
-            }
+            for (let i = 0; i < lives; i++) hearts += "❤️ ";
             if (lives === 0) hearts = "💀";
             livesDisplay.innerText = `Vidas: ${hearts}`;
         }
 
-        function checkAnswer() {
-            const userAnswer = cleanString(answerInput.value);
-            
-            if (userAnswer === "") {
-                feedbackText.className = "feedback text-danger";
-                feedbackText.innerText = "Digite alguma coisa primeiro!";
-                return;
-            }
+        function verifyWord() {
+            const lvl = levels[currentLevel];
+            let userAssembledWord = "";
 
-            const currentQuiz = quizData[currentQuestionIndex];
-            
-            // Verifica se a resposta bate com a correta ou alguma aceitável em formato limpo
-            const isCorrect = (userAnswer === cleanString(currentQuiz.correct)) || 
-                              currentQuiz.alternatives.some(alt => cleanString(alt) === userAnswer);
+            // Junta as letras fixas com o que o usuário digitou nos inputs
+            lvl.displayPattern.forEach((char, index) => {
+                if (char !== '_') {
+                    userAssembledWord += char;
+                } else {
+                    const inputElement = document.getElementById(`input-${index}`);
+                    userAssembledWord += (inputElement.value || "").toUpperCase();
+                }
+            });
 
-            if (isCorrect) {
-                feedbackText.className = "feedback text-success";
-                feedbackText.innerText = "Acertou! Você é puro(a).";
-                
-                // Espera um pouco e avança
-                setTimeout(() => {
-                    currentQuestionIndex++;
-                    if (currentQuestionIndex < quizData.length) {
-                        loadQuestion();
-                    } else {
-                        winModal.style.display = "flex";
-                    }
-                }, 1500);
-
+            if (userAssembledWord === lvl.correctWord) {
+                currentLevel++;
+                if (currentLevel < levels.length) {
+                    alert("Boa! Você não caiu no visual malicioso. Próxima fase!");
+                    loadLevel();
+                } else {
+                    winModal.style.display = 'flex';
+                }
             } else {
-                // Errou (provavelmente pensou besteira)
                 lives--;
                 updateLivesDisplay();
                 
-                feedbackText.className = "feedback text-danger";
-                feedbackText.innerText = "ERROU! Mente poluída detectada.";
-
                 if (lives <= 0) {
-                    setTimeout(() => {
-                        loseMessage.innerText = currentQuiz.wrongHint;
-                        loseModal.style.display = "flex";
-                    }, 1000);
+                    loseReason.innerText = lvl.scold;
+                    loseModal.style.display = 'flex';
                 } else {
-                    // Dá uma dica esculachando a mente dele
-                    alert(`🚨 Ops! \n\n${currentQuiz.wrongHint}\n\nVocê perdeu 1 vida.`);
-                    loadQuestion();
+                    alert(`❌ ERROU!\n\n${lvl.scold}\nVocê perdeu 1 vida!`);
+                    loadLevel(); // Reinicia os inputs da fase atual
                 }
             }
         }
 
         function restartGame() {
-            currentQuestionIndex = 0;
+            currentLevel = 0;
             lives = 3;
-            winModal.style.display = "none";
-            loseModal.style.display = "none";
-            loadQuestion();
+            winModal.style.display = 'none';
+            loseModal.style.display = 'none';
+            loadLevel();
         }
 
-        // Permite enviar a resposta apertando a tecla Enter
-        answerInput.addEventListener("keyup", function(event) {
-            if (event.key === "Enter") {
-                checkAnswer();
-            }
-        });
-
         // Inicia o jogo
-        loadQuestion();
+        loadLevel();
     </script>
 </body>
 </html>
