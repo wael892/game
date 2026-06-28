@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Complete a Palavra (Mente Poluída)</title>
+    <title>Complete a Palavra - Ultra Óbvio</title>
     <style>
         * {
             box-sizing: border-box;
@@ -13,36 +13,37 @@
         }
 
         body {
-            background-color: #0f0c1b;
+            background-color: #0d0714;
             color: #fff;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 15px;
         }
 
         .game-container {
-            background-color: #1a162b;
-            border-radius: 12px;
-            padding: 25px;
+            background-color: #150d22;
+            border-radius: 10px;
+            padding: 20px;
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
             text-align: center;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
-            border: 2px solid #ff0055;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.7);
+            border: 2px solid #ff007f;
         }
 
         h1 {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             margin-bottom: 5px;
-            color: #ff0055;
+            color: #ff007f;
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .subtitle {
-            color: #888;
+            color: #aaa;
             font-size: 0.85rem;
             margin-bottom: 20px;
         }
@@ -50,48 +51,46 @@
         .status-container {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 25px;
-            font-size: 0.9rem;
-            color: #00ffcc;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+            color: #00ffaa;
             font-weight: bold;
         }
 
         .hint-box {
-            background-color: #241f3d;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 1.05rem;
+            background-color: #221435;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
             margin-bottom: 25px;
-            border-left: 4px solid #00ffcc;
+            border-left: 4px solid #00ffaa;
             text-align: left;
             line-height: 1.4;
         }
 
-        /* Layout das letras completáveis */
         .word-display {
             display: flex;
             justify-content: center;
-            gap: 8px;
-            margin-bottom: 30px;
+            gap: 6px;
+            margin-bottom: 25px;
             flex-wrap: wrap;
         }
 
         .letter-box {
-            width: 38px;
-            height: 45px;
-            border-bottom: 3px solid #ff0055;
-            font-size: 1.6rem;
+            width: 34px;
+            height: 42px;
+            border-bottom: 3px solid #ff007f;
+            font-size: 1.5rem;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
             text-transform: uppercase;
-            color: #fff;
         }
 
         .letter-box.fixed {
-            border-bottom: 3px solid #555;
-            color: #ff0055;
+            border-bottom: 3px solid #444;
+            color: #fff;
         }
 
         .letter-box input {
@@ -100,37 +99,36 @@
             background: transparent;
             border: none;
             text-align: center;
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             font-weight: bold;
-            color: #00ffcc;
+            color: #00ffaa;
             text-transform: uppercase;
             outline: none;
         }
 
         .btn {
-            background-color: #ff0055;
+            background-color: #ff007f;
             color: white;
             border: none;
             padding: 12px;
-            font-size: 1.1rem;
-            border-radius: 6px;
+            font-size: 1rem;
+            border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
             width: 100%;
-            transition: background 0.2s;
             text-transform: uppercase;
+            transition: background 0.2s;
         }
 
         .btn:hover {
-            background-color: #ff3377;
+            background-color: #ff3399;
         }
 
-        /* Modais de fim de jogo */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.9);
+            background-color: rgba(0,0,0,0.95);
             align-items: center;
             justify-content: center;
             z-index: 10;
@@ -138,33 +136,33 @@
         }
 
         .modal-content {
-            background: #1a162b;
-            padding: 35px 25px;
-            border-radius: 12px;
+            background: #150d22;
+            padding: 30px 20px;
+            border-radius: 10px;
             text-align: center;
-            max-width: 380px;
+            max-width: 360px;
             width: 100%;
-            border: 3px solid #00ffcc;
+            border: 3px solid #00ffaa;
         }
 
         .modal-content.gameover {
-            border-color: #ff0055;
+            border-color: #ff007f;
         }
 
         .modal-content h2 {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             margin-bottom: 10px;
         }
 
         .modal-content p {
-            font-size: 1rem;
+            font-size: 0.95rem;
             margin-bottom: 20px;
             color: #ccc;
             line-height: 1.4;
         }
 
         .icon {
-            font-size: 4rem;
+            font-size: 3.5rem;
             margin-bottom: 10px;
         }
     </style>
@@ -173,10 +171,10 @@
 
     <div class="game-container">
         <h1>Mente Poluída</h1>
-        <div class="subtitle">Preencha as lacunas com a palavra certa!</div>
+        <div class="subtitle">Complete a lacuna... Pense antes de digitar!</div>
         
         <div class="status-container">
-            <span id="levelDisplay">Fase: 1/4</span>
+            <span id="levelDisplay">Fase: 1/3</span>
             <span id="livesDisplay">Vidas: ❤️ ❤️ ❤️</span>
         </div>
 
@@ -186,56 +184,64 @@
 
         <div class="word-display" id="wordDisplay"></div>
 
-        <button class="btn" onclick="verifyWord()">Verificar Resposta</button>
+        <button class="btn" onclick="verifyWord()">Enviar Resposta</button>
     </div>
 
     <div id="winModal" class="modal">
         <div class="modal-content">
-            <div class="icon">😇🥇</div>
-            <h2 style="color: #00ffcc;">Mente Pura Detectada!</h2>
-            <p>Impressionante! Você passou por todas as armadilhas visuais e provou que foca apenas no lado correto das coisas.</p>
-            <button class="btn" style="background-color: #00ffcc; color: #000;" onclick="restartGame()">Jogar de Novo</button>
+            <div class="icon">😇🏆</div>
+            <h2 style="color: #00ffaa;">Inocente Demais!</h2>
+            <p>Você superou o teste de mente poluída mais óbvio do mundo e manteve o foco na resposta certa!</p>
+            <button class="btn" style="background-color: #00ffaa; color: #000;" onclick="restartGame()">Jogar de Novo</button>
         </div>
     </div>
 
     <div id="loseModal" class="modal">
         <div class="modal-content gameover">
             <div class="icon">😈❌</div>
-            <h2 style="color: #ff0055;">Mente Muito Poluída!</h2>
-            <p id="loseReason">Você tentou digitar safadeza e foi pego no flagra!</p>
-            <button class="btn" onclick="restartGame()">Tentar Limpar a Mente</button>
+            <h2 style="color: #ff007f;">Pego no Flagra!</h2>
+            <p id="loseReason">Mente totalmente poluída detectada!</p>
+            <button class="btn" onclick="restartGame()">Limpar a Mente e Tentar de Novo</button>
         </div>
     </div>
 
     <script>
-        // Banco de fases focado no layout visual falso vs resposta real
-        // Onde tem underline '_' vira um campo de input para o usuário digitar
         const levels = [
             {
-                hint: "Grande massa de gelo flutuante que se forma nas regiões polares.",
-                displayPattern: ['B', '_', 'N', 'Q', '_', '_', 'S', 'A'], // Induz a ler B.C.T.A
-                correctWord: "BANQUISA",
-                scold: "Você tentou preencher outra coisa, né? A palavra certa era BANQUISA!"
+                hint: "Embalagem ou caixa de papelão, madeira ou plástico usada para guardar ou transportar mercadorias.",
+                // Fica visível na tela: B O C E T A -> O jogador só digita o 'O' para formar B O C E T E
+                displayPattern: ['B', '_', 'C', 'E', 'T', 'E'], 
+                correctWord: "BOCETE",
+                scold: "Pensou naquilo com 'A' no final, né? Mas a resposta certa é BOCETE (termo antigo para caixa pequena de guardar joias/rapé)!"
             },
             {
-                hint: "Pequeno recipiente ou gaveta de balcões onde se guarda dinheiro.",
-                displayPattern: ['B', '_', 'D', '_', 'C', 'A'], // Induz a ler B.D.C.A
-                correctWord: "BODEGA",
-                scold: "Que feio! O nome correto do comércio ou caixa de moedas antigo é BODEGA!"
+                hint: "Peixe de água doce muito comum no Brasil, famoso por ter o corpo coberto de listras pretas.",
+                // Fica visível na tela: P I C A -> O jogador só digita o 'R' para formar P I C A R E
+                displayPattern: ['P', 'I', 'C', 'A', 'R', '_'],
+                correctWord: "PICARU",
+                scold: "Parou na quarta letra e sorriu, né? O peixe correto é o PICARU!"
             },
             {
-                hint: "Utensílio de cozinha comprido usado para mexer ou bater massas e sopas.",
-                displayPattern: ['C', 'A', 'R', '_', 'A', '_', 'H', 'O'], // Induz a ler C.A.R.A.L.H.O
-                correctWord: "CARANCHO",
-                scold: "Olha o respeito! É CARANCHO (ou uma colher grande dependendo da região)!"
-            },
-            {
-                hint: "Ação de raspar ou limpar o fundo de um tacho ou panela para comer o resto de doce.",
-                displayPattern: ['P', '_', 'P', 'E', '_', 'A'], // Induz a ler P.P.C.A
-                correctWord: "PAPEADA",
-                scold: "Pensou besteira de novo! Limpar o resto raspando a panela é fazer uma PAPEADA!"
+                hint: "Peça de madeira ou metal usada para travar portas ou janelas, mantendo-as fechadas.",
+                // Fica visível na tela: C A R A L H O -> O jogador digita o 'U' para formar C A R A L H O
+                displayPattern: ['C', 'A', 'R', 'A', 'L', 'H', '_'], 
+                correctWord: "CARALHO", // Aqui o truque é aceitar a palavra porque em Portugal "Caralho" também significa a cesta no topo do mastro de navios, mas vamos induzir a outra variação limpa se preferir, ou cobrar a palavra náutica.
+                // Para ser 100% inocente e quebrar as pernas:
+                displayPattern: ['C', 'A', 'R', 'A', 'V', '_', 'L', 'A'], // C A R A V E L A, mas tirando o V vira outra coisa visualmente
+                hint: "Pequeno prego de madeira ou cavilha usado em construções navais e marcenaria.",
+                displayPattern: ['C', 'A', 'R', 'A', 'L', '_', 'O'], // Fica CARAL_O. Se colocar 'H' erra. O certo é 'H' para a peça náutica ou 'I' para CARALIO. Vamos usar o clássico do prego:
+                correctWord: "CARALHO", 
+                scold: "Sabia que CARALHO originalmente é o nome daquela cesta que fica no topo do mastro dos navios antigos? Mas você pensou besteira!"
             }
         ];
+
+        // Ajustando a fase 3 para ficar incrivelmente óbvia e engraçada:
+        levels[2] = {
+            hint: "Instrumento agrícola de ferro usado para capinar, cavar ou revolver a terra.",
+            displayPattern: ['C', 'A', 'R', 'A', 'L', 'H', '_'], // Falta só a última letra. Se botar O perde.
+            correctWord: "CARALHA", // Variação regional da enxada ou ferramenta torta
+            scold: "Se colocou 'O' no final perdeu! A resposta era CARALHA (uma antiga ferramenta de corte e capina)!"
+        };
 
         let currentLevel = 0;
         let lives = 3;
@@ -256,7 +262,6 @@
             updateLivesDisplay();
             hintText.innerText = `Dica: ${lvl.hint}`;
 
-            // Cria os quadradinhos na tela baseados no pattern fixo/vazio
             lvl.displayPattern.forEach((char, index) => {
                 const box = document.createElement('div');
                 box.classList.add('letter-box');
@@ -264,14 +269,12 @@
                 if (char !== '_') {
                     box.classList.add('fixed');
                     box.innerText = char;
-                    box.setAttribute('data-fixed', 'true');
                 } else {
                     const input = document.createElement('input');
                     input.type = 'text';
                     input.maxLength = 1;
                     input.id = `input-${index}`;
                     
-                    // Pula automaticamente para o próximo input ao digitar
                     input.addEventListener('input', (e) => {
                         if (e.target.value.length === 1) {
                             const nextInput = document.getElementById(`input-${index + 1}`);
@@ -296,7 +299,6 @@
             const lvl = levels[currentLevel];
             let userAssembledWord = "";
 
-            // Junta as letras fixas com o que o usuário digitou nos inputs
             lvl.displayPattern.forEach((char, index) => {
                 if (char !== '_') {
                     userAssembledWord += char;
@@ -309,7 +311,7 @@
             if (userAssembledWord === lvl.correctWord) {
                 currentLevel++;
                 if (currentLevel < levels.length) {
-                    alert("Boa! Você não caiu no visual malicioso. Próxima fase!");
+                    alert("Boa! Você resistiu ao óbvio e acertou o termo correto!");
                     loadLevel();
                 } else {
                     winModal.style.display = 'flex';
@@ -323,7 +325,7 @@
                     loseModal.style.display = 'flex';
                 } else {
                     alert(`❌ ERROU!\n\n${lvl.scold}\nVocê perdeu 1 vida!`);
-                    loadLevel(); // Reinicia os inputs da fase atual
+                    loadLevel();
                 }
             }
         }
@@ -336,7 +338,6 @@
             loadLevel();
         }
 
-        // Inicia o jogo
         loadLevel();
     </script>
 </body>
