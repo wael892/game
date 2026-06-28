@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sudoku Ultra Fácil</title>
+    <title>Mente Poluída Teste</title>
     <style>
         * {
             box-sizing: border-box;
@@ -13,254 +13,343 @@
         }
 
         body {
-            background-color: #f0f2f5;
+            background-color: #1a1a2e;
+            color: #fff;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            padding: 10px;
+            padding: 20px;
+        }
+
+        .game-container {
+            background-color: #162447;
+            border-radius: 15px;
+            padding: 30px;
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            border: 2px solid #e94560;
         }
 
         h1 {
-            color: #333;
-            margin-bottom: 5px;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #e94560;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        p {
-            color: #666;
-            margin-bottom: 15px;
+        .status-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
             font-size: 0.9rem;
-            text-align: center;
+            color: #bfa3ff;
+            font-weight: bold;
         }
 
-        /* Tabuleiro Compacto */
-        .sudoku-grid {
-            display: grid;
-            grid-template-columns: repeat(9, 35px);
-            grid-template-rows: repeat(9, 35px);
-            border: 3px solid #000;
-            background-color: #000;
-            gap: 1px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        }
-
-        .cell {
-            background-color: #fff;
+        .question-box {
+            background-color: #1f4068;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            min-height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #333;
-            user-select: none;
+            line-height: 1.5;
         }
 
-        /* Inputs para as células vazias */
-        .cell input {
-            width: 100%;
-            height: 100%;
-            border: none;
-            text-align: center;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #1e88e5;
-            background-color: #e3f2fd;
-            outline: none;
-        }
-
-        .cell input:focus {
-            background-color: #bbdefb;
-        }
-
-        /* Bordas das subgrades 3x3 */
-        .cell:nth-child(3n) { border-right: 2px solid #000; }
-        .cell:nth-child(9n) { border-right: none; }
-        .sudoku-grid > .cell-row-3 { border-bottom: 2px solid #000; }
-
-        /* Modal de Recompensa */
-        .reward-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.6);
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-        }
-
-        .reward-content {
-            background: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            max-width: 90%;
-            width: 320px;
-        }
-
-        .reward-content h2 {
-            color: #4caf50;
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-        }
-
-        .reward-content .badge {
-            font-size: 4rem;
-            margin: 15px 0;
-            animation: spin 1s ease-in-out infinite alternate;
-        }
-
-        .reward-content p {
-            font-size: 1rem;
-            color: #444;
+        .input-container {
             margin-bottom: 20px;
         }
 
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1rem;
+            border: 2px solid #1f4068;
+            border-radius: 8px;
+            background-color: #1a1a2e;
+            color: #fff;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #e94560;
+        }
+
         .btn {
-            background-color: #4caf50;
+            background-color: #e94560;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 25px;
             font-size: 1rem;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
-            transition: background 0.2s;
+            width: 100%;
+            transition: background 0.2s, transform 0.1s;
         }
 
-        .btn:hover { background-color: #43a047; }
-
-        @keyframes popUp {
-            from { transform: scale(0.7); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+        .btn:hover {
+            background-color: #ff4a68;
         }
 
-        @keyframes spin {
-            from { transform: rotate(-5deg) scale(1); }
-            to { transform: rotate(5deg) scale(1.1); }
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Feedback de Erro ou Acerto */
+        .feedback {
+            margin-top: 15px;
+            font-size: 1rem;
+            font-weight: bold;
+            min-height: 24px;
+        }
+
+        .text-danger { color: #ff4757; }
+        .text-success { color: #2ed573; }
+
+        /* Telas Finais (Modal) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: #162447;
+            padding: 40px 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 400px;
+            width: 100%;
+            border: 3px solid #2ed573;
+        }
+
+        .modal-content.gameover {
+            border-color: #ff4757;
+        }
+
+        .modal-content h2 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .modal-content p {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            color: #cdcdcd;
+            line-height: 1.4;
+        }
+
+        .big-icon {
+            font-size: 4.5rem;
+            margin-bottom: 15px;
         }
     </style>
 </head>
 <body>
 
-    <h1>Sudoku Express</h1>
-    <p>Complete as 3 células azuis que faltam para ganhar!</p>
+    <div class="game-container">
+        <h1>Teste de Pureza</h1>
+        <p style="color: #8a8a8a; font-size: 0.85rem; margin-bottom: 15px;">Cuidado com as aparências... Responda com lógica!</p>
+        
+        <div class="status-container">
+            <span id="levelDisplay">Pergunta: 1/5</span>
+            <span id="livesDisplay">Vidas: ❤️ ❤️ ❤️</span>
+        </div>
 
-    <div id="grid" class="sudoku-grid"></div>
+        <div class="question-box" id="questionText">
+            Carregando pergunta...
+        </div>
 
-    <div id="rewardModal" class="reward-modal">
-        <div class="reward-content">
-            <h2>Parabéns! 🎉</h2>
-            <div class="badge">🏆</div>
-            <p>Você completou o Sudoku e ganhou o troféu de Mestre Relâmpago!</p>
-            <button class="btn" onclick="resetGame()">Jogar de Novo</button>
+        <div class="input-container">
+            <input type="text" id="answerInput" placeholder="Sua resposta aqui..." autocomplete="off">
+        </div>
+
+        <button class="btn" id="submitBtn" onclick="checkAnswer()">Enviar Resposta</button>
+        
+        <div class="feedback" id="feedbackText"></div>
+    </div>
+
+    <!-- Tela de Vitória / Recompensa -->
+    <div id="winModal" class="modal">
+        <div class="modal-content">
+            <div class="big-icon">😇🏆</div>
+            <h2 class="text-success">Mente Pura!</h2>
+            <p>Incrível! Você provou que não tem a mente poluída e resistiu a todas as pegadinhas safadas.</p>
+            <p style="color: #ffd700; font-weight: bold;">Sua recompensa: O título de Anjinho Inocente da Internet!</p>
+            <button class="btn" style="background-color: #2ed573;" onclick="restartGame()">Jogar Novamente</button>
+        </div>
+    </div>
+
+    <!-- Tela de Game Over -->
+    <div id="loseModal" class="modal">
+        <div class="modal-content gameover">
+            <div class="big-icon">😈❌</div>
+            <h2 class="text-danger">Mente Poluída!</h2>
+            <p id="loseMessage">Você caiu na pegadinha e pensou besteira!</p>
+            <button class="btn" style="background-color: #ff4757;" onclick="restartGame()">Tentar Limpar a Mente</button>
         </div>
     </div>
 
     <script>
-        // Tabuleiro gabarito completo
-        const solution = [
-            [5,3,4, 6,7,8, 9,1,2],
-            [6,7,2, 1,9,5, 3,4,8],
-            [1,9,8, 3,4,2, 5,6,7],
-            
-            [8,5,9, 7,6,1, 4,2,3],
-            [4,2,6, 8,5,3, 7,9,1],
-            [7,1,3, 9,2,4, 8,5,6],
-            
-            [9,6,1, 5,3,7, 2,8,4],
-            [2,8,7, 4,1,9, 6,3,5],
-            [3,4,5, 2,8,6, 1,7,9]
+        // Banco de perguntas capciosas
+        // Cada objeto tem a pergunta, a resposta certa (inocente) e pegadinhas comuns (para mandar mensagens personalizadas se ele errar)
+        const quizData = [
+            {
+                question: "O que é que entra duro, esticado e seco, e sai mole, murcho e pingando?",
+                correct: "macarrao", // Trataremos acentos e maiúsculas por código
+                alternatives: ["macarrão", "espaguete"],
+                wrongHint: "Se você pensou naquilo... Errou feio! É apenas o bom e velho Macarrão na panela!"
+            },
+            {
+                question: "O que é comprido, tem pelos nas duas pontas, e trabalha sempre em uma cavidade úmida e quente?",
+                correct: "escova de dente",
+                alternatives: ["escova de dentes", "escova"],
+                wrongHint: "Que mente é essa? É a Escova de Dentes limpando a boca!"
+            },
+            {
+                question: "Começa com 'B' e termina com 'CTA'. Tem uma fenda no meio, e quando está bem excitada ou com calor, verte líquido. O que é?",
+                correct: "banquisa",
+                alternatives: ["banquisas"],
+                wrongHint: "Que absurdo! B-A-N-Q-U-I-S-A. É uma grande massa de gelo flutuante no oceano!"
+            },
+            {
+                question: "O que é que o homem tem no meio das pernas que começa com 'C', tem 5 letras e as mulheres adoram usar de vez em quando?",
+                correct: "calca",
+                alternatives: ["calça"],
+                wrongHint: "Cruzes! A resposta é C-A-L-Ç-A. Homens usam no meio das pernas e mulheres também!"
+            },
+            {
+                question: "O que é que entra na boca com facilidade, é comprido e gostoso, e se você chupar rápido demais começa a pingar?",
+                correct: "sorvete",
+                alternatives: ["picolé", "picole"],
+                wrongHint: "Vá tomar um banho frio! É só um Picolé ou Sorvete no calor!"
+            }
         ];
 
-        // Apenas 3 posições vazias (definidas como 0) para ser ridiculamente fácil
-        const initialBoard = [
-            [5,3,4, 6,7,8, 9,1,2],
-            [6,7,2, 1,9,5, 3,4,8],
-            [1,9,8, 3,4,2, 5,6,7],
+        let currentQuestionIndex = 0;
+        let lives = 3;
+
+        const questionText = document.getElementById('questionText');
+        const answerInput = document.getElementById('answerInput');
+        const feedbackText = document.getElementById('feedbackText');
+        const levelDisplay = document.getElementById('levelDisplay');
+        const livesDisplay = document.getElementById('livesDisplay');
+        const winModal = document.getElementById('winModal');
+        const loseModal = document.getElementById('loseModal');
+        const loseMessage = document.getElementById('loseMessage');
+
+        // Função para remover acentos e deixar tudo minúsculo para facilitar o acerto do jogador
+        function cleanString(str) {
+            return str.normalize("NFD")
+                      .replace(/[\u0300-\u036f]/g, "")
+                      .toLowerCase()
+                      .trim();
+        }
+
+        function loadQuestion() {
+            feedbackText.innerText = "";
+            answerInput.value = "";
+            answerInput.focus();
             
-            [8,5,9, 7,6,1, 4,2,3],
-            [4,2,6, 8,5,3, 7,9,1],
-            [7,1,3, 9,2,4, 8,5,6],
+            levelDisplay.innerText = `Pergunta: ${currentQuestionIndex + 1}/${quizData.length}`;
+            updateLivesDisplay();
+
+            questionText.innerText = quizData[currentQuestionIndex].question;
+        }
+
+        function updateLivesDisplay() {
+            let hearts = "";
+            for (let i = 0; i < lives; i++) {
+                hearts += "❤️ ";
+            }
+            if (lives === 0) hearts = "💀";
+            livesDisplay.innerText = `Vidas: ${hearts}`;
+        }
+
+        function checkAnswer() {
+            const userAnswer = cleanString(answerInput.value);
             
-            [9,6,1, 5,3,7, 2,8,4],
-            [2,8,7, 4,1,9, 6,3,0], // Último elemento é 5 (vazio aqui)
-            [3,4,0, 2,8,6, 1,7,9]  // Terceiro elemento é 5 (vazio aqui)
-        ];
-        // Deixando a primeira célula vazia também para somar 3 vazias
-        initialBoard[0][0] = 0; // Primeiro elemento é 5 (vazio aqui)
+            if (userAnswer === "") {
+                feedbackText.className = "feedback text-danger";
+                feedbackText.innerText = "Digite alguma coisa primeiro!";
+                return;
+            }
 
-        const gridElement = document.getElementById('grid');
-        const modal = document.getElementById('rewardModal');
+            const currentQuiz = quizData[currentQuestionIndex];
+            
+            // Verifica se a resposta bate com a correta ou alguma aceitável em formato limpo
+            const isCorrect = (userAnswer === cleanString(currentQuiz.correct)) || 
+                              currentQuiz.alternatives.some(alt => cleanString(alt) === userAnswer);
 
-        function createGrid() {
-            gridElement.innerHTML = '';
-            for (let r = 0; r < 9; r++) {
-                for (let c = 0; c < 9; c++) {
-                    const cell = document.createElement('div');
-                    cell.classList.add('cell');
-                    
-                    // Aplica classe de borda inferior para os blocos 3x3
-                    if (r === 2 || r === 5) {
-                        cell.classList.add('cell-row-3');
-                    }
-
-                    if (initialBoard[r][c] !== 0) {
-                        cell.innerText = initialBoard[r][c];
+            if (isCorrect) {
+                feedbackText.className = "feedback text-success";
+                feedbackText.innerText = "Acertou! Você é puro(a).";
+                
+                // Espera um pouco e avança
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < quizData.length) {
+                        loadQuestion();
                     } else {
-                        // Cria o input editável para as poucas células vazias
-                        const input = document.createElement('input');
-                        input.type = 'text';
-                        input.maxLength = 1;
-                        input.dataset.row = r;
-                        input.dataset.col = c;
-                        
-                        // Valida a digitação em tempo real
-                        input.addEventListener('input', (e) => {
-                            let val = e.target.value;
-                            // Permite apenas números de 1 a 9
-                            if (!/^[1-9]$/.test(val)) {
-                                e.target.value = '';
-                                return;
-                            }
-                            checkWin();
-                        });
-
-                        cell.appendChild(input);
+                        winModal.style.display = "flex";
                     }
-                    gridElement.appendChild(cell);
+                }, 1500);
+
+            } else {
+                // Errou (provavelmente pensou besteira)
+                lives--;
+                updateLivesDisplay();
+                
+                feedbackText.className = "feedback text-danger";
+                feedbackText.innerText = "ERROU! Mente poluída detectada.";
+
+                if (lives <= 0) {
+                    setTimeout(() => {
+                        loseMessage.innerText = currentQuiz.wrongHint;
+                        loseModal.style.display = "flex";
+                    }, 1000);
+                } else {
+                    // Dá uma dica esculachando a mente dele
+                    alert(`🚨 Ops! \n\n${currentQuiz.wrongHint}\n\nVocê perdeu 1 vida.`);
+                    loadQuestion();
                 }
             }
         }
 
-        function checkWin() {
-            const inputs = gridElement.querySelectorAll('input');
-            let allCorrect = true;
+        function restartGame() {
+            currentQuestionIndex = 0;
+            lives = 3;
+            winModal.style.display = "none";
+            loseModal.style.display = "none";
+            loadQuestion();
+        }
 
-            inputs.forEach(input => {
-                const r = parseInt(input.dataset.row);
-                const c = parseInt(input.dataset.col);
-                if (parseInt(input.value) !== solution[r][c]) {
-                    allCorrect = false;
-                }
-            });
-
-            if (allCorrect && inputs.length > 0) {
-                // Dispara a recompensa instantaneamente
-                modal.style.display = 'flex';
+        // Permite enviar a resposta apertando a tecla Enter
+        answerInput.addEventListener("keyup", function(event) {
+            if (event.key === "Enter") {
+                checkAnswer();
             }
-        }
+        });
 
-        function resetGame() {
-            modal.style.display = 'none';
-            createGrid();
-        }
-
-        // Inicializa o jogo ao carregar a página
-        createGrid();
+        // Inicia o jogo
+        loadQuestion();
     </script>
 </body>
 </html>
