@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEON SURVIVORS: ROGUELIKE</title>
+    <title>NEON BALLS: INFINITE DROP</title>
     <style>
         * {
             box-sizing: border-box;
@@ -11,7 +11,7 @@
             padding: 0;
         }
         body {
-            background-color: #020204;
+            background-color: #030306;
             color: #fff;
             font-family: system-ui, -apple-system, sans-serif;
             overflow: hidden;
@@ -26,7 +26,7 @@
             width: 100%;
             max-width: 400px;
             height: 100vh;
-            background: #050508;
+            background: #06060c;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
@@ -41,52 +41,32 @@
             background: rgba(0,0,0,0.85);
             z-index: 10;
             display: flex;
-            flex-direction: column;
-            gap: 6px;
-            border-bottom: 1px solid #1c1c24;
-        }
-        #xp-bar-container {
-            width: 100%;
-            height: 8px;
-            background: #151520;
-            border-radius: 4px;
-            overflow: hidden;
-            border: 1px solid rgba(0,255,255,0.2);
-        }
-        #xp-bar {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, #00ffff, #0088ff);
-            box-shadow: 0 0 10px #00ffff;
-            transition: width 0.1s ease;
-        }
-        #hud-stats {
-            display: flex;
             justify-content: space-between;
-            font-size: 11px;
+            align-items: center;
+            border-bottom: 1px solid #1a1a26;
+            font-size: 13px;
             font-weight: 800;
             letter-spacing: 1px;
-            color: #888;
         }
-        #hud-stats strong {
-            color: #fff;
-        }
-        /* Canvas de Combate */
+        #hud-gold { color: #ffd700; text-shadow: 0 0 8px rgba(255,215,0,0.4); }
+        #hud-round { color: #00ffff; }
+        
+        /* Canvas */
         canvas {
-            background: #06060a;
             display: block;
             width: 100%;
             flex-grow: 1;
+            background: #080812;
             cursor: crosshair;
         }
-        /* Telas de Overlay */
+        /* Overlays / Telas */
         .screen {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(4, 4, 8, 0.98);
+            background: rgba(5, 5, 10, 0.98);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -96,56 +76,16 @@
             text-align: center;
         }
         h1 {
-            font-size: 32px;
+            font-size: 34px;
             font-weight: 900;
             letter-spacing: 2px;
-            background: linear-gradient(45deg, #ff00ff, #00ffff);
+            background: linear-gradient(45deg, #00ffff, #ff00ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(0,255,255,0.2);
         }
-        /* Menu de Level Up (Escolha de Habilidades) */
-        #level-up-screen {
-            display: none;
-            background: rgba(3, 3, 6, 0.96);
-            z-index: 110;
-        }
-        .card-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            width: 100%;
-            max-width: 320px;
-            margin-top: 20px;
-        }
-        .card {
-            background: #0d0d14;
-            border: 1px solid #ff00ff;
-            border-radius: 8px;
-            padding: 14px;
-            cursor: pointer;
-            transition: transform 0.1s, background 0.1s;
-            text-align: left;
-            box-shadow: 0 4px 10px rgba(255, 0, 255, 0.1);
-        }
-        .card:active {
-            transform: scale(0.97);
-            background: #1a0a1a;
-            border-color: #00ffff;
-        }
-        .card-title {
-            font-weight: 900;
-            color: #00ffff;
-            font-size: 14px;
-            margin-bottom: 4px;
-            text-transform: uppercase;
-        }
-        .card-desc {
-            font-size: 12px;
-            color: #aaa;
-            line-height: 1.4;
-        }
-        /* Meta Progressão (Loja Permanente) */
+        /* Upgrade Shop */
         #shop {
             width: 100%;
             max-width: 320px;
@@ -156,32 +96,35 @@
             justify-content: space-between;
             align-items: center;
             background: rgba(255,255,255,0.03);
-            padding: 10px 14px;
+            padding: 12px 16px;
             margin-bottom: 8px;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 12px;
-            border-left: 3px solid #ff00ff;
+            border-left: 3px solid #00ffff;
+            text-align: left;
         }
         .buy-btn {
-            background: #00ffff;
-            color: #000;
+            background: #ff00ff;
+            color: #fff;
             border: none;
-            padding: 6px 12px;
+            padding: 8px 14px;
             font-weight: 900;
             font-size: 11px;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
+            box-shadow: 0 0 10px rgba(255,0,255,0.3);
         }
         .buy-btn:disabled {
             background: #222;
             color: #555;
+            box-shadow: none;
             cursor: not-allowed;
         }
         .main-btn {
             background: linear-gradient(135deg, #00ffff, #ff00ff);
             color: #000;
             border: none;
-            padding: 16px 40px;
+            padding: 16px 45px;
             font-size: 15px;
             font-weight: 900;
             border-radius: 30px;
@@ -189,7 +132,7 @@
             width: 100%;
             max-width: 260px;
             text-transform: uppercase;
-            box-shadow: 0 0 20px rgba(0,255,255,0.3);
+            box-shadow: 0 0 25px rgba(0,255,255,0.4);
             letter-spacing: 1px;
         }
     </style>
@@ -197,56 +140,35 @@
 <body>
 
     <div id="game-container">
-        <!-- Interface de evolução ativa durante o gameplay -->
         <div id="hud">
-            <div id="xp-bar-container"><div id="xp-bar"></div></div>
-            <div id="hud-stats">
-                <div>LVL: <strong id="hud-lvl">1</strong></div>
-                <div>SALAS LIMPAS: <strong id="hud-room">0</strong></div>
-                <div>OURO META: <strong id="hud-gold">0</strong></div>
-            </div>
+            <div>RODADA: <span id="hud-round">1</span></div>
+            <div>OURO: <span id="hud-gold">0</span></div>
         </div>
 
         <canvas id="gameCanvas"></canvas>
 
-        <!-- Menu Inicial / Tela de Morte -->
         <div id="menu-screen" class="screen">
-            <h1 id="menu-title">NEON SURVIVORS</h1>
+            <h1 id="menu-title">NEON BALLS</h1>
             
-            <div id="game-report" style="display:none; font-size:13px; color:#ccc; margin-bottom:20px; background:rgba(255,255,255,0.02); padding:15px; width:100%; max-width:320px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); text-align:left;">
-                <div style="text-align:center; font-weight:bold; color:#ff0055; margin-bottom:10px; font-size:14px;">DRIVE DESTRUÍDO</div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Salas Sobrevividas:</span><strong id="rep-rooms" style="color:#00ffff">0</strong></div>
-                <div style="display:flex; justify-content:space-between;"><span>Ouro Recuperado:</span><strong id="rep-gold" style="color:#ffd700">0</strong></div>
-            </div>
-            
-            <div style="font-size:11px; color:#ff00ff; font-weight:900; margin-bottom:8px; letter-spacing:1px; text-transform:uppercase;">Upgrades Persistentes do Sistema</div>
+            <div style="font-size:12px; color:#ff00ff; font-weight:900; margin-bottom:12px; letter-spacing:1px; text-transform:uppercase;">Evolução de Arsenal Incremental</div>
             <div id="shop">
                 <div class="shop-item">
                     <div>
-                        <div><strong>Módulos de Dano</strong> (+2 Dano Base)</div>
-                        <div style="color:#666">Nível Atual: <span id="sh-lvl-dmg">1</span></div>
+                        <div><strong>Contagem de Bolas</strong></div>
+                        <div style="color:#777">Total de disparos: <span id="sh-val-balls">1</span></div>
                     </div>
-                    <button class="buy-btn" id="buy-dmg">C: <span id="sh-cost-dmg">10</span></button>
+                    <button class="buy-btn" id="buy-balls">C: <span id="sh-cost-balls">10</span></button>
                 </div>
                 <div class="shop-item">
                     <div>
-                        <div><strong>Matriz de Blindagem</strong> (+25 Vida Max)</div>
-                        <div style="color:#666">Nível Atual: <span id="sh-lvl-hp">1</span></div>
+                        <div><strong>Poder de Impacto</strong></div>
+                        <div style="color:#777">Dano por batida: <span id="sh-val-dmg">1</span></div>
                     </div>
-                    <button class="buy-btn" id="buy-hp">C: <span id="sh-cost-hp">15</span></button>
+                    <button class="buy-btn" id="buy-dmg">C: <span id="sh-cost-dmg">15</span></button>
                 </div>
             </div>
 
-            <button class="main-btn" id="start-btn">CONECTAR AO FEED</button>
-        </div>
-
-        <!-- Pop-up instantâneo de Escolha de Habilidade (Gatilhador de Dopamina) -->
-        <div id="level-up-screen" class="screen">
-            <h1 style="font-size:26px; margin-bottom:2px;">OVERCLOCK SELECT</h1>
-            <div style="color:#00ffff; font-size:11px; font-weight:800; letter-spacing:2px; text-transform:uppercase;">Evolução de Hardware Detectada</div>
-            <div class="card-container" id="cards-wrapper">
-                <!-- Injetado via Javascript dinamicamente -->
-            </div>
+            <button class="main-btn" id="start-btn">DISPARAR SALVA</button>
         </div>
     </div>
 
@@ -254,504 +176,361 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Elementos DOM da Interface
-        const hudLvl = document.getElementById('hud-lvl');
-        const hudRoom = document.getElementById('hud-room');
+        // Interface DOM
+        const hudRound = document.getElementById('hud-round');
         const hudGold = document.getElementById('hud-gold');
-        const xpBar = document.getElementById('xp-bar');
         const menuScreen = document.getElementById('menu-screen');
-        const levelUpScreen = document.getElementById('level-up-screen');
-        const cardsWrapper = document.getElementById('cards-wrapper');
         const startBtn = document.getElementById('start-btn');
         const menuTitle = document.getElementById('menu-title');
-        const gameReport = document.getElementById('game-report');
 
-        const buyDmg = document.getElementById('buy-dmg'), shLvlDmg = document.getElementById('sh-lvl-dmg'), shCostDmg = document.getElementById('sh-cost-dmg');
-        const buyHp = document.getElementById('buy-hp'), shLvlHp = document.getElementById('sh-lvl-hp'), shCostHp = document.getElementById('sh-cost-hp');
+        const buyBalls = document.getElementById('buy-balls'), shValBalls = document.getElementById('sh-val-balls'), shCostBalls = document.getElementById('sh-cost-balls');
+        const buyDmg = document.getElementById('buy-dmg'), shValDmg = document.getElementById('sh-val-dmg'), shCostDmg = document.getElementById('sh-cost-dmg');
 
-        // Motor de Áudio Web Real-Time
+        // Engine de Som Sintetizado (Efeito Sonoro Acumulativo ASMR)
         let audioCtx = null;
-        function playSound(type) {
+        let lastHitTime = 0;
+        let pitchPitch = 0;
+
+        function playHitSound() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            let now = audioCtx.currentTime;
+            
+            // Se houver muitas colisões seguidas, o tom sobe de escala criando um senso de combo musical
+            if (now - lastHitTime < 0.1) {
+                pitchPitch = Math.min(600, pitchPitch + 20);
+            } else {
+                pitchPitch = 150;
+            }
+            lastHitTime = now;
+
             let osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
-            let now = audioCtx.currentTime;
-
-            if (type === 'shoot') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(450, now);
-                osc.frequency.exponentialRampToValueAtTime(150, now + 0.06);
-                gain.gain.setValueAtTime(0.04, now); osc.start(now); osc.stop(now + 0.06);
-            } else if (type === 'hit') {
-                osc.type = 'triangle'; osc.frequency.setValueAtTime(140, now);
-                gain.gain.setValueAtTime(0.08, now); osc.start(now); osc.stop(now + 0.04);
-            } else if (type === 'xp') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(587.33, now); // D5
-                osc.frequency.linearRampToValueAtTime(880, now + 0.05);
-                gain.gain.setValueAtTime(0.06, now); osc.start(now); osc.stop(now + 0.05);
-            } else if (type === 'lvl') {
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(261.63, now); // C4
-                osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.25);
-                gain.gain.setValueAtTime(0.12, now); osc.start(now); osc.stop(now + 0.25);
-            }
-        }
-
-        // Economia e Atributos Salvos Permanentemente no Navegador
-        let metaGold = parseInt(localStorage.getItem('ns_meta_gold')) || 0;
-        let permDmgLevel = parseInt(localStorage.getItem('ns_perm_dmg')) || 1;
-        let permHpLevel = parseInt(localStorage.getItem('ns_perm_hp')) || 1;
-
-        // Estado do Player e Parâmetros de Combate Ativos
-        let player = { x: 0, y: 0, size: 10, hp: 100, maxHp: 100, speed: 2.8, dmg: 10, fireRate: 22, timer: 0 };
-        let roomsCleared = 0;
-        let currentLevel = 1;
-        let currentXp = 0;
-        let xpNeeded = 10;
-        let runGold = 0;
-
-        // Arrays de Entidades Dinâmicas
-        let enemies = [], projectiles = [], gems = [], particles = [];
-        let isPlaying = false, touchActive = false, touchX = 0, touchY = 0;
-        let keys = {};
-
-        // Modificadores Acumuláveis por Escolha de Cartas (Builds Variadas)
-        let build = { multiShot: 1, pierce: 1, fireRateBonus: 0, ricochet: false };
-
-        // Sincronia da Loja com LocalStorage
-        function updateShopUI() {
-            hudGold.textContent = metaGold;
             
-            shLvlDmg.textContent = permDmgLevel;
-            let cDmg = permDmgLevel * 8;
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(pitchPitch + Math.random() * 30, now);
+            gain.gain.setValueAtTime(0.03, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+            
+            osc.start(now); osc.stop(now + 0.05);
+        }
+
+        // Dados Permanentes Progressivos
+        let goldWallet = parseInt(localStorage.getItem('nb_gold')) || 0;
+        let statBalls = parseInt(localStorage.getItem('nb_balls')) || 2;
+        let statDmg = parseInt(localStorage.getItem('nb_dmg')) || 1;
+
+        // Atributos Mecânicos
+        let round = 1;
+        let balls = [];
+        let blocks = [];
+        let particles = [];
+        
+        let isAiming = false;
+        let isSimulating = false;
+        let aimAngle = 0;
+        
+        // Posição fixa de lançamento no topo central
+        let gunX = 0;
+        let gunY = 25;
+
+        // Sincronia da Loja
+        function updateShopUI() {
+            hudGold.textContent = goldWallet;
+            hudRound.textContent = round;
+
+            shValBalls.textContent = statBalls;
+            let cBalls = statBalls * 8;
+            shCostBalls.textContent = cBalls;
+            buyBalls.disabled = goldWallet < cBalls;
+
+            shValDmg.textContent = statDmg;
+            let cDmg = statDmg * 12;
             shCostDmg.textContent = cDmg;
-            buyDmg.disabled = metaGold < cDmg;
-
-            shLvlHp.textContent = permHpLevel;
-            let cHp = permHpLevel * 10;
-            shCostHp.textContent = cHp;
-            buyHp.disabled = metaGold < cHp;
+            buyDmg.disabled = goldWallet < cDmg;
         }
 
+        buyBalls.addEventListener('click', (e) => {
+            e.stopPropagation(); let cost = statBalls * 8;
+            if(goldWallet >= cost) { goldWallet -= cost; statBalls += 2; saveStats(); }
+        });
         buyDmg.addEventListener('click', (e) => {
-            e.stopPropagation(); let cost = permDmgLevel * 8;
-            if(metaGold >= cost) { metaGold -= cost; permDmgLevel++; saveProgress(); }
-        });
-        buyHp.addEventListener('click', (e) => {
-            e.stopPropagation(); let cost = permHpLevel * 10;
-            if(metaGold >= cost) { metaGold -= cost; permHpLevel++; saveProgress(); }
+            e.stopPropagation(); let cost = statDmg * 12;
+            if(goldWallet >= cost) { goldWallet -= cost; statDmg += 1; saveStats(); }
         });
 
-        function saveProgress() {
-            localStorage.setItem('ns_meta_gold', metaGold);
-            localStorage.setItem('ns_perm_dmg', permDmgLevel);
-            localStorage.setItem('ns_perm_hp', permHpLevel);
+        function saveStats() {
+            localStorage.setItem('nb_gold', goldWallet);
+            localStorage.setItem('nb_balls', statBalls);
+            localStorage.setItem('nb_dmg', statDmg);
             updateShopUI();
-            playSound('xp');
         }
 
-        // Redimensionamento Inteligente de Tela para Dispositivos Móveis
         function resizeCanvas() {
             canvas.width = canvas.parentElement.clientWidth;
             canvas.height = canvas.parentElement.clientHeight - document.getElementById('hud').clientHeight;
+            gunX = canvas.width / 2;
         }
         window.addEventListener('resize', resizeCanvas);
 
-        // Mapeamento de Teclado (WASD/Setas) + Drag Interativo Mobile
-        window.addEventListener('keydown', e => keys[e.code] = true);
-        window.addEventListener('keyup', e => keys[e.code] = false);
+        // Inputs Simplificados (Arrastar para Mirar e Soltar)
+        canvas.addEventListener('mousedown', startAim);
+        canvas.addEventListener('mousemove', checkAim);
+        canvas.addEventListener('mouseup', releaseBalls);
 
-        canvas.addEventListener('touchstart', e => { touchActive = true; trackTouch(e); }, {passive:false});
-        canvas.addEventListener('touchmove', e => { e.preventDefault(); trackTouch(e); }, {passive:false});
-        canvas.addEventListener('touchend', () => touchActive = false);
+        canvas.addEventListener('touchstart', (e) => { startAim(e.touches[0]); }, {passive:true});
+        canvas.addEventListener('touchmove', (e) => { checkAim(e.touches[0]); }, {passive:true});
+        canvas.addEventListener('touchend', () => { releaseBalls(); }, {passive:true});
 
-        function trackTouch(e) {
+        function startAim(e) {
+            if (isSimulating) return;
+            isAiming = true;
+            calculateAngle(e);
+        }
+        function checkAim(e) {
+            if (!isAiming) return;
+            calculateAngle(e);
+        }
+        function calculateAngle(e) {
             let rect = canvas.getBoundingClientRect();
-            touchX = e.touches[0].clientX - rect.left;
-            touchY = e.touches[0].clientY - rect.top;
+            let mouseX = e.clientX - rect.left;
+            let mouseY = e.clientY - rect.top;
+            // Força a mira a apontar apenas para baixo para evitar travar no teto
+            aimAngle = Math.atan2(Math.max(mouseY, gunY + 20) - gunY, mouseX - gunX);
+        }
+
+        function releaseBalls() {
+            if (!isAiming) return;
+            isAiming = false;
+            isSimulating = true;
+            menuScreen.style.display = 'none';
+
+            // Dispara uma rajada cadenciada em fila indiana usando um timer/delay
+            let count = 0;
+            function spawnSequentialBall() {
+                if (count < statBalls) {
+                    balls.push({
+                        x: gunX, y: gunY,
+                        vx: Math.cos(aimAngle) * 7, vy: Math.sin(aimAngle) * 7,
+                        radius: 5
+                    });
+                    count++;
+                    setTimeout(spawnSequentialBall, 60); // Delay de 60ms entre cada bola
+                }
+            }
+            spawnSequentialBall();
+            requestAnimationFrame(gameLoop);
         }
 
         startBtn.addEventListener('click', () => {
             if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             resizeCanvas();
-            startNewRun();
+            startNextRoundSetup();
         });
 
-        function startNewRun() {
-            roomsCleared = 0; currentLevel = 1; currentXp = 0; xpNeeded = 10; runGold = 0;
-            build = { multiShot: 1, pierce: 1, fireRateBonus: 0, ricochet: false };
-
-            player.maxHp = 100 + (permHpLevel - 1) * 25;
-            player.hp = player.maxHp;
-            player.dmg = 10 + (permDmgLevel - 1) * 2;
-            player.speed = 2.8;
-            player.fireRate = 22;
-            player.x = canvas.width / 2;
-            player.y = canvas.height / 2;
-
-            enemies = []; projectiles = []; gems = []; particles = [];
-            hudLvl.textContent = currentLevel;
-            hudRoom.textContent = roomsCleared;
-            xpBar.style.width = '0%';
-
-            menuScreen.style.display = 'none';
-            isPlaying = true;
-            generateWave();
-            requestAnimationFrame(gameLoop);
-        }
-
-        // Criação procedural de ondas agressivas que cercam o player
-        function generateWave() {
-            enemies = [];
-            let waveCount = 8 + roomsCleared * 3;
-            for(let i = 0; i < waveCount; i++) {
-                let side = Math.floor(Math.random() * 4);
-                let ex, ey;
-                if(side === 0) { ex = Math.random() * canvas.width; ey = -30; }
-                else if(side === 1) { ex = canvas.width + 30; ey = Math.random() * canvas.height; }
-                else if(side === 2) { ex = Math.random() * canvas.width; ey = canvas.height + 30; }
-                else { ex = -30; ey = Math.random() * canvas.height; }
-
-                // Tipos de inimigos escalonados por cor/atributos
-                let isElite = roomsCleared >= 2 && Math.random() < 0.25;
-                enemies.push({
-                    x: ex, y: ey,
-                    size: isElite ? 11 : 7,
-                    hp: (12 + roomsCleared * 6) * (isElite ? 2.5 : 1),
-                    maxHp: (12 + roomsCleared * 6) * (isElite ? 2.5 : 1),
-                    speed: isElite ? 1.3 : 1.6 + (Math.random() * 0.4),
-                    color: isElite ? '#ff0055' : '#ffaa00',
-                    value: isElite ? 3 : 1
-                });
-            }
-        }
-
-        // Core Game Loop
-        function gameLoop() {
-            if (!isPlaying) return;
-
-            updateMechanics();
-            renderVisuals();
-
-            requestAnimationFrame(gameLoop);
-        }
-
-        function updateMechanics() {
-            // Movimentação via Teclado ou Arrasto Digital Touch
-            let mx = 0, my = 0;
-            if (keys['KeyW'] || keys['ArrowUp']) my = -1;
-            if (keys['KeyS'] || keys['ArrowDown']) my = 1;
-            if (keys['KeyA'] || keys['ArrowLeft']) mx = -1;
-            if (keys['KeyD'] || keys['ArrowRight']) mx = 1;
-
-            if (touchActive) {
-                let dx = touchX - player.x;
-                let dy = touchY - player.y;
-                let distance = Math.sqrt(dx*dx + dy*dy);
-                if (distance > 10) {
-                    mx = dx / distance;
-                    my = dy / distance;
-                }
-            }
-
-            if (mx !== 0 && my !== 0) { mx *= 0.7071; my *= 0.7071; }
-            player.x += mx * player.speed;
-            player.y += my * player.speed;
-
-            // Restrição de bordas físicas do mapa da arena
-            player.x = Math.max(player.size, Math.min(canvas.width - player.size, player.x));
-            player.y = Math.max(player.size, Math.min(canvas.height - player.size, player.y));
-
-            // Sistema de Auto-Mirar Inteligente (Foca no alvo mais perto automaticamente)
-            player.timer++;
-            let actualCooldown = Math.max(8, player.fireRate - build.fireRateBonus);
+        function startNextRoundSetup() {
+            isSimulating = false;
+            balls = [];
+            particles = [];
             
-            if (player.timer >= actualCooldown && enemies.length > 0) {
-                player.timer = 0;
-                let target = null;
-                let minDist = 99999;
-                for (let e of enemies) {
-                    let d = Math.sqrt((e.x - player.x)**2 + (e.y - player.y)**2);
-                    if (d < minDist) { minDist = d; target = e; }
-                }
-
-                if (target) {
-                    let angle = Math.atan2(target.y - player.y, target.x - player.x);
-                    playSound('shoot');
-                    
-                    // Disparos Múltiplos (Build de Espalhamento)
-                    if (build.multiShot === 1) {
-                        fireBullet(angle);
-                    } else if (build.multiShot === 2) {
-                        fireBullet(angle - 0.15); fireBullet(angle + 0.15);
-                    } else {
-                        fireBullet(angle - 0.25); fireBullet(angle); fireBullet(angle + 0.25);
-                    }
-                }
+            // Desce blocos antigos e gera uma nova fileira procedural
+            for(let b of blocks) b.row++;
+            
+            // Condição de derrota: se algum bloco atingir o topo/limite superior reverso do fundo
+            let lose = blocks.some(b => b.row > 8);
+            if (lose) {
+                goldWallet = 0; // Penalidade leve ou reinício de rodada
+                round = 1;
+                blocks = [];
+                menuTitle.textContent = "SISTEMA RESETADO";
+                saveStats();
             }
 
-            // Loop de Atualização de Projéteis Ativos
-            for (let i = projectiles.length - 1; i >= 0; i--) {
-                let p = projectiles[i];
-                p.x += p.vx; p.y += p.vy;
-
-                // Destruição por saída de borda ou ricochete ativo nas paredes
-                if (p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height) {
-                    if (build.ricochet && !p.bounced) {
-                        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-                        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-                        p.bounced = true;
-                    } else {
-                        projectiles.splice(i, 1);
-                        continue;
-                    }
-                }
-
-                // Colisão Projétil x Monstro
-                for (let j = enemies.length - 1; j >= 0; j--) {
-                    let e = enemies[j];
-                    let dist = Math.sqrt((p.x - e.x)**2 + (p.y - e.y)**2);
-                    if (dist < e.size + p.size) {
-                        e.hp -= player.dmg;
-                        createImpactParticles(p.x, p.y, '#00ffff', 4);
-                        playSound('hit');
-
-                        p.pierceCount--;
-                        if (p.pierceCount <= 0) {
-                            projectiles.splice(i, 1);
-                            break;
-                        }
-                    }
+            // Gera novos blocos na linha 1. Números crescem exponencialmente com a rodada
+            let cols = 6;
+            let cellWidth = canvas.width / cols;
+            for(let i=0; i<cols; i++) {
+                if (Math.random() < 0.65) {
+                    let hpMax = Math.floor(round * 2.2 * statDmg) + Math.floor(Math.random() * round);
+                    blocks.push({
+                        x: i * cellWidth + 4,
+                        y: 0, // Controlado dinamicamente via row no render
+                        w: cellWidth - 8,
+                        h: 35,
+                        hp: hpMax,
+                        maxHp: hpMax,
+                        row: 1
+                    });
                 }
             }
 
-            // Atualização de Monstros de IA perseguidores
-            for (let i = enemies.length - 1; i >= 0; i--) {
-                let e = enemies[i];
-                
-                // Morte do Monstro -> Drop de Gema de XP instantânea
-                if (e.hp <= 0) {
-                    gems.push({ x: e.x, y: e.y, value: e.value, color: e.value > 1 ? '#ff00ff' : '#00ffff' });
-                    enemies.splice(i, 1);
-                    continue;
-                }
-
-                let angle = Math.atan2(player.y - e.y, player.x - e.x);
-                e.x += Math.cos(angle) * e.speed;
-                e.y += Math.sin(angle) * e.speed;
-
-                // Colisão de Dano Físico contra o Jogador
-                let dist = Math.sqrt((e.x - player.x)**2 + (e.y - player.y)**2);
-                if (dist < player.size + e.size) {
-                    player.hp -= 0.6; // Dano contínuo por frame por proximidade
-                    createImpactParticles(player.x, player.y, '#ff0000', 1);
-                    if (player.hp <= 0) {
-                        triggerPlayerDeath();
-                        return;
-                    }
-                }
-            }
-
-            // Atração Magnética de Cristais e Evolução de XP
-            for (let i = gems.length - 1; i >= 0; i--) {
-                let g = gems[i];
-                let dist = Math.sqrt((g.x - player.x)**2 + (g.y - player.y)**2);
-                
-                // Força de gravidade/ímã automática baseada na proximidade
-                if (dist < 75) {
-                    let angle = Math.atan2(player.y - g.y, player.x - g.x);
-                    g.x += Math.cos(angle) * 4.5;
-                    g.y += Math.sin(angle) * 4.5;
-                }
-
-                if (dist < player.size + 5) {
-                    currentXp += g.value;
-                    runGold += g.value; // Cada ponto de XP coletado rende 1 de Ouro Meta
-                    playSound('xp');
-                    gems.splice(i, 1);
-
-                    // Checagem Mecânica de Level Up
-                    if (currentXp >= xpNeeded) {
-                        currentXp -= xpNeeded;
-                        currentLevel++;
-                        xpNeeded = Math.floor(xpNeeded * 1.35) + 8;
-                        hudLvl.textContent = currentLevel;
-                        triggerLevelUpScreen();
-                    }
-                    xpBar.style.width = `${(currentXp / xpNeeded) * 100}%`;
-                }
-            }
-
-            // Animação de Partículas Visuais de Fundo
-            for (let i = particles.length - 1; i >= 0; i--) {
-                let part = particles[i];
-                part.x += part.vx; part.y += part.vy;
-                part.alpha -= 0.03;
-                if (part.alpha <= 0) particles.splice(i, 1);
-            }
-
-            // Mudança e Limpeza Procedural de Sala da Masmorra
-            if (enemies.length === 0 && gems.length === 0) {
-                roomsCleared++;
-                hudRoom.textContent = roomsCleared;
-                generateWave();
-            }
-        }
-
-        function fireBullet(ang) {
-            projectiles.push({
-                x: player.x, y: player.y,
-                vx: Math.cos(ang) * 6.5, vy: Math.sin(ang) * 6.5,
-                size: 3,
-                pierceCount: build.pierce,
-                bounced: false
-            });
-        }
-
-        function createImpactParticles(x, y, color, num) {
-            for (let i = 0; i < num; i++) {
-                let angle = Math.random() * Math.PI * 2;
-                let speed = 1 + Math.random() * 3;
-                particles.push({
-                    x: x, y: y,
-                    vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-                    alpha: 1, color: color
-                });
-            }
-        }
-
-        // Renderizador Gráfico de Vetores Neon no Canvas
-        function renderVisuals() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Desenhar Partículas de Impacto
-            for (let p of particles) {
-                ctx.save();
-                ctx.globalAlpha = p.alpha;
-                ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.restore();
-            }
-
-            // Desenhar Cristais/Gemas de Recompensa Neon
-            for (let g of gems) {
-                ctx.fillStyle = g.color;
-                ctx.shadowBlur = 10; ctx.shadowColor = g.color;
-                ctx.beginPath();
-                ctx.arc(g.x, g.y, 3, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            }
-
-            // Desenhar Balas do Player
-            ctx.fillStyle = '#00ffff';
-            for (let p of projectiles) {
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            // Desenhar Horda de Inimigos
-            for (let e of enemies) {
-                ctx.fillStyle = e.color;
-                ctx.shadowBlur = 8; ctx.shadowColor = e.color;
-                
-                // Barra de Vida minúscula sobre os monstros Elites
-                if (e.maxHp > 30) {
-                    ctx.fillStyle = '#222';
-                    ctx.fillRect(e.x - 10, e.y - 12, 20, 3);
-                    ctx.fillStyle = '#ff0055';
-                    ctx.fillRect(e.x - 10, e.y - 12, (e.hp / e.maxHp) * 20, 3);
-                }
-
-                ctx.fillStyle = e.color;
-                ctx.beginPath();
-                ctx.arc(e.x, e.y, e.size, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            }
-
-            // Desenhar Jogador e sua Aura Reativa
-            ctx.fillStyle = '#ffffff';
-            ctx.shadowBlur = 15; ctx.shadowColor = '#00ffff';
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-
-            // Interface Circular de Vida Integrada ao redor do Player
-            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, player.size + 6, 0, Math.PI * 2);
-            ctx.stroke();
-
-            let hpPercent = Math.max(0, player.hp / player.maxHp);
-            ctx.strokeStyle = hpPercent > 0.35 ? '#00ffcc' : '#ff0055';
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, player.size + 6, -Math.PI / 2, (-Math.PI / 2) + (Math.PI * 2 * hpPercent));
-            ctx.stroke();
-        }
-
-        // Sistema de Seleção Aleatória de Cartas de Atributo (Gatilho de Dopamina)
-        const poolOfUpgrades = [
-            { id: 'ms', title: 'Módulo Multi-Shot', desc: 'Dispara projéteis adicionais em cone angular simultaneamente.' },
-            { id: 'fr', title: 'Gatilho de Overclock', desc: 'Aumenta significativamente a cadência de tiro automática.' },
-            { id: 'pr', title: 'Munição Perfurante', desc: 'Seus projéteis atravessam +1 monstro antes de sumir.' },
-            { id: 'rc', title: 'Matriz Ricochete', desc: 'As balas ricocheteiam de volta ao atingir as bordas da arena.' },
-            { id: 'hp', title: 'Injeção de Nanorrobôs', desc: 'Restaura instantaneamente 50% da integridade da sua vida.' }
-        ];
-
-        function triggerLevelUpScreen() {
-            isPlaying = false;
-            playSound('lvl');
-            cardsWrapper.innerHTML = '';
-
-            // Sorteia 3 opções aleatórias sem repetição pura do pool
-            let shuffled = [...poolOfUpgrades].sort(() => 0.5 - Math.random()).slice(0, 3);
-
-            shuffled.forEach(upg => {
-                let card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <div class="card-title">${upg.title}</div>
-                    <div class="card-desc">${upg.desc}</div>
-                `;
-                card.onclick = () => selectUpgrade(upg.id);
-                cardsWrapper.appendChild(card);
-            });
-
-            levelUpScreen.style.display = 'flex';
-        }
-
-        function selectUpgrade(id) {
-            if(id === 'ms') build.multiShot = Math.min(3, build.multiShot + 1);
-            if(id === 'fr') build.fireRateBonus += 5;
-            if(id === 'pr') build.pierce += 1;
-            if(id === 'rc') build.ricochet = true;
-            if(id === 'hp') player.hp = Math.min(player.maxHp, player.hp + (player.maxHp * 0.5));
-
-            levelUpScreen.style.display = 'none';
-            isPlaying = true;
-            gameLoop();
-        }
-
-        function triggerPlayerDeath() {
-            isPlaying = false;
-            metaGold += runGold;
-            localStorage.setItem('ns_meta_gold', metaGold);
-
-            menuTitle.textContent = "SISTEMA CAÍDO";
-            document.getElementById('rep-rooms').textContent = roomsCleared;
-            document.getElementById('rep-gold').textContent = runGold;
-            gameReport.style.display = 'block';
-
-            startBtn.textContent = "CONECTAR REINICIALIZAÇÃO";
             updateShopUI();
             menuScreen.style.display = 'flex';
         }
 
-        // Inicialização primária da Loja do Menu
+        // Engine de Loop Física de Colisões Aceleradas
+        function gameLoop() {
+            if (!isSimulating) return;
+
+            updatePhysics();
+            render();
+
+            // Se todas as bolas saírem da tela por baixo, a rodada de simulação acaba
+            if (balls.length === 0 && isSimulating) {
+                round++;
+                startNextRoundSetup();
+                return;
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function updatePhysics() {
+            // Atualiza bolas
+            for (let i = balls.length - 1; i >= 0; i--) {
+                let b = balls[i];
+                b.x += b.vx;
+                b.y += b.vy;
+
+                // Colisão de Paredes Laterais
+                if (b.x < b.radius) { b.x = b.radius; b.vx *= -1; playHitSound(); }
+                if (b.x > canvas.width - b.radius) { b.x = canvas.width - b.radius; b.vx *= -1; playHitSound(); }
+                
+                // Colisão de Teto
+                if (b.y < b.radius + 50) { b.y = b.radius + 50; b.vy *= -1; playHitSound(); }
+
+                // Elimina bola se cair no abismo inferior
+                if (b.y > canvas.height + 20) {
+                    balls.splice(i, 1);
+                    continue;
+                }
+
+                // Colisão com os Blocos Geométricos Rects
+                for (let j = blocks.length - 1; j >= 0; j--) {
+                    let blk = blocks[j];
+                    let blkY = blk.row * 48 + 40; // Mapeamento físico vertical
+
+                    // Checa proximidade por caixa delimitadora expandida pelo raio da bola
+                    if (b.x > blk.x - b.radius && b.x < blk.x + blk.w + b.radius &&
+                        b.y > blkY - b.radius && b.y < blkY + blk.h + b.radius) {
+                        
+                        // Determina qual lado bateu para inverter o vetor correto
+                        let distX = Math.min(Math.abs(b.x - blk.x), Math.abs(b.x - (blk.x + blk.w)));
+                        let distY = Math.min(Math.abs(b.y - blkY), Math.abs(b.y - (blkY + blk.h)));
+
+                        if (distX < distY) b.vx *= -1;
+                        else b.vy *= -1;
+
+                        // Computa dano e recompensa em ouro meta
+                        blk.hp -= statDmg;
+                        goldWallet += 1;
+                        hudGold.textContent = goldWallet;
+                        
+                        playHitSound();
+                        createSparkParticles(b.x, b.y);
+
+                        if (blk.hp <= 0) {
+                            blocks.splice(j, 1);
+                        }
+                        break; // Processa uma colisão por frame por bola para estabilidade
+                    }
+                }
+            }
+
+            // Atualiza partículas visuais
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx; p.y += p.vy; p.vy += 0.1; // Gravidade própria das faíscas
+                p.life -= 0.04;
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+        }
+
+        function createSparkParticles(x, y) {
+            for(let i=0; i<4; i++) {
+                particles.push({
+                    x: x, y: y,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: (Math.random() - 0.5) * 4 - 1,
+                    life: 1.0,
+                    color: Math.random() < 0.5 ? '#00ffff' : '#ff00ff'
+                });
+            }
+        }
+
+        // Renderização Visual de Alta Densidade Neon
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Linha limite do teto/canhão
+            ctx.strokeStyle = '#1a1a36';
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(0, 50); ctx.lineTo(canvas.width, 50); ctx.stroke();
+
+            // Desenhar Linha de Mira Preditiva Estética
+            if (isAiming) {
+                ctx.strokeStyle = 'rgba(0,255,255,0.25)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([6, 6]);
+                ctx.beginPath();
+                ctx.moveTo(gunX, gunY + 25);
+                ctx.lineTo(gunX + Math.cos(aimAngle) * 180, gunY + 25 + Math.sin(aimAngle) * 180);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // Desenhar Blocos Coloridos Dinamicamente por Vida Restante
+            for (let blk of blocks) {
+                let blkY = blk.row * 48 + 40;
+                let pct = blk.hp / blk.maxHp;
+                
+                // Transiciona de roxo neon para azul neon baseado na vida
+                ctx.fillStyle = `rgba(${Math.floor(255 * (1-pct))}, ${Math.floor(255 * pct)}, 255, 0.12)`;
+                ctx.fillRect(blk.x, blkY, blk.w, blk.h);
+
+                ctx.strokeStyle = pct > 0.5 ? '#00ffff' : '#ff00ff';
+                ctx.lineWidth = 2;
+                ctx.shadowBlur = 6; ctx.shadowColor = ctx.strokeStyle;
+                ctx.strokeRect(blk.x, blkY, blk.w, blk.h);
+                ctx.shadowBlur = 0;
+
+                // Texto interno do bloco (HP numérico)
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(blk.hp, blk.x + blk.w/2, blkY + blk.h/2);
+            }
+
+            // Desenhar Bolas Neon Ativas
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowBlur = 10; ctx.shadowColor = '#00ffff';
+            for (let b of balls) {
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.shadowBlur = 0;
+
+            // Desenhar Partículas de Faíscas
+            for (let p of particles) {
+                ctx.save();
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.fillRect(p.x, p.y, 2, 2);
+                ctx.restore();
+            }
+
+            // Desenhar Canhão/Emissor de Partículas no Topo
+            ctx.fillStyle = '#111126';
+            ctx.strokeStyle = '#00ffff';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(gunX, 50, 16, 0, Math.PI * 2);
+            ctx.fill(); ctx.stroke();
+        }
+
+        // Execução primária da UI
+        resizeCanvas();
         updateShopUI();
     </script>
 </body>
