@@ -1,344 +1,357 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Complete a Palavra - Ultra Óbvio</title>
+    <title>Hyper-Pulse</title>
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
         body {
-            background-color: #0d0714;
+            background-color: #0a0a0c;
             color: #fff;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            overflow: hidden;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            padding: 15px;
+            align-items: center;
+            height: 100vh;
+            user-select: none;
         }
-
-        .game-container {
-            background-color: #150d22;
-            border-radius: 10px;
-            padding: 20px;
+        #game-container {
+            position: relative;
             width: 100%;
             max-width: 400px;
-            text-align: center;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.7);
-            border: 2px solid #ff007f;
-        }
-
-        h1 {
-            font-size: 1.5rem;
-            margin-bottom: 5px;
-            color: #ff007f;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .subtitle {
-            color: #aaa;
-            font-size: 0.85rem;
-            margin-bottom: 20px;
-        }
-
-        .status-container {
+            height: 100vh;
+            max-height: 700px;
             display: flex;
+            flex-direction: column;
             justify-content: space-between;
-            margin-bottom: 20px;
-            font-size: 0.85rem;
-            color: #00ffaa;
-            font-weight: bold;
-        }
-
-        .hint-box {
-            background-color: #221435;
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 0.95rem;
-            margin-bottom: 25px;
-            border-left: 4px solid #00ffaa;
-            text-align: left;
-            line-height: 1.4;
-        }
-
-        .word-display {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-
-        .letter-box {
-            width: 34px;
-            height: 42px;
-            border-bottom: 3px solid #ff007f;
-            font-size: 1.5rem;
-            font-weight: bold;
-            display: flex;
             align-items: center;
-            justify-content: center;
-            text-transform: uppercase;
-        }
-
-        .letter-box.fixed {
-            border-bottom: 3px solid #444;
-            color: #fff;
-        }
-
-        .letter-box input {
-            width: 100%;
-            height: 100%;
-            background: transparent;
-            border: none;
-            text-align: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #00ffaa;
-            text-transform: uppercase;
-            outline: none;
-        }
-
-        .btn {
-            background-color: #ff007f;
-            color: white;
-            border: none;
-            padding: 12px;
-            font-size: 1rem;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            text-transform: uppercase;
-            transition: background 0.2s;
-        }
-
-        .btn:hover {
-            background-color: #ff3399;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.95);
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
             padding: 20px;
         }
-
-        .modal-content {
-            background: #150d22;
-            padding: 30px 20px;
-            border-radius: 10px;
+        #ui-top {
             text-align: center;
-            max-width: 360px;
+            z-index: 10;
+        }
+        #score-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+        }
+        #score {
+            font-size: 48px;
+            font-weight: 800;
+            color: #00ffcc;
+            text-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
+        }
+        #high-score {
+            font-size: 14px;
+            color: #444;
+            margin-top: 5px;
+        }
+        #canvas-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #target-ring {
+            width: 80px;
+            height: 80px;
+            border: 4px solid #00ffcc;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+            transition: transform 0.1s ease;
+        }
+        .pulse {
+            transform: scale(1.1);
+            background-color: rgba(0, 255, 204, 0.2);
+        }
+        .flash-hit {
+            animation: flashHit 0.2s ease-out;
+        }
+        .flash-miss {
+            animation: flashMiss 0.2s ease-out;
+        }
+        @keyframes flashHit {
+            0% { background-color: rgba(0, 255, 204, 0.6); }
+            100% { background-color: transparent; }
+        }
+        @keyframes flashMiss {
+            0% { background-color: rgba(255, 0, 85, 0.4); border-color: #ff0055; }
+            100% { border-color: #00ffcc; }
+        }
+        #incoming-ring {
+            position: absolute;
+            border: 2px solid #ff0055;
+            border-radius: 50%;
+            opacity: 0;
+            pointer-events: none;
+        }
+        #screen-flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0;
+        }
+        .perfect-flash {
+            animation: screenFlashAnim 0.3s ease-out;
+        }
+        @keyframes screenFlashAnim {
+            0% { opacity: 0.3; background-color: #00ffcc; }
+            100% { opacity: 0; background-color: transparent; }
+        }
+        #menu {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            border: 3px solid #00ffaa;
+            height: 100%;
+            background-color: rgba(10, 10, 12, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            padding: 20px;
+            text-align: center;
         }
-
-        .modal-content.gameover {
-            border-color: #ff007f;
-        }
-
-        .modal-content h2 {
-            font-size: 1.6rem;
+        #menu h1 {
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: 4px;
             margin-bottom: 10px;
+            color: #fff;
         }
-
-        .modal-content p {
-            font-size: 0.95rem;
-            margin-bottom: 20px;
-            color: #ccc;
+        #menu p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 40px;
+            max-width: 250px;
             line-height: 1.4;
         }
-
-        .icon {
-            font-size: 3.5rem;
-            margin-bottom: 10px;
+        .btn {
+            background: #00ffcc;
+            color: #0a0a0c;
+            border: none;
+            padding: 15px 40px;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0, 255, 204, 0.4);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 5px 15px rgba(0, 255, 204, 0.2);
+        }
+        #feedback {
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            height: 24px;
+            color: #666;
+            z-index: 10;
         }
     </style>
 </head>
 <body>
 
-    <div class="game-container">
-        <h1>Mente Poluída</h1>
-        <div class="subtitle">Complete a lacuna... Pense antes de digitar!</div>
-        
-        <div class="status-container">
-            <span id="levelDisplay">Fase: 1/3</span>
-            <span id="livesDisplay">Vidas: ❤️ ❤️ ❤️</span>
+    <div id="screen-flash"></div>
+
+    <div id="game-container">
+        <div id="ui-top">
+            <div id="score-label">Score</div>
+            <div id="score">0</div>
+            <div id="high-score">BEST: 0</div>
         </div>
 
-        <div class="hint-box" id="hintText">
-            Dica: ...
+        <div id="canvas-container">
+            <div id="target-ring"></div>
+            <div id="incoming-ring"></div>
         </div>
 
-        <div class="word-display" id="wordDisplay"></div>
-
-        <button class="btn" onclick="verifyWord()">Enviar Resposta</button>
+        <div id="feedback"></div>
     </div>
 
-    <div id="winModal" class="modal">
-        <div class="modal-content">
-            <div class="icon">😇🏆</div>
-            <h2 style="color: #00ffaa;">Inocente Demais!</h2>
-            <p>Você superou o teste de mente poluída mais óbvio do mundo e manteve o foco na resposta certa!</p>
-            <button class="btn" style="background-color: #00ffaa; color: #000;" onclick="restartGame()">Jogar de Novo</button>
-        </div>
-    </div>
-
-    <div id="loseModal" class="modal">
-        <div class="modal-content gameover">
-            <div class="icon">😈❌</div>
-            <h2 style="color: #ff007f;">Pego no Flagra!</h2>
-            <p id="loseReason">Mente totalmente poluída detectada!</p>
-            <button class="btn" onclick="restartGame()">Limpar a Mente e Tentar de Novo</button>
-        </div>
+    <div id="menu">
+        <h1 id="menu-title">HYPER-PULSE</h1>
+        <p id="menu-desc">Clique ou use ESPAÇO no momento exato em que o anel externo encontrar o centro.</p>
+        <button class="btn" id="start-btn">JOGAR</button>
     </div>
 
     <script>
-        const levels = [
-            {
-                hint: "Embalagem ou caixa de papelão, madeira ou plástico usada para guardar ou transportar mercadorias.",
-                // Fica visível na tela: B O C E T A -> O jogador só digita o 'O' para formar B O C E T E
-                displayPattern: ['B', '_', 'C', 'E', 'T', 'E'], 
-                correctWord: "BOCETE",
-                scold: "Pensou naquilo com 'A' no final, né? Mas a resposta certa é BOCETE (termo antigo para caixa pequena de guardar joias/rapé)!"
-            },
-            {
-                hint: "Peixe de água doce muito comum no Brasil, famoso por ter o corpo coberto de listras pretas.",
-                // Fica visível na tela: P I C A -> O jogador só digita o 'R' para formar P I C A R E
-                displayPattern: ['P', 'I', 'C', 'A', 'R', '_'],
-                correctWord: "PICARU",
-                scold: "Parou na quarta letra e sorriu, né? O peixe correto é o PICARU!"
-            },
-            {
-                hint: "Peça de madeira ou metal usada para travar portas ou janelas, mantendo-as fechadas.",
-                // Fica visível na tela: C A R A L H O -> O jogador digita o 'U' para formar C A R A L H O
-                displayPattern: ['C', 'A', 'R', 'A', 'L', 'H', '_'], 
-                correctWord: "CARALHO", // Aqui o truque é aceitar a palavra porque em Portugal "Caralho" também significa a cesta no topo do mastro de navios, mas vamos induzir a outra variação limpa se preferir, ou cobrar a palavra náutica.
-                // Para ser 100% inocente e quebrar as pernas:
-                displayPattern: ['C', 'A', 'R', 'A', 'V', '_', 'L', 'A'], // C A R A V E L A, mas tirando o V vira outra coisa visualmente
-                hint: "Pequeno prego de madeira ou cavilha usado em construções navais e marcenaria.",
-                displayPattern: ['C', 'A', 'R', 'A', 'L', '_', 'O'], // Fica CARAL_O. Se colocar 'H' erra. O certo é 'H' para a peça náutica ou 'I' para CARALIO. Vamos usar o clássico do prego:
-                correctWord: "CARALHO", 
-                scold: "Sabia que CARALHO originalmente é o nome daquela cesta que fica no topo do mastro dos navios antigos? Mas você pensou besteira!"
-            }
-        ];
+        const targetRing = document.getElementById('target-ring');
+        const incomingRing = document.getElementById('incoming-ring');
+        const scoreDisplay = document.getElementById('score');
+        const highScoreDisplay = document.getElementById('high-score');
+        const feedbackDisplay = document.getElementById('feedback');
+        const screenFlash = document.getElementById('screen-flash');
+        const startBtn = document.getElementById('start-btn');
+        const menu = document.getElementById('menu');
+        const menuTitle = document.getElementById('menu-title');
+        const menuDesc = document.getElementById('menu-desc');
 
-        // Ajustando a fase 3 para ficar incrivelmente óbvia e engraçada:
-        levels[2] = {
-            hint: "Instrumento agrícola de ferro usado para capinar, cavar ou revolver a terra.",
-            displayPattern: ['C', 'A', 'R', 'A', 'L', 'H', '_'], // Falta só a última letra. Se botar O perde.
-            correctWord: "CARALHA", // Variação regional da enxada ou ferramenta torta
-            scold: "Se colocou 'O' no final perdeu! A resposta era CARALHA (uma antiga ferramenta de corte e capina)!"
-        };
+        let score = 0;
+        let highScore = localStorage.getItem('hyper_pulse_highscore') || 0;
+        let isPlaying = false;
+        
+        let currentScale = 4.0;
+        let baseSpeed = 0.04;
+        let speedMultiplier = 1.0;
+        let animationId = null;
+        let hasInteractedThisCycle = false;
 
-        let currentLevel = 0;
-        let lives = 3;
+        highScoreDisplay.textContent = `BEST: ${highScore}`;
 
-        const hintText = document.getElementById('hintText');
-        const wordDisplay = document.getElementById('wordDisplay');
-        const levelDisplay = document.getElementById('levelDisplay');
-        const livesDisplay = document.getElementById('livesDisplay');
-        const winModal = document.getElementById('winModal');
-        const loseModal = document.getElementById('loseModal');
-        const loseReason = document.getElementById('loseReason');
+        function initGame() {
+            score = 0;
+            speedMultiplier = 1.0;
+            scoreDisplay.textContent = score;
+            feedbackDisplay.textContent = '';
+            feedbackDisplay.style.color = '#666';
+            resetRing();
+            isPlaying = true;
+            menu.style.display = 'none';
+            gameLoop();
+        }
 
-        function loadLevel() {
-            wordDisplay.innerHTML = '';
-            const lvl = levels[currentLevel];
+        function resetRing() {
+            currentScale = 4.0;
+            hasInteractedThisCycle = false;
+            incomingRing.style.opacity = '0';
             
-            levelDisplay.innerText = `Fase: ${currentLevel + 1}/${levels.length}`;
-            updateLivesDisplay();
-            hintText.innerText = `Dica: ${lvl.hint}`;
-
-            lvl.displayPattern.forEach((char, index) => {
-                const box = document.createElement('div');
-                box.classList.add('letter-box');
-
-                if (char !== '_') {
-                    box.classList.add('fixed');
-                    box.innerText = char;
-                } else {
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.maxLength = 1;
-                    input.id = `input-${index}`;
-                    
-                    input.addEventListener('input', (e) => {
-                        if (e.target.value.length === 1) {
-                            const nextInput = document.getElementById(`input-${index + 1}`);
-                            if (nextInput) nextInput.focus();
-                        }
-                    });
-
-                    box.appendChild(input);
-                }
-                wordDisplay.appendChild(box);
-            });
+            // Adiciona uma leve variação aleatória na velocidade a cada ciclo para quebrar a previsibilidade mecânica pura
+            speedMultiplier = 1.0 + (score * 0.04) + (Math.random() * 0.05);
         }
 
-        function updateLivesDisplay() {
-            let hearts = "";
-            for (let i = 0; i < lives; i++) hearts += "❤️ ";
-            if (lives === 0) hearts = "💀";
-            livesDisplay.innerText = `Vidas: ${hearts}`;
-        }
+        function gameLoop() {
+            if (!isPlaying) return;
 
-        function verifyWord() {
-            const lvl = levels[currentLevel];
-            let userAssembledWord = "";
-
-            lvl.displayPattern.forEach((char, index) => {
-                if (char !== '_') {
-                    userAssembledWord += char;
-                } else {
-                    const inputElement = document.getElementById(`input-${index}`);
-                    userAssembledWord += (inputElement.value || "").toUpperCase();
-                }
-            });
-
-            if (userAssembledWord === lvl.correctWord) {
-                currentLevel++;
-                if (currentLevel < levels.length) {
-                    alert("Boa! Você resistiu ao óbvio e acertou o termo correto!");
-                    loadLevel();
-                } else {
-                    winModal.style.display = 'flex';
-                }
-            } else {
-                lives--;
-                updateLivesDisplay();
+            // Reduz o tamanho do anel externo baseado na velocidade atual
+            currentScale -= baseSpeed * speedMultiplier;
+            
+            if (currentScale > 0.3) {
+                incomingRing.style.opacity = '1';
+                incomingRing.style.transform = `scale(${currentScale})`;
                 
-                if (lives <= 0) {
-                    loseReason.innerText = lvl.scold;
-                    loseModal.style.display = 'flex';
+                // Mudança dinâmica de cor baseada na proximidade (Dopamina/Urgência)
+                if (currentScale > 1.2) {
+                    incomingRing.style.borderColor = '#ff0055';
+                } else if (currentScale >= 0.9 && currentScale <= 1.1) {
+                    incomingRing.style.borderColor = '#00ffcc'; // Janela perfeita
                 } else {
-                    alert(`❌ ERROU!\n\n${lvl.scold}\nVocê perdeu 1 vida!`);
-                    loadLevel();
+                    incomingRing.style.borderColor = '#ffcc00';
+                }
+            }
+
+            // Se passou do ponto limite sem o jogador clicar, perde o combo
+            if (currentScale <= 0.5 && !hasInteractedThisCycle) {
+                triggerGameOver('MUITO TARDE!');
+                return;
+            }
+
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function handleAction() {
+            if (!isPlaying || hasInteractedThisCycle) return;
+            hasInteractedThisCycle = true;
+
+            // Alvo ideal é quando a escala está próxima de 1.0 (tamanho do círculo central)
+            const accuracy = Math.abs(currentScale - 1.0);
+
+            if (accuracy <= 0.12) {
+                // Acerto Perfeito
+                score++;
+                scoreDisplay.textContent = score;
+                
+                feedbackDisplay.textContent = 'PERFEITO!';
+                feedbackDisplay.style.color = '#00ffcc';
+                
+                // Feedback tátil visual
+                targetRing.classList.remove('flash-hit');
+                void targetRing.offsetWidth; // Trigger reflow
+                targetRing.classList.add('flash-hit');
+
+                screenFlash.classList.remove('perfect-flash');
+                void screenFlash.offsetWidth;
+                screenFlash.classList.add('perfect-flash');
+
+                resetRing();
+            } else if (accuracy <= 0.25) {
+                // Acerto bom, mas não perfeito
+                score++;
+                scoreDisplay.textContent = score;
+
+                feedbackDisplay.textContent = 'QUASE';
+                feedbackDisplay.style.color = '#ffcc00';
+
+                resetRing();
+            } else {
+                // Errou o tempo
+                if (currentScale > 1.0) {
+                    triggerGameOver('MUITO CEDO!');
+                } else {
+                    triggerGameOver('MUITO TARDE!');
                 }
             }
         }
 
-        function restartGame() {
-            currentLevel = 0;
-            lives = 3;
-            winModal.style.display = 'none';
-            loseModal.style.display = 'none';
-            loadLevel();
+        function triggerGameOver(reason) {
+            isPlaying = false;
+            cancelAnimationFrame(animationId);
+            
+            targetRing.classList.add('flash-miss');
+            setTimeout(() => targetRing.classList.remove('flash-miss'), 200);
+
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('hyper_pulse_highscore', highScore);
+                highScoreDisplay.textContent = `BEST: ${highScore}`;
+            }
+
+            // Atualiza tela de Game Over instantaneamente para reinício rápido
+            menuTitle.textContent = 'GAME OVER';
+            menuDesc.innerHTML = `<span style="color: #ff0055; font-weight: bold;">${reason}</span><br><br>Pontuação: ${score}<br>Melhor: ${highScore}`;
+            startBtn.textContent = 'TENTAR DE NOVO';
+            menu.style.display = 'flex';
         }
 
-        loadLevel();
+        // Inputs (Clique/Touch e Barra de Espaço)
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (isPlaying) handleAction();
+                else initGame();
+            }
+        });
+
+        document.getElementById('game-container').addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            handleAction();
+        });
+
+        document.getElementById('game-container').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleAction();
+        });
+
+        startBtn.addEventListener('click', initGame);
     </script>
 </body>
 </html>
