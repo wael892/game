@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEON DUNGEON SLAYER</title>
+    <title>NEON SURVIVORS: ROGUELIKE</title>
     <style>
         * {
             box-sizing: border-box;
@@ -37,41 +37,49 @@
         /* Top HUD */
         #hud {
             width: 100%;
-            padding: 10px;
-            background: rgba(0,0,0,0.5);
+            padding: 12px;
+            background: rgba(0,0,0,0.85);
             z-index: 10;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
+            border-bottom: 1px solid #1c1c24;
         }
         #xp-bar-container {
             width: 100%;
             height: 8px;
-            background: #222;
+            background: #151520;
             border-radius: 4px;
             overflow: hidden;
+            border: 1px solid rgba(0,255,255,0.2);
         }
         #xp-bar {
             width: 0%;
             height: 100%;
-            background: #00ffff;
+            background: linear-gradient(90deg, #00ffff, #0088ff);
             box-shadow: 0 0 10px #00ffff;
-            transition: width 0.1s linear;
+            transition: width 0.1s ease;
         }
         #hud-stats {
             display: flex;
             justify-content: space-between;
-            font-size: 12px;
-            font-weight: bold;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #888;
+        }
+        #hud-stats strong {
+            color: #fff;
         }
         /* Canvas de Combate */
         canvas {
-            background: #08080f;
+            background: #06060a;
             display: block;
             width: 100%;
             flex-grow: 1;
+            cursor: crosshair;
         }
-        /* Telas Popups */
+        /* Telas de Overlay */
         .screen {
             position: absolute;
             top: 0;
@@ -94,57 +102,62 @@
             background: linear-gradient(45deg, #ff00ff, #00ffff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         /* Menu de Level Up (Escolha de Habilidades) */
         #level-up-screen {
             display: none;
-            background: rgba(5, 5, 10, 0.95);
+            background: rgba(3, 3, 6, 0.96);
+            z-index: 110;
         }
         .card-container {
             display: flex;
             flex-direction: column;
             gap: 12px;
             width: 100%;
-            max-width: 300px;
+            max-width: 320px;
             margin-top: 20px;
         }
         .card {
-            background: #11111a;
+            background: #0d0d14;
             border: 1px solid #ff00ff;
             border-radius: 8px;
-            padding: 15px;
+            padding: 14px;
             cursor: pointer;
             transition: transform 0.1s, background 0.1s;
             text-align: left;
+            box-shadow: 0 4px 10px rgba(255, 0, 255, 0.1);
         }
         .card:active {
-            transform: scale(0.98);
-            background: #221122;
+            transform: scale(0.97);
+            background: #1a0a1a;
+            border-color: #00ffff;
         }
         .card-title {
-            font-weight: bold;
+            font-weight: 900;
             color: #00ffff;
             font-size: 14px;
             margin-bottom: 4px;
+            text-transform: uppercase;
         }
         .card-desc {
             font-size: 12px;
             color: #aaa;
+            line-height: 1.4;
         }
-        /* Loja de Atributos Permanentes */
+        /* Meta Progressão (Loja Permanente) */
         #shop {
             width: 100%;
-            max-width: 300px;
+            max-width: 320px;
             margin-bottom: 25px;
         }
         .shop-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #111;
-            padding: 10px;
-            margin-bottom: 6px;
+            background: rgba(255,255,255,0.03);
+            padding: 10px 14px;
+            margin-bottom: 8px;
             border-radius: 6px;
             font-size: 12px;
             border-left: 3px solid #ff00ff;
@@ -154,79 +167,85 @@
             color: #000;
             border: none;
             padding: 6px 12px;
-            font-weight: bold;
+            font-weight: 900;
+            font-size: 11px;
             border-radius: 4px;
             cursor: pointer;
         }
         .buy-btn:disabled {
-            background: #333;
-            color: #666;
+            background: #222;
+            color: #555;
+            cursor: not-allowed;
         }
         .main-btn {
             background: linear-gradient(135deg, #00ffff, #ff00ff);
             color: #000;
             border: none;
-            padding: 15px 40px;
-            font-size: 16px;
+            padding: 16px 40px;
+            font-size: 15px;
             font-weight: 900;
             border-radius: 30px;
             cursor: pointer;
             width: 100%;
             max-width: 260px;
             text-transform: uppercase;
-            box-shadow: 0 0 15px rgba(0,255,255,0.3);
+            box-shadow: 0 0 20px rgba(0,255,255,0.3);
+            letter-spacing: 1px;
         }
     </style>
 </head>
 <body>
 
     <div id="game-container">
+        <!-- Interface de evolução ativa durante o gameplay -->
         <div id="hud">
             <div id="xp-bar-container"><div id="xp-bar"></div></div>
             <div id="hud-stats">
-                <div>LVL: <span id="hud-lvl">1</span></div>
-                <div>SALAS: <span id="hud-room">1</span></div>
-                <div>OURO: <span id="hud-gold">0</span></div>
+                <div>LVL: <strong id="hud-lvl">1</strong></div>
+                <div>SALAS LIMPAS: <strong id="hud-room">0</strong></div>
+                <div>OURO META: <strong id="hud-gold">0</strong></div>
             </div>
         </div>
 
         <canvas id="gameCanvas"></canvas>
 
-        <!-- Menu Inicial / Game Over -->
+        <!-- Menu Inicial / Tela de Morte -->
         <div id="menu-screen" class="screen">
-            <h1 id="menu-title">DUNGEON SLAYER</h1>
-            <div id="game-report" style="display:none; font-size:14px; color:#ccc; margin-bottom:15px; background:rgba(255,255,255,0.02); padding:10px; width:100%; max-width:300px; border-radius:6px;">
-                <div>Salas Limpas: <strong id="rep-rooms" style="color:#00ffff">0</strong></div>
-                <div>Ouro Coletado: <strong id="rep-gold" style="color:#ffd700">0</strong></div>
+            <h1 id="menu-title">NEON SURVIVORS</h1>
+            
+            <div id="game-report" style="display:none; font-size:13px; color:#ccc; margin-bottom:20px; background:rgba(255,255,255,0.02); padding:15px; width:100%; max-width:320px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); text-align:left;">
+                <div style="text-align:center; font-weight:bold; color:#ff0055; margin-bottom:10px; font-size:14px;">DRIVE DESTRUÍDO</div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Salas Sobrevividas:</span><strong id="rep-rooms" style="color:#00ffff">0</strong></div>
+                <div style="display:flex; justify-content:space-between;"><span>Ouro Recuperado:</span><strong id="rep-gold" style="color:#ffd700">0</strong></div>
             </div>
             
-            <div style="font-size:12px; color:#ff00ff; font-weight:bold; margin-bottom:5px;">LOJA DE ATRIBUTOS PERMANENTES</div>
+            <div style="font-size:11px; color:#ff00ff; font-weight:900; margin-bottom:8px; letter-spacing:1px; text-transform:uppercase;">Upgrades Persistentes do Sistema</div>
             <div id="shop">
                 <div class="shop-item">
                     <div>
-                        <div><strong>Dano Base</strong> (+2 por nível)</div>
-                        <div style="color:#aaa">Nível atual: <span id="sh-lvl-dmg">1</span></div>
+                        <div><strong>Módulos de Dano</strong> (+2 Dano Base)</div>
+                        <div style="color:#666">Nível Atual: <span id="sh-lvl-dmg">1</span></div>
                     </div>
                     <button class="buy-btn" id="buy-dmg">C: <span id="sh-cost-dmg">10</span></button>
                 </div>
                 <div class="shop-item">
                     <div>
-                        <div><strong>Vida Máxima</strong> (+20 por nível)</div>
-                        <div style="color:#aaa">Nível atual: <span id="sh-lvl-hp">1</span></div>
+                        <div><strong>Matriz de Blindagem</strong> (+25 Vida Max)</div>
+                        <div style="color:#666">Nível Atual: <span id="sh-lvl-hp">1</span></div>
                     </div>
                     <button class="buy-btn" id="buy-hp">C: <span id="sh-cost-hp">15</span></button>
                 </div>
             </div>
 
-            <button class="main-btn" id="start-btn">ENTRAR NA MASMORRA</button>
+            <button class="main-btn" id="start-btn">CONECTAR AO FEED</button>
         </div>
 
-        <!-- Tela de Escolha de Habilidade (Dopamina/Card Selection) -->
+        <!-- Pop-up instantâneo de Escolha de Habilidade (Gatilhador de Dopamina) -->
         <div id="level-up-screen" class="screen">
-            <h1 style="font-size:24px; margin-bottom:5px;">LEVEL UP!</h1>
-            <div style="color:#00ffff; font-size:13px; font-weight:bold; letter-spacing:1px;">ESCOLHA SEU UPGRADE DE COMBATE</div>
+            <h1 style="font-size:26px; margin-bottom:2px;">OVERCLOCK SELECT</h1>
+            <div style="color:#00ffff; font-size:11px; font-weight:800; letter-spacing:2px; text-transform:uppercase;">Evolução de Hardware Detectada</div>
             <div class="card-container" id="cards-wrapper">
-                <!-- Injetado por JS -->
+                <!-- Injetado via Javascript dinamicamente -->
             </div>
         </div>
     </div>
@@ -235,7 +254,7 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // UI DOM
+        // Elementos DOM da Interface
         const hudLvl = document.getElementById('hud-lvl');
         const hudRoom = document.getElementById('hud-room');
         const hudGold = document.getElementById('hud-gold');
@@ -247,11 +266,10 @@
         const menuTitle = document.getElementById('menu-title');
         const gameReport = document.getElementById('game-report');
 
-        // Botões Loja
         const buyDmg = document.getElementById('buy-dmg'), shLvlDmg = document.getElementById('sh-lvl-dmg'), shCostDmg = document.getElementById('sh-cost-dmg');
         const buyHp = document.getElementById('buy-hp'), shLvlHp = document.getElementById('sh-lvl-hp'), shCostHp = document.getElementById('sh-cost-hp');
 
-        // Motor de Áudio Sintetizado
+        // Motor de Áudio Web Real-Time
         let audioCtx = null;
         function playSound(type) {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -260,134 +278,481 @@
             let now = audioCtx.currentTime;
 
             if (type === 'shoot') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(400, now);
-                osc.frequency.exponentialRampToValueAtTime(100, now + 0.08);
-                gain.gain.setValueAtTime(0.05, now); osc.start(now); osc.stop(now + 0.08);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(450, now);
+                osc.frequency.exponentialRampToValueAtTime(150, now + 0.06);
+                gain.gain.setValueAtTime(0.04, now); osc.start(now); osc.stop(now + 0.06);
             } else if (type === 'hit') {
-                osc.type = 'triangle'; osc.frequency.setValueAtTime(120, now);
-                gain.gain.setValueAtTime(0.1, now); osc.start(now); osc.stop(now + 0.05);
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(140, now);
+                gain.gain.setValueAtTime(0.08, now); osc.start(now); osc.stop(now + 0.04);
             } else if (type === 'xp') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(600, now);
-                osc.frequency.linearRampToValueAtTime(900, now + 0.05);
-                gain.gain.setValueAtTime(0.08, now); osc.start(now); osc.stop(now + 0.05);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(587.33, now); // D5
+                osc.frequency.linearRampToValueAtTime(880, now + 0.05);
+                gain.gain.setValueAtTime(0.06, now); osc.start(now); osc.stop(now + 0.05);
             } else if (type === 'lvl') {
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(300, now);
-                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.2);
-                gain.gain.setValueAtTime(0.15, now); osc.start(now); osc.stop(now + 0.2);
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(261.63, now); // C4
+                osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.25);
+                gain.gain.setValueAtTime(0.12, now); osc.start(now); osc.stop(now + 0.25);
             }
         }
 
-        // Dados Permanentes (Salvos no Navegador)
-        let goldWallet = parseInt(localStorage.getItem('ds_gold')) || 0;
-        let permDmgLvl = parseInt(localStorage.getItem('ds_perm_dmg')) || 1;
-        let permHpLvl = parseInt(localStorage.getItem('ds_perm_hp')) || 1;
+        // Economia e Atributos Salvos Permanentemente no Navegador
+        let metaGold = parseInt(localStorage.getItem('ns_meta_gold')) || 0;
+        let permDmgLevel = parseInt(localStorage.getItem('ns_perm_dmg')) || 1;
+        let permHpLevel = parseInt(localStorage.getItem('ns_perm_hp')) || 1;
 
-        // Atributos de Jogo Dinâmicos
-        let player = { x: 0, y: 0, radius: 12, hp: 100, maxHp: 100, speed: 3.2, dmg: 8, shootCooldown: 25, currentCooldown: 0 };
-        let currentRoom = 1;
-        let level = 1;
-        let xp = 0;
-        let xpNeeded = 15;
-        let goldCollectedThisRun = 0;
-        
+        // Estado do Player e Parâmetros de Combate Ativos
+        let player = { x: 0, y: 0, size: 10, hp: 100, maxHp: 100, speed: 2.8, dmg: 10, fireRate: 22, timer: 0 };
+        let roomsCleared = 0;
+        let currentLevel = 1;
+        let currentXp = 0;
+        let xpNeeded = 10;
+        let runGold = 0;
+
+        // Arrays de Entidades Dinâmicas
         let enemies = [], projectiles = [], gems = [], particles = [];
-        let isPlaying = false, isTouchMoving = false, targetTouchX = 0, targetTouchY = 0;
+        let isPlaying = false, touchActive = false, touchX = 0, touchY = 0;
         let keys = {};
 
-        // Habilidades obtidas na rodada ativa
-        let upgradesRun = { multiShot: 0, pierce: 0, speedUp: 0, bounce: 0 };
+        // Modificadores Acumuláveis por Escolha de Cartas (Builds Variadas)
+        let build = { multiShot: 1, pierce: 1, fireRateBonus: 0, ricochet: false };
 
-        // Atualizar Loja de Atributos Permanentes
+        // Sincronia da Loja com LocalStorage
         function updateShopUI() {
-            hudGold.textContent = goldWallet;
+            hudGold.textContent = metaGold;
             
-            shLvlDmg.textContent = permDmgLvl;
-            let cDmg = permDmgLvl * 8;
+            shLvlDmg.textContent = permDmgLevel;
+            let cDmg = permDmgLevel * 8;
             shCostDmg.textContent = cDmg;
-            buyDmg.disabled = goldWallet < cDmg;
+            buyDmg.disabled = metaGold < cDmg;
 
-            shLvlHp.textContent = permHpLvl;
-            let cHp = permHpLvl * 10;
+            shLvlHp.textContent = permHpLevel;
+            let cHp = permHpLevel * 10;
             shCostHp.textContent = cHp;
-            buyHp.disabled = goldWallet < cHp;
+            buyHp.disabled = metaGold < cHp;
         }
 
         buyDmg.addEventListener('click', (e) => {
-            e.stopPropagation(); let cost = permDmgLvl * 8;
-            if(goldWallet >= cost) { goldWallet -= cost; permDmgLvl++; saveShop(); }
+            e.stopPropagation(); let cost = permDmgLevel * 8;
+            if(metaGold >= cost) { metaGold -= cost; permDmgLevel++; saveProgress(); }
         });
         buyHp.addEventListener('click', (e) => {
-            e.stopPropagation(); let cost = permHpLvl * 10;
-            if(goldWallet >= cost) { goldWallet -= cost; permHpLvl++; saveShop(); }
+            e.stopPropagation(); let cost = permHpLevel * 10;
+            if(metaGold >= cost) { metaGold -= cost; permHpLevel++; saveProgress(); }
         });
 
-        function saveShop() {
-            localStorage.setItem('ds_gold', goldWallet);
-            localStorage.setItem('ds_perm_dmg', permDmgLvl);
-            localStorage.setItem('ds_perm_hp', permHpLvl);
+        function saveProgress() {
+            localStorage.setItem('ns_meta_gold', metaGold);
+            localStorage.setItem('ns_perm_dmg', permDmgLevel);
+            localStorage.setItem('ns_perm_hp', permHpLevel);
             updateShopUI();
             playSound('xp');
         }
 
-        // Configuração de tamanho do canvas dinâmico
+        // Redimensionamento Inteligente de Tela para Dispositivos Móveis
         function resizeCanvas() {
             canvas.width = canvas.parentElement.clientWidth;
             canvas.height = canvas.parentElement.clientHeight - document.getElementById('hud').clientHeight;
         }
         window.addEventListener('resize', resizeCanvas);
 
-        // Inputs Teclado e Touch (Arrastar Dedo para andar)
+        // Mapeamento de Teclado (WASD/Setas) + Drag Interativo Mobile
         window.addEventListener('keydown', e => keys[e.code] = true);
         window.addEventListener('keyup', e => keys[e.code] = false);
 
-        canvas.addEventListener('touchstart', e => { isTouchMoving = true; setTouchPos(e); }, {passive:false});
-        canvas.addEventListener('touchmove', e => { e.preventDefault(); setTouchPos(e); }, {passive:false});
-        canvas.addEventListener('touchend', () => isTouchMoving = false);
+        canvas.addEventListener('touchstart', e => { touchActive = true; trackTouch(e); }, {passive:false});
+        canvas.addEventListener('touchmove', e => { e.preventDefault(); trackTouch(e); }, {passive:false});
+        canvas.addEventListener('touchend', () => touchActive = false);
 
-        function setTouchPos(e) {
+        function trackTouch(e) {
             let rect = canvas.getBoundingClientRect();
-            targetTouchX = e.touches[0].clientX - rect.left;
-            targetTouchY = e.touches[0].clientY - rect.top;
+            touchX = e.touches[0].clientX - rect.left;
+            touchY = e.touches[0].clientY - rect.top;
         }
 
-        // Inicializar Partida
         startBtn.addEventListener('click', () => {
             if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             resizeCanvas();
-            initRun();
+            startNewRun();
         });
 
-        function initRun() {
-            currentRoom = 1; level = 1; xp = 0; xpNeeded = 15; goldCollectedThisRun = 0;
-            upgradesRun = { multiShot: 0, pierce: 0, speedUp: 0, bounce: 0 };
+        function startNewRun() {
+            roomsCleared = 0; currentLevel = 1; currentXp = 0; xpNeeded = 10; runGold = 0;
+            build = { multiShot: 1, pierce: 1, fireRateBonus: 0, ricochet: false };
 
-            player.maxHp = 100 + (permHpLvl - 1) * 20;
+            player.maxHp = 100 + (permHpLevel - 1) * 25;
             player.hp = player.maxHp;
-            player.dmg = 8 + (permDmgLvl - 1) * 2;
-            player.speed = 3.2;
-            player.shootCooldown = 25;
+            player.dmg = 10 + (permDmgLevel - 1) * 2;
+            player.speed = 2.8;
+            player.fireRate = 22;
             player.x = canvas.width / 2;
             player.y = canvas.height / 2;
 
             enemies = []; projectiles = []; gems = []; particles = [];
-            hudLvl.textContent = level;
-            hudRoom.textContent = currentRoom;
+            hudLvl.textContent = currentLevel;
+            hudRoom.textContent = roomsCleared;
             xpBar.style.width = '0%';
 
             menuScreen.style.display = 'none';
             isPlaying = true;
-            spawnWave();
+            generateWave();
             requestAnimationFrame(gameLoop);
         }
 
-        function spawnWave() {
+        // Criação procedural de ondas agressivas que cercam o player
+        function generateWave() {
             enemies = [];
-            // Aumenta quantidade e tipos de monstros baseado na sala atual
-            let amount = 4 + currentRoom * 2;
-            for(let i=0; i<amount; i++) {
-                let edge = Math.floor(Math.random() * 4);
+            let waveCount = 8 + roomsCleared * 3;
+            for(let i = 0; i < waveCount; i++) {
+                let side = Math.floor(Math.random() * 4);
                 let ex, ey;
-                if(edge === 0) { ex = Math.random()*canvas.width; ey = -20; }
-                else if(edge === 1) { ex = canvas.width+20; ey = Math.random()*canvas.height; }
-                else if(edge === 2) { ex = Math.random()*canvas.width; ey = canvas.height+20; }
-                else { ex = -20; ey = Math.randomNormally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
+                if(side === 0) { ex = Math.random() * canvas.width; ey = -30; }
+                else if(side === 1) { ex = canvas.width + 30; ey = Math.random() * canvas.height; }
+                else if(side === 2) { ex = Math.random() * canvas.width; ey = canvas.height + 30; }
+                else { ex = -30; ey = Math.random() * canvas.height; }
+
+                // Tipos de inimigos escalonados por cor/atributos
+                let isElite = roomsCleared >= 2 && Math.random() < 0.25;
+                enemies.push({
+                    x: ex, y: ey,
+                    size: isElite ? 11 : 7,
+                    hp: (12 + roomsCleared * 6) * (isElite ? 2.5 : 1),
+                    maxHp: (12 + roomsCleared * 6) * (isElite ? 2.5 : 1),
+                    speed: isElite ? 1.3 : 1.6 + (Math.random() * 0.4),
+                    color: isElite ? '#ff0055' : '#ffaa00',
+                    value: isElite ? 3 : 1
+                });
+            }
+        }
+
+        // Core Game Loop
+        function gameLoop() {
+            if (!isPlaying) return;
+
+            updateMechanics();
+            renderVisuals();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function updateMechanics() {
+            // Movimentação via Teclado ou Arrasto Digital Touch
+            let mx = 0, my = 0;
+            if (keys['KeyW'] || keys['ArrowUp']) my = -1;
+            if (keys['KeyS'] || keys['ArrowDown']) my = 1;
+            if (keys['KeyA'] || keys['ArrowLeft']) mx = -1;
+            if (keys['KeyD'] || keys['ArrowRight']) mx = 1;
+
+            if (touchActive) {
+                let dx = touchX - player.x;
+                let dy = touchY - player.y;
+                let distance = Math.sqrt(dx*dx + dy*dy);
+                if (distance > 10) {
+                    mx = dx / distance;
+                    my = dy / distance;
+                }
+            }
+
+            if (mx !== 0 && my !== 0) { mx *= 0.7071; my *= 0.7071; }
+            player.x += mx * player.speed;
+            player.y += my * player.speed;
+
+            // Restrição de bordas físicas do mapa da arena
+            player.x = Math.max(player.size, Math.min(canvas.width - player.size, player.x));
+            player.y = Math.max(player.size, Math.min(canvas.height - player.size, player.y));
+
+            // Sistema de Auto-Mirar Inteligente (Foca no alvo mais perto automaticamente)
+            player.timer++;
+            let actualCooldown = Math.max(8, player.fireRate - build.fireRateBonus);
+            
+            if (player.timer >= actualCooldown && enemies.length > 0) {
+                player.timer = 0;
+                let target = null;
+                let minDist = 99999;
+                for (let e of enemies) {
+                    let d = Math.sqrt((e.x - player.x)**2 + (e.y - player.y)**2);
+                    if (d < minDist) { minDist = d; target = e; }
+                }
+
+                if (target) {
+                    let angle = Math.atan2(target.y - player.y, target.x - player.x);
+                    playSound('shoot');
+                    
+                    // Disparos Múltiplos (Build de Espalhamento)
+                    if (build.multiShot === 1) {
+                        fireBullet(angle);
+                    } else if (build.multiShot === 2) {
+                        fireBullet(angle - 0.15); fireBullet(angle + 0.15);
+                    } else {
+                        fireBullet(angle - 0.25); fireBullet(angle); fireBullet(angle + 0.25);
+                    }
+                }
+            }
+
+            // Loop de Atualização de Projéteis Ativos
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                let p = projectiles[i];
+                p.x += p.vx; p.y += p.vy;
+
+                // Destruição por saída de borda ou ricochete ativo nas paredes
+                if (p.x < 0 || p.x > canvas.width || p.y < 0 || p.y > canvas.height) {
+                    if (build.ricochet && !p.bounced) {
+                        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                        p.bounced = true;
+                    } else {
+                        projectiles.splice(i, 1);
+                        continue;
+                    }
+                }
+
+                // Colisão Projétil x Monstro
+                for (let j = enemies.length - 1; j >= 0; j--) {
+                    let e = enemies[j];
+                    let dist = Math.sqrt((p.x - e.x)**2 + (p.y - e.y)**2);
+                    if (dist < e.size + p.size) {
+                        e.hp -= player.dmg;
+                        createImpactParticles(p.x, p.y, '#00ffff', 4);
+                        playSound('hit');
+
+                        p.pierceCount--;
+                        if (p.pierceCount <= 0) {
+                            projectiles.splice(i, 1);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Atualização de Monstros de IA perseguidores
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                let e = enemies[i];
+                
+                // Morte do Monstro -> Drop de Gema de XP instantânea
+                if (e.hp <= 0) {
+                    gems.push({ x: e.x, y: e.y, value: e.value, color: e.value > 1 ? '#ff00ff' : '#00ffff' });
+                    enemies.splice(i, 1);
+                    continue;
+                }
+
+                let angle = Math.atan2(player.y - e.y, player.x - e.x);
+                e.x += Math.cos(angle) * e.speed;
+                e.y += Math.sin(angle) * e.speed;
+
+                // Colisão de Dano Físico contra o Jogador
+                let dist = Math.sqrt((e.x - player.x)**2 + (e.y - player.y)**2);
+                if (dist < player.size + e.size) {
+                    player.hp -= 0.6; // Dano contínuo por frame por proximidade
+                    createImpactParticles(player.x, player.y, '#ff0000', 1);
+                    if (player.hp <= 0) {
+                        triggerPlayerDeath();
+                        return;
+                    }
+                }
+            }
+
+            // Atração Magnética de Cristais e Evolução de XP
+            for (let i = gems.length - 1; i >= 0; i--) {
+                let g = gems[i];
+                let dist = Math.sqrt((g.x - player.x)**2 + (g.y - player.y)**2);
+                
+                // Força de gravidade/ímã automática baseada na proximidade
+                if (dist < 75) {
+                    let angle = Math.atan2(player.y - g.y, player.x - g.x);
+                    g.x += Math.cos(angle) * 4.5;
+                    g.y += Math.sin(angle) * 4.5;
+                }
+
+                if (dist < player.size + 5) {
+                    currentXp += g.value;
+                    runGold += g.value; // Cada ponto de XP coletado rende 1 de Ouro Meta
+                    playSound('xp');
+                    gems.splice(i, 1);
+
+                    // Checagem Mecânica de Level Up
+                    if (currentXp >= xpNeeded) {
+                        currentXp -= xpNeeded;
+                        currentLevel++;
+                        xpNeeded = Math.floor(xpNeeded * 1.35) + 8;
+                        hudLvl.textContent = currentLevel;
+                        triggerLevelUpScreen();
+                    }
+                    xpBar.style.width = `${(currentXp / xpNeeded) * 100}%`;
+                }
+            }
+
+            // Animação de Partículas Visuais de Fundo
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let part = particles[i];
+                part.x += part.vx; part.y += part.vy;
+                part.alpha -= 0.03;
+                if (part.alpha <= 0) particles.splice(i, 1);
+            }
+
+            // Mudança e Limpeza Procedural de Sala da Masmorra
+            if (enemies.length === 0 && gems.length === 0) {
+                roomsCleared++;
+                hudRoom.textContent = roomsCleared;
+                generateWave();
+            }
+        }
+
+        function fireBullet(ang) {
+            projectiles.push({
+                x: player.x, y: player.y,
+                vx: Math.cos(ang) * 6.5, vy: Math.sin(ang) * 6.5,
+                size: 3,
+                pierceCount: build.pierce,
+                bounced: false
+            });
+        }
+
+        function createImpactParticles(x, y, color, num) {
+            for (let i = 0; i < num; i++) {
+                let angle = Math.random() * Math.PI * 2;
+                let speed = 1 + Math.random() * 3;
+                particles.push({
+                    x: x, y: y,
+                    vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+                    alpha: 1, color: color
+                });
+            }
+        }
+
+        // Renderizador Gráfico de Vetores Neon no Canvas
+        function renderVisuals() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Desenhar Partículas de Impacto
+            for (let p of particles) {
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Desenhar Cristais/Gemas de Recompensa Neon
+            for (let g of gems) {
+                ctx.fillStyle = g.color;
+                ctx.shadowBlur = 10; ctx.shadowColor = g.color;
+                ctx.beginPath();
+                ctx.arc(g.x, g.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            // Desenhar Balas do Player
+            ctx.fillStyle = '#00ffff';
+            for (let p of projectiles) {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Desenhar Horda de Inimigos
+            for (let e of enemies) {
+                ctx.fillStyle = e.color;
+                ctx.shadowBlur = 8; ctx.shadowColor = e.color;
+                
+                // Barra de Vida minúscula sobre os monstros Elites
+                if (e.maxHp > 30) {
+                    ctx.fillStyle = '#222';
+                    ctx.fillRect(e.x - 10, e.y - 12, 20, 3);
+                    ctx.fillStyle = '#ff0055';
+                    ctx.fillRect(e.x - 10, e.y - 12, (e.hp / e.maxHp) * 20, 3);
+                }
+
+                ctx.fillStyle = e.color;
+                ctx.beginPath();
+                ctx.arc(e.x, e.y, e.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            // Desenhar Jogador e sua Aura Reativa
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowBlur = 15; ctx.shadowColor = '#00ffff';
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Interface Circular de Vida Integrada ao redor do Player
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.size + 6, 0, Math.PI * 2);
+            ctx.stroke();
+
+            let hpPercent = Math.max(0, player.hp / player.maxHp);
+            ctx.strokeStyle = hpPercent > 0.35 ? '#00ffcc' : '#ff0055';
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.size + 6, -Math.PI / 2, (-Math.PI / 2) + (Math.PI * 2 * hpPercent));
+            ctx.stroke();
+        }
+
+        // Sistema de Seleção Aleatória de Cartas de Atributo (Gatilho de Dopamina)
+        const poolOfUpgrades = [
+            { id: 'ms', title: 'Módulo Multi-Shot', desc: 'Dispara projéteis adicionais em cone angular simultaneamente.' },
+            { id: 'fr', title: 'Gatilho de Overclock', desc: 'Aumenta significativamente a cadência de tiro automática.' },
+            { id: 'pr', title: 'Munição Perfurante', desc: 'Seus projéteis atravessam +1 monstro antes de sumir.' },
+            { id: 'rc', title: 'Matriz Ricochete', desc: 'As balas ricocheteiam de volta ao atingir as bordas da arena.' },
+            { id: 'hp', title: 'Injeção de Nanorrobôs', desc: 'Restaura instantaneamente 50% da integridade da sua vida.' }
+        ];
+
+        function triggerLevelUpScreen() {
+            isPlaying = false;
+            playSound('lvl');
+            cardsWrapper.innerHTML = '';
+
+            // Sorteia 3 opções aleatórias sem repetição pura do pool
+            let shuffled = [...poolOfUpgrades].sort(() => 0.5 - Math.random()).slice(0, 3);
+
+            shuffled.forEach(upg => {
+                let card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-title">${upg.title}</div>
+                    <div class="card-desc">${upg.desc}</div>
+                `;
+                card.onclick = () => selectUpgrade(upg.id);
+                cardsWrapper.appendChild(card);
+            });
+
+            levelUpScreen.style.display = 'flex';
+        }
+
+        function selectUpgrade(id) {
+            if(id === 'ms') build.multiShot = Math.min(3, build.multiShot + 1);
+            if(id === 'fr') build.fireRateBonus += 5;
+            if(id === 'pr') build.pierce += 1;
+            if(id === 'rc') build.ricochet = true;
+            if(id === 'hp') player.hp = Math.min(player.maxHp, player.hp + (player.maxHp * 0.5));
+
+            levelUpScreen.style.display = 'none';
+            isPlaying = true;
+            gameLoop();
+        }
+
+        function triggerPlayerDeath() {
+            isPlaying = false;
+            metaGold += runGold;
+            localStorage.setItem('ns_meta_gold', metaGold);
+
+            menuTitle.textContent = "SISTEMA CAÍDO";
+            document.getElementById('rep-rooms').textContent = roomsCleared;
+            document.getElementById('rep-gold').textContent = runGold;
+            gameReport.style.display = 'block';
+
+            startBtn.textContent = "CONECTAR REINICIALIZAÇÃO";
+            updateShopUI();
+            menuScreen.style.display = 'flex';
+        }
+
+        // Inicialização primária da Loja do Menu
+        updateShopUI();
+    </script>
+</body>
+</html>
