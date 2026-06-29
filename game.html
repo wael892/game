@@ -2,8 +2,8 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>O Labirinto da Mente</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>O Labirinto da Mente - Mobile</title>
     <style>
         /* RESET DE ESTILOS */
         * {
@@ -11,6 +11,8 @@
             padding: 0;
             box-sizing: border-box;
             user-select: none;
+            -webkit-user-select: none;
+            touch-action: none; /* Impede zoom acidental no celular */
         }
 
         body, html {
@@ -34,18 +36,20 @@
             align-items: center;
             z-index: 10;
             transition: opacity 1s ease;
+            padding: 20px;
         }
 
         #tela-inicial h1 {
-            font-size: 3rem;
+            font-size: 2.5rem;
             color: #8b0000;
             text-shadow: 0 0 10px rgba(139, 0, 0, 0.8);
             margin-bottom: 20px;
+            text-align: center;
             animation: pulsar 3s infinite alternate;
         }
 
         #tela-inicial p {
-            font-size: 1rem;
+            font-size: 0.9rem;
             margin-bottom: 40px;
             color: #777;
             text-align: center;
@@ -58,15 +62,16 @@
             background: transparent;
             border: 2px solid #8b0000;
             color: #8b0000;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-family: inherit;
             cursor: pointer;
             font-weight: bold;
             transition: all 0.3s ease;
             box-shadow: 0 0 5px rgba(139, 0, 0, 0.4);
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .btn:hover {
+        .btn:hover, .btn:active {
             background: #8b0000;
             color: #000;
             box-shadow: 0 0 20px #8b0000;
@@ -81,7 +86,7 @@
             background: #0a0a0a;
         }
 
-        /* EFEITO DE LANTERNA (VINETE SEGUIDORA) */
+        /* EFEITO DE LANTERNA */
         #lanterna {
             position: absolute;
             top: 0;
@@ -89,16 +94,16 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            background: radial-gradient(circle 150px at 50% 50%, transparent 100%, rgba(0,0,0,0.98) 100%);
+            background: radial-gradient(circle 120px at 50% 50%, transparent 100%, rgba(0,0,0,0.99) 100%);
             z-index: 5;
         }
 
         /* BARRA DE STATUS / SANIDADE */
         #interface {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
+            top: 15px;
+            left: 15px;
+            right: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -108,14 +113,19 @@
 
         .status-container {
             pointer-events: auto;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 15px;
             border: 1px solid #333;
         }
 
+        .status-container label {
+            font-size: 0.8rem;
+            display: block;
+        }
+
         .barra-sanidade {
-            width: 200px;
-            height: 15px;
+            width: 120px;
+            height: 12px;
             border: 1px solid #555;
             background-color: #222;
             margin-top: 5px;
@@ -131,82 +141,76 @@
 
         #inventario {
             pointer-events: auto;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.7);
             border: 1px solid #333;
-            padding: 10px;
-            font-size: 0.9rem;
+            padding: 8px 15px;
+            font-size: 0.8rem;
         }
 
         /* CAIXA DE TEXTO / DIÁLOGOS */
         #caixa-texto {
             position: absolute;
-            bottom: 30px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            width: 80%;
-            max-width: 800px;
-            background: rgba(5, 5, 5, 0.9);
+            width: 90%;
+            background: rgba(5, 5, 5, 0.95);
             border: 1px solid #8b0000;
-            padding: 20px;
+            padding: 15px;
             z-index: 6;
-            min-height: 80px;
+            min-height: 70px;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             text-shadow: 1px 1px 2px #000;
-            box-shadow: 0 0 15px rgba(0,0,0,0.7);
+            box-shadow: 0 0 15px rgba(0,0,0,0.8);
         }
 
-        /* OBJETOS INTERATIVOS DA SALA */
+        /* OBJETOS INTERATIVOS */
         .objeto {
             position: absolute;
             cursor: pointer;
-            transition: filter 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .objeto:hover {
-            filter: drop-shadow(0 0 8px rgba(139, 0, 0, 0.8));
-        }
-
-        /* Posicionamento dos objetos mockados em CSS */
         #porta {
-            bottom: 15%;
-            left: 45%;
-            width: 120px;
-            height: 220px;
+            bottom: 20%;
+            left: 42%;
+            width: 80px;
+            height: 160px;
             background: #1e1111;
-            border: 4px dashed #0a0505;
+            border: 3px dashed #0a0505;
             border-bottom: none;
         }
 
         #porta::after {
             content: '';
             position: absolute;
-            right: 15px;
+            right: 10px;
             top: 50%;
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             background: #444;
             border-radius: 50%;
         }
 
         #quadro {
             top: 25%;
-            left: 20%;
-            width: 100px;
-            height: 130px;
+            left: 10%;
+            width: 70px;
+            height: 90px;
             background: #2b2b2b;
-            border: 6px solid #4a3b2c;
+            border: 4px solid #4a3b2c;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
         #quadro-olho {
-            width: 40px;
-            height: 25px;
+            width: 30px;
+            height: 18px;
             background: #fff;
             border-radius: 50%;
             position: relative;
@@ -216,19 +220,19 @@
         #quadro-olho::before {
             content: '';
             position: absolute;
-            width: 16px;
-            height: 16px;
+            width: 12px;
+            height: 12px;
             background: #c00;
             border-radius: 50%;
-            top: 4px;
-            left: 12px;
+            top: 3px;
+            left: 9px;
         }
 
         #armario {
-            bottom: 15%;
-            right: 15%;
-            width: 140px;
-            height: 260px;
+            bottom: 20%;
+            right: 10%;
+            width: 90px;
+            height: 180px;
             background: #1c1c1c;
             border: 3px solid #111;
         }
@@ -243,8 +247,8 @@
         }
 
         #bilhete {
-            bottom: 20%;
-            left: 30%;
+            bottom: 25%;
+            left: 28%;
             width: 35px;
             height: 35px;
             background: #d4cbb3;
@@ -269,15 +273,15 @@
 
         #game-over h2 {
             color: #ff0000;
-            font-size: 3rem;
+            font-size: 2.5rem;
             margin-bottom: 20px;
-            letter-spacing: 5px;
+            letter-spacing: 3px;
             animation: tremer 0.1s infinite;
         }
 
         #vitoria h2 {
             color: #00ff00;
-            font-size: 3rem;
+            font-size: 2.5rem;
             margin-bottom: 20px;
         }
 
@@ -305,12 +309,12 @@
         }
 
         #rosto-fantasma {
-            width: 300px;
-            height: 300px;
+            width: 240px;
+            height: 240px;
             background: #fff;
             border-radius: 50%;
-            filter: blur(5px) contrast(20);
-            box-shadow: 0 0 80px #fff, 0 0 120px #ff0000;
+            filter: blur(4px) contrast(20);
+            box-shadow: 0 0 60px #fff, 0 0 100px #ff0000;
             position: relative;
             animation: tremer 0.05s infinite;
         }
@@ -319,21 +323,21 @@
             content: '';
             position: absolute;
             top: 30%;
-            width: 60px;
-            height: 90px;
+            width: 45px;
+            height: 70px;
             background: #000;
             border-radius: 50%;
         }
-        #rosto-fantasma::before { left: 60px; }
-        #rosto-fantasma::after { right: 60px; }
+        #rosto-fantasma::before { left: 45px; }
+        #rosto-fantasma::after { right: 45px; }
 
         #boca-fantasma {
             position: absolute;
             bottom: 15%;
             left: 50%;
             transform: translateX(-50%);
-            width: 100px;
-            height: 100px;
+            width: 80px;
+            height: 80px;
             background: #000;
             border-radius: 50%;
         }
@@ -341,11 +345,9 @@
 </head>
 <body>
 
-    <audio id="audio-placeholder"></audio>
-
     <div id="tela-inicial">
         <h1>O VAZIO</h1>
-        <p>Você acordou em um lugar desconhecido. A escuridão consome seus pensamentos a cada segundo. Encontre uma saída antes que sua mente se quebre por completo.</p>
+        <p>Você acordou em um lugar desconhecido. A escuridão consome seus pensamentos. Arraste o dedo para iluminar e toque nos objetos para tentar escapar.</p>
         <button class="btn" onclick="iniciarJogo()">ENTRAR NA ESCURIDÃO</button>
     </div>
 
@@ -369,7 +371,7 @@
         <div id="armario" class="objeto" onclick="interagir('armario')"></div>
         <div id="bilhete" class="objeto" onclick="interagir('bilhete')"></div>
 
-        <div id="caixa-texto">A escuridão está fria. Devo procurar uma forma de abrir a porta trancada...</div>
+        <div id="caixa-texto">A escuridão está fria. Toque nos objetos escondidos para achar a saída...</div>
     </div>
 
     <div id="jumpscare">
@@ -380,13 +382,13 @@
 
     <div id="game-over" class="tela-fim">
         <h2>VOCÊ ENLOUQUECEU</h2>
-        <p style="margin-bottom: 30px;">Sua mente sucumbiu ao terror que habitava a sala.</p>
+        <p style="margin-bottom: 30px;">Sua mente sucumbiu ao terror...</p>
         <button class="btn" onclick="reiniciarJogo()">TENTAR NOVAMENTE</button>
     </div>
 
     <div id="vitoria" class="tela-fim">
         <h2>VOCÊ ESCAPOU</h2>
-        <p style="margin-bottom: 30px;">Você destrancou a porta a tempo e correu em direção à luz, deixando o pesadelo para trás.</p>
+        <p style="margin-bottom: 30px;">Você abriu a porta a tempo e sobreviveu.</p>
         <button class="btn" onclick="reiniciarJogo()">JOGAR DE NOVO</button>
     </div>
 
@@ -407,8 +409,6 @@
         const lanterna = document.getElementById('lanterna');
         const cenario = document.getElementById('cenario');
 
-        // GERADOR DE ÁUDIO SINTETIZADO (Web Audio API)
-        // Criado para que o jogo tenha efeitos sonoros de terror sem precisar de arquivos .mp3 externos
         let audioCtx = null;
 
         function iniciarAudio() {
@@ -426,7 +426,6 @@
                 osc.type = tipo;
                 osc.frequency.setValueAtTime(frequencia, audioCtx.currentTime);
                 
-                // Modulação para som de suspense trêmulo
                 if (tipo === 'sawtooth' || frequencia < 150) {
                     osc.frequency.linearRampToValueAtTime(frequencia - 20, audioCtx.currentTime + duracao);
                 }
@@ -440,7 +439,7 @@
                 osc.start();
                 osc.stop(audioCtx.currentTime + duracao);
             } catch (e) {
-                console.log("Erro ao reproduzir som sintetizado.");
+                console.log("Erro de áudio.");
             }
         }
 
@@ -450,7 +449,6 @@
             document.getElementById('tela-inicial').style.display = 'none';
             cenario.style.display = 'block';
             
-            // Loop de som ambiente sinistro
             tocarSomTerror(60, 'sine', 4, 0.3);
             setInterval(() => {
                 if (!estado.fimDoJogo) {
@@ -458,20 +456,35 @@
                 }
             }, 3500);
 
-            // Redução constante de sanidade
             estado.intervaloSanidade = setInterval(() => {
                 if (!estado.fimDoJogo) {
-                    atualizarSanidade(-1.5);
+                    atualizarSanidade(-2.0); // Mobile consome sanidade um pouco mais rápido pelo mapa menor
                 }
             }, 1000);
         }
 
-        // CONTROLE DA LANTERNA SEGUINDO O MOUSE
+        // ATUALIZAÇÃO DA LANTERNA (COMPATÍVEL COM COMPUTADOR E CELULAR)
+        function moverLanterna(x, y) {
+            lanterna.style.background = `radial-gradient(circle 120px at ${x}px ${y}px, transparent 100%, rgba(0,0,0,0.99) 100%)`;
+        }
+
+        // Eventos de Mouse (Computador)
         window.addEventListener('mousemove', (e) => {
             if (cenario.style.display === 'block') {
-                let x = e.clientX;
-                let y = e.clientY;
-                lanterna.style.background = `radial-gradient(circle 160px at ${x}px ${y}px, transparent 100%, rgba(0,0,0,0.98) 100%)`;
+                moverLanterna(e.clientX, e.clientY);
+            }
+        });
+
+        // Eventos de Toque (Celular)
+        window.addEventListener('touchstart', (e) => {
+            if (cenario.style.display === 'block' && e.touches.length > 0) {
+                moverLanterna(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if (cenario.style.display === 'block' && e.touches.length > 0) {
+                moverLanterna(e.touches[0].clientX, e.touches[0].clientY);
             }
         });
 
@@ -485,14 +498,13 @@
             }
             progressoSanidade.style.width = estado.sanidade + '%';
 
-            // Piscar lanterna aleatoriamente se a sanidade estiver baixa
             if (estado.sanidade < 40 && Math.random() > 0.8) {
-                lanterna.style.opacity = '0.3';
+                lanterna.style.opacity = '0.2';
                 setTimeout(() => lanterna.style.opacity = '1', 150);
             }
         }
 
-        // LÓGICA DE INTERAÇÃO COM OBJETOS
+        // LÓGICA DE INTERAÇÃO
         function interagir(objetoId) {
             if (estado.fimDoJogo) return;
 
@@ -502,52 +514,48 @@
                     vencerJogo();
                 } else {
                     tocarSomTerror(120, 'square', 0.2, 0.4);
-                    caixaTexto.innerText = "A porta de ferro está trancada firmemente por uma fechadura antiga. Preciso de uma chave.";
+                    caixaTexto.innerText = "A porta está trancada por uma fechadura antiga. Preciso de uma chave.";
                     atualizarSanidade(-2);
                 }
             } 
-            
             else if (objetoId === 'quadro') {
                 tocarSomTerror(280, 'sine', 0.5, 0.3);
                 if (!estado.quadroObservado) {
-                    caixaTexto.innerText = "Um retrato grotesco. Os olhos pintados parecem se mover. Atrás da moldura, há uma inscrição arranhada: 'O segredo repousa onde os panos escondem a carne'.";
+                    caixaTexto.innerText = "Um retrato grotesco. Atrás da moldura diz: 'O segredo repousa onde os panos escondem a carne'.";
                     estado.quadroObservado = true;
                     atualizarSanidade(-5);
                 } else {
-                    caixaTexto.innerText = "O quadro continua me encarando. A inscrição aponta para algum lugar guardado.";
+                    caixaTexto.innerText = "Os olhos do quadro ainda parecem me seguir.";
                 }
             } 
-            
             else if (objetoId === 'armario') {
                 if (!estado.quadroObservado) {
                     tocarSomTerror(90, 'square', 0.4, 0.3);
-                    caixaTexto.innerText = "Um armário pesado de madeira escura. Está emperrado ou trancado por algum mecanismo oculto.";
+                    caixaTexto.innerText = "Um armário de madeira escura. Está totalmente emperrado.";
                 } else if (!estado.armarioAberto) {
                     tocarSomTerror(180, 'sawtooth', 0.8, 0.4);
-                    caixaTexto.innerText = "Lembrando da pista do quadro, você força o fundo falso do armário... Você encontrou a Chave Antiga!";
+                    caixaTexto.innerText = "Você encontrou a Chave Antiga no fundo falso do armário!";
                     estado.armarioAberto = true;
                     estado.temChave = true;
-                    inventarioDiv.innerText = "Inventário: Chave Antiga";
+                    inventarioDiv.innerText = "Inventário: Chave";
                     inventarioDiv.style.color = "#00ff00";
-                    atualizarSanidade(10); // Alívio ao achar item
+                    atualizarSanidade(15);
                 } else {
-                    caixaTexto.innerText = "O armário agora está vazio, exalando cheiro de poeira e mofo.";
+                    caixaTexto.innerText = "O armário está vazio.";
                 }
             } 
-            
             else if (objetoId === 'bilhete') {
                 tocarSomTerror(600, 'sine', 0.2, 0.2);
-                caixaTexto.innerText = "Um pedaço de papel rasgado no chão diz: 'Não olhe diretamente para as paredes por muito tempo. Ele se alimenta do seu medo.'";
+                caixaTexto.innerText = "Um bilhete rasgado: 'Não fique no escuro por muito tempo. Ele está olhando.'";
                 atualizarSanidade(-3);
             }
         }
 
-        // SISTEMA DE DERROTA COM JUMPSCARE
+        // JUMPSCARE E DERROTA
         function desencadearGameOver() {
             estado.fimDoJogo = true;
             clearInterval(estado.intervaloSanidade);
             
-            // Ativa jumpscare visual e sonoro agudo
             const jumpscareDiv = document.getElementById('jumpscare');
             jumpscareDiv.style.display = 'flex';
             tocarSomTerror(880, 'sawtooth', 1.5, 0.9);
@@ -557,10 +565,10 @@
                 jumpscareDiv.style.display = 'none';
                 document.getElementById('game-over').style.display = 'flex';
                 cenario.style.display = 'none';
-            }, 1500);
+            }, 1200);
         }
 
-        // SISTEMA DE VITÓRIA
+        // VITÓRIA
         function vencerJogo() {
             estado.fimDoJogo = true;
             clearInterval(estado.intervaloSanidade);
@@ -568,7 +576,7 @@
             cenario.style.display = 'none';
         }
 
-        // RESET DO ESTADO PARA REINICIAR
+        // REINICIAR
         function reiniciarJogo() {
             estado.sanidade = 100;
             estado.temChave = false;
@@ -578,7 +586,7 @@
             
             inventarioDiv.innerText = "Inventário: Vazio";
             inventarioDiv.style.color = "#dcdcdc";
-            caixaTexto.innerText = "A escuridão retornou... Encontre uma saída novamente.";
+            caixaTexto.innerText = "A escuridão retornou... Encontre a saída.";
             
             document.getElementById('game-over').style.display = 'none';
             document.getElementById('vitoria').style.display = 'none';
