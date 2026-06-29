@@ -3,18 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>O Vazio do Asilo - Edição Integrada</title>
+    <title>O Enigma do Asilo: Pista do Quadro</title>
     <style>
-        /* =========================================
-           RESET E ESTILOS GERAIS
-           Impedem margens, scroll e zoom acidental
-           ========================================= */
+        /* RESET E ESTILOS GERAIS */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             user-select: none;
-            -webkit-user-select: none;
             touch-action: none; /* Impede zoom no mobile */
         }
 
@@ -27,82 +23,22 @@
             color: #dcdcdc;
         }
 
-        /* =========================================
-           TELA INICIAL
-           Exibida antes do jogo começar
-           ========================================= */
-        #tela-inicial {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, #1a0505 0%, #000000 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            transition: opacity 1s ease;
-            padding: 20px;
-        }
-
-        #tela-inicial h1 {
-            font-size: 2.5rem;
-            color: #8b0000;
-            text-shadow: 0 0 10px rgba(139, 0, 0, 0.8);
-            margin-bottom: 20px;
-            text-align: center;
-            animation: pulsar 3s infinite alternate;
-        }
-
-        #tela-inicial p {
-            font-size: 0.9rem;
-            margin-bottom: 40px;
-            color: #777;
-            text-align: center;
-            max-width: 500px;
-            line-height: 1.5;
-        }
-
-        .btn {
-            padding: 15px 40px;
-            background: transparent;
-            border: 2px solid #8b0000;
-            color: #8b0000;
-            font-size: 1.1rem;
-            font-family: inherit;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            box-shadow: 0 0 5px rgba(139, 0, 0, 0.4);
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .btn:hover, .btn:active {
-            background: #8b0000;
-            color: #000;
-            box-shadow: 0 0 20px #8b0000;
-        }
-
-        /* =========================================
-           CENÁRIO DO JOGO
-           Onde o gameplay acontece
-           ========================================= */
+        /* CENÁRIO DO JOGO (Sala Escura do Asilo) */
         #cenario {
             position: relative;
             width: 100%;
             height: 100%;
-            display: none; /* Inicia escondido */
-            
-            /* IMAGEM 1: O Ambiente do Asilo */
-            background-image: url('https://replicate.delivery/xpbkg/20pWq0F8M0YxER2r7vPz55W9v5Z8m3V8v9P5y7Y8v9Z8M5XTA/output.png');
+            /* IMAGEM DE FUNDO: A Sala Escura do Asilo */
+            background-image: url('image_0.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* EFEITO DE LANTERNA
-           O círculo de luz que segue o cursor/toque
-           ========================================= */
+        /* EFEITO DE LANTERNA (VINETE SEGUIDORA) */
         #lanterna {
             position: absolute;
             top: 0;
@@ -110,563 +46,153 @@
             width: 100%;
             height: 100%;
             pointer-events: none; /* Permite clicar através dele */
-            background: radial-gradient(circle 120px at 50% 50%, transparent 100%, rgba(0,0,0,0.99) 100%);
+            /* Círculo de luz transparente no centro, breu profundo nas bordas */
+            background: radial-gradient(circle 100px at 50% 50%, transparent 100%, rgba(0,0,0,0.99) 100%);
             z-index: 5;
         }
 
-        /* =========================================
-           INTERFACE E HUD
-           Sanidade e Inventário
-           ========================================= */
-        #interface {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            right: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 6;
-            pointer-events: none;
+        /* O QUADRO (Objeto Interativo) */
+        #quadro-interativo {
+            width: 250px; /* Ajuste conforme necessário */
+            height: 350px; /* Ajuste conforme necessário */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            
+            /* ESTADO INICIAL: Breu Total (brightness 0) */
+            filter: brightness(0);
+            
+            /* Transição suave para o brilho */
+            transition: filter 0.1s ease;
+            cursor: pointer;
+            z-index: 2;
         }
 
-        .status-container {
-            pointer-events: auto;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 8px 15px;
-            border: 1px solid #333;
-        }
-
-        .status-container label {
-            font-size: 0.8rem;
-            display: block;
-        }
-
-        .barra-sanidade {
-            width: 120px;
-            height: 12px;
-            border: 1px solid #555;
-            background-color: #222;
-            margin-top: 5px;
-            overflow: hidden;
-        }
-
-        #progresso-sanidade {
-            width: 100%;
-            height: 100%;
-            background-color: #8b0000;
-            transition: width 0.3s ease;
-        }
-
-        #inventario {
-            pointer-events: auto;
-            background: rgba(0, 0, 0, 0.8);
-            border: 1px solid #333;
-            padding: 8px 15px;
-            font-size: 0.8rem;
-        }
-
-        /* CAIXA DE TEXTO / DIÁLOGOS
-           ========================================= */
+        /* INSTRUÇÕES E TEXTO DA PISTA */
         #caixa-texto {
             position: absolute;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            width: 90%;
-            max-width: 800px;
-            background: rgba(5, 5, 5, 0.95);
+            width: 80%;
+            max-width: 600px;
+            background: rgba(0, 0, 0, 0.85);
             border: 1px solid #8b0000;
             padding: 15px;
             z-index: 6;
-            min-height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             text-align: center;
             font-size: 0.95rem;
             text-shadow: 1px 1px 2px #000;
-            box-shadow: 0 0 15px rgba(0,0,0,0.8);
         }
 
-        /* =========================================
-           OBJETOS INTERATIVOS
-           Iniciam no breu e ganham luz via JS
-           ========================================= */
-        .objeto {
-            position: absolute;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            
-            /* Efeito inicial de escuridão profunda */
-            filter: brightness(0.05) contrast(1.2);
-            transition: filter 0.1s ease, transform 0.2s ease;
-        }
-
-        /* A Porta (Área invisível sobre a porta do fundo) */
-        #porta {
-            bottom: 22%;
-            left: 40%;
-            width: 20%;
-            height: 55%;
-            background: transparent;
-            filter: none; /* A porta já faz parte do fundo */
-        }
-
-        /* IMAGEM 2: O Quadro Bizarro */
-        #quadro {
-            top: 25%;
-            left: 8%;
-            width: 80px;
-            height: 105px;
-            background-image: url('https://replicate.delivery/xpbkg/925pWq0F8M0YxER2r7vPz55W9v5Z8m3V8v9P5y7Y8v9Z8M5XTA/output.png');
-            border: 2px solid #2a2015;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-        }
-
-        /* IMAGEM 3: O Armário Médico Enferrujado */
-        #armario {
-            bottom: 15%;
-            right: 8%;
-            width: 100px;
-            height: 190px;
-            background-image: url('https://replicate.delivery/xpbkg/522pWq0F8M0YxER2r7vPz55W9v5Z8m3V8v9P5y7Y8v9Z8M5XTA/output.png');
-        }
-
-        /* O Bilhete no Chão */
-        #bilhete {
-            bottom: 18%;
-            left: 32%;
-            width: 30px;
-            height: 30px;
-            background: #c3b99f; /* Papel velho */
-            transform: rotate(-20deg);
-            box-shadow: 1px 1px 4px rgba(0,0,0,0.6);
-            filter: brightness(0.05); /* Inicia escuro */
-        }
-
-        /* Animação para quando o armário está emperrado */
-        .tremendo {
-            animation: tremer 0.2s infinite;
-        }
-
-        /* =========================================
-           TELAS FINAIS E JUMPSCARE
-           ========================================= */
-        .tela-fim {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 20;
-            padding: 20px;
-            text-align: center;
-        }
-
-        #game-over h2 {
+        #pista-revelada {
             color: #ff0000;
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            letter-spacing: 3px;
-            animation: tremer 0.1s infinite;
-        }
-
-        #vitoria h2 {
-            color: #00ff00;
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-        }
-
-        /* =========================================
-           ANIMAÇÕES CSS
-           ========================================= */
-        @keyframes pulsar {
-            0% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        @keyframes tremer {
-            0% { transform: translate(2px, 1px) rotate(0deg); }
-            50% { transform: translate(-1px, -1px) rotate(1deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
-        }
-
-        /* IMAGEM 4: SCARE JUMP (O Monstro) */
-        #jumpscare {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            
-            background-image: url('https://replicate.delivery/xpbkg/822pWq0F8M0YxER2r7vPz55W9v5Z8m3V8v9P5y7Y8v9Z8M5XTA/output.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            
-            z-index: 30;
+            font-weight: bold;
             display: none; /* Inicia escondido */
-            animation: tremer 0.05s infinite; /* Treme agressivamente */
-        }
-        
-        /* Efeito de luz vermelha sobre o monstro */
-        #jumpscare::before {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 0, 0, 0.2);
         }
     </style>
 </head>
 <body>
 
-    <div id="tela-inicial">
-        <h1>O VAZIO DO ASILO</h1>
-        <p>Você acordou em uma ala abandonada. A sanidade se esvai no escuro. Mova sua lanterna e procure pistas nos objetos para achar a chave e escapar antes que sua mente se quebre.</p>
-        <button class="btn" onclick="iniciarJogo()">ENTRAR NAS SOMBRAS</button>
-    </div>
-
     <div id="cenario">
         <div id="lanterna"></div>
 
-        <div id="interface">
-            <div class="status-container">
-                <label>SANIDADE</label>
-                <div class="barra-sanidade">
-                    <div id="progresso-sanidade"></div>
-                </div>
-            </div>
-            <div id="inventario">Inventário: Vazio</div>
+        <div id="quadro-interativo" onclick="interagirQuadro()"></div>
+
+        <div id="caixa-texto">
+            <p>A sala está num breu profundo. Mova o foco da sua lanterna (o mouse ou o dedo) para explorar.</p>
+            <p>O JavaScript está calculando a proximidade da luz. O Quadro bizarro *só* se iluminará quando o foco estiver diretamente sobre ele, revelando uma pista oculta em brightness(1).</p>
+            <span id="pista-revelada">A pista foi revelada! Clique no quadro para ler a inscrição...</span>
         </div>
-
-        <div id="porta" class="objeto" onclick="interagir('porta')"></div>
-        <div id="quadro" class="objeto" onclick="interagir('quadro')"></div>
-        <div id="armario" class="objeto" onclick="interagir('armario')"></div>
-        <div id="bilhete" class="objeto" onclick="interagir('bilhete')"></div>
-
-        <div id="caixa-texto">Está terrivelmente escuro... Mova sua lanterna para explorar.</div>
-    </div>
-
-    <div id="jumpscare"></div>
-
-    <div id="game-over" class="tela-fim">
-        <h2>SUA MENTE QUEBROU</h2>
-        <p style="margin-bottom: 30px;">O horror do asilo consumiu seus últimos pensamentos racionais.</p>
-        <button class="btn" onclick="reiniciarJogo()">REINICIAR</button>
-    </div>
-
-    <div id="vitoria" class="tela-fim">
-        <h2>VOCÊ SOBREVIVEU</h2>
-        <p style="margin-bottom: 30px;">A velha chave girou com dificuldade. Você abriu a porta e escapou do pesadelo.</p>
-        <button class="btn" onclick="reiniciarJogo()">JOGAR NOVAMENTE</button>
     </div>
 
     <script>
         /* =========================================
-           ESTADO INTERNO DO JOGO
-           Armazena o progresso e sanidade
+           LÓGICA JAVASCRIPT: FOCO DE LANTERNA
+           O núcleo do efeito de proximidade.
            ========================================= */
-        let estado = {
-            sanidade: 100,
-            temChave: false,
-            quadroObservado: false,
-            armarioAberto: false,
-            fimDoJogo: false,
-            intervaloSanidade: null,
-            lanternaX: 0,
-            lanternaY: 0
-        };
-
-        // Elementos DOM frequentemente usados
-        const caixaTexto = document.getElementById('caixa-texto');
-        const progressoSanidade = document.getElementById('progresso-sanidade');
-        const inventarioDiv = document.getElementById('inventario');
+        
         const lanterna = document.getElementById('lanterna');
-        const cenario = document.getElementById('cenario');
+        const quadro = document.getElementById('quadro-interativo');
+        const caixaTexto = document.getElementById('caixa-texto');
+        const pistaRevelada = document.getElementById('pista-revelada');
 
-        /* =========================================
-           SISTEMA DE SOM PROCEDURAL
-           Dispensa arquivos .mp3 externos
-           ========================================= */
-        let audioCtx = null;
+        let luzFocadaNoQuadro = false;
 
-        function iniciarAudio() {
-            if (!audioCtx) {
-                // Tenta inicializar o contexto de áudio (requer clique do usuário)
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-        }
-
-        function tocarSomTerror(frequencia, tipo, duracao, volume) {
-            if (!audioCtx) return; // Áudio não inicializado
-            
-            try {
-                let osc = audioCtx.createOscillator();
-                let gain = audioCtx.createGain();
-                
-                osc.type = tipo;
-                osc.frequency.setValueAtTime(frequencia, audioCtx.currentTime);
-                
-                // Modulação simples para som de suspense (frequência cai levemente)
-                if (tipo === 'sawtooth' || frequencia < 150) {
-                    osc.frequency.linearRampToValueAtTime(frequencia - 30, audioCtx.currentTime + duracao);
-                }
-
-                // Controle de volume e fade-out
-                gain.gain.setValueAtTime(volume, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duracao);
-                
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                
-                osc.start();
-                osc.stop(audioCtx.currentTime + duracao);
-            } catch (e) {
-                console.log("Erro ao gerar áudio.");
-            }
-        }
-
-        /* =========================================
-           INICIALIZAÇÃO DO GAMEPLAY
-           ========================================= */
-        function iniciarJogo() {
-            iniciarAudio(); // Tenta ativar o som no primeiro clique
-            document.getElementById('tela-inicial').style.display = 'none';
-            cenario.style.display = 'block';
-            
-            // Inicia o som de fundo (drone baixo e sinistro)
-            tocarSomTerror(55, 'sine', 4, 0.4);
-            // Loop para manter o som ambiente
-            setInterval(() => {
-                if (!estado.fimDoJogo) {
-                    tocarSomTerror(50 + Math.random() * 15, 'sine', 3, 0.25);
-                }
-            }, 3200);
-
-            // Redução constante de sanidade a cada segundo
-            estado.intervaloSanidade = setInterval(() => {
-                if (!estado.fimDoJogo) {
-                    atualizarSanidade(-1.8);
-                }
-            }, 1000);
-        }
-
-        /* =========================================
-           SISTEMA REALISTA DE REVELAÇÃO PELA LANTERNA
-           Os objetos só se iluminam quando a luz está perto
-           ========================================= */
-        function gerenciarIluminacaoObjetos() {
-            // Seleciona todos os objetos interativos
-            const objetos = document.querySelectorAll('.objeto');
-            
-            objetos.forEach(obj => {
-                // A porta do fundo não precisa desse efeito (já está no cenário de fundo)
-                if (obj.id === 'porta') return;
-                
-                // Pega a posição central do objeto
-                const rect = obj.getBoundingClientRect();
-                const objX = rect.left + (rect.width / 2);
-                const objY = rect.top + (rect.height / 2);
-                
-                // Calcula a distância matemática entre o centro do objeto e o foco da lanterna
-                const distancia = Math.hypot(estado.lanternaX - objX, estado.lanternaY - objY);
-                
-                // Se o foco da lanterna estiver perto o suficiente (130px)
-                if (distancia < 130) {
-                    // Calcula a intensidade: quanto mais perto do centro, mais brilhante
-                    const intensidade = 1 - (distancia / 130);
-                    // Aplica o brilho dinâmico na imagem do objeto
-                    obj.style.filter = `brightness(${0.05 + (intensidade * 0.85)}) contrast(1.2)`;
-                } else {
-                    // Mantém o objeto no breu profundo
-                    obj.style.filter = 'brightness(0.05) contrast(1.2)';
-                }
-            });
-        }
-
-        // Atualiza a posição da vinheta da lanterna e gerencia a luz dos objetos
+        // Função para atualizar a posição da lanterna e gerenciar o brilho
         function atualizarLanterna(x, y) {
-            estado.lanternaX = x;
-            estado.lanternaY = y;
-            // Move o círculo de luz
-            lanterna.style.background = `radial-gradient(circle 120px at ${x}px ${y}px, transparent 100%, rgba(0,0,0,0.99) 100%)`;
-            gerenciarIluminacaoObjetos();
+            // 1. Move o círculo de luz da vinete CSS
+            lanterna.style.background = `radial-gradient(circle 100px at ${x}px ${y}px, transparent 100%, rgba(0,0,0,0.99) 100%)`;
+
+            // 2. Calcula a proximidade do foco de luz com o centro do quadro
+            const rect = quadro.getBoundingClientRect();
+            const quadroCentroX = rect.left + (rect.width / 2);
+            const quadroCentroY = rect.top + (rect.height / 2);
+
+            // Distância matemática entre o foco (x,y) e o centro do quadro
+            const distancia = Math.hypot(x - quadroCentroX, y - quadroCentroY);
+
+            // 3. Aplica o brilho dinamicamente
+            // Se o foco estiver a menos de 110px do centro do quadro
+            if (distancia < 110) {
+                // Calcula a intensidade baseada na proximidade (perto = brilhante, longe = escuro)
+                // Usando uma escala de 0.05 (mínimo) a 1.0 (máximo)
+                const intensidade = 1 - (distancia / 110);
+                const brightness = 0.05 + (intensidade * 0.95);
+                
+                // Aplica o filtro de brightness ao quadro
+                quadro.style.filter = `brightness(${brightness})`;
+                
+                // Estado da pista
+                if (brightness > 0.9 && !luzFocadaNoQuadro) {
+                    luzFocadaNoQuadro = true;
+                    quadro.style.backgroundImage = "url('image_2.png')"; // Troca para a imagem com a pista ampliada
+                    pistaRevelada.style.display = 'block';
+                }
+            } else {
+                // Fora do foco: Breu Total
+                quadro.style.filter = 'brightness(0)';
+                if (luzFocadaNoQuadro) {
+                    luzFocadaNoQuadro = false;
+                    quadro.style.backgroundImage = "url('image_0.png')"; // Volta para a imagem sem a pista
+                    pistaRevelada.style.display = 'none';
+                }
+            }
         }
+
+        /* =========================================
+           INPUT DE USUÁRIO (MOUSE E TOQUE)
+           Sincroniza o foco da luz com o movimento.
+           ========================================= */
 
         // Input de Mouse (Computador)
         window.addEventListener('mousemove', (e) => {
-            if (cenario.style.display === 'block') {
-                atualizarLanterna(e.clientX, e.clientY);
-            }
+            atualizarLanterna(e.clientX, e.clientY);
         });
 
         // Input de Toque (Celular)
         window.addEventListener('touchstart', (e) => {
-            if (cenario.style.display === 'block' && e.touches.length > 0) {
+            if (e.touches.length > 0) {
                 atualizarLanterna(e.touches[0].clientX, e.touches[0].clientY);
             }
         });
 
         window.addEventListener('touchmove', (e) => {
-            if (cenario.style.display === 'block' && e.touches.length > 0) {
+            if (e.touches.length > 0) {
                 atualizarLanterna(e.touches[0].clientX, e.touches[0].clientY);
             }
         });
 
         /* =========================================
-           MECÂNICA DE SANIDADE
-           Controla o Game Over e os sustos visuais
+           INTERAÇÃO (CLIQUES)
+           Ações quando o usuário interage com o quadro.
            ========================================= */
-        function atualizarSanidade(valor) {
-            estado.sanidade += valor;
-            if (estado.sanidade > 100) estado.sanidade = 100; // Cap
-            
-            // Sanidade zerada desencadeia o Jumpscare e Game Over
-            if (estado.sanidade <= 0) {
-                estado.sanidade = 0;
-                desencadearGameOver();
+        function interagirQuadro() {
+            if (luzFocadaNoQuadro) {
+                alert("Você clica no quadro. Atrás da moldura enferrujada, há uma inscrição arranhada:\n'O segredo repousa onde os panos escondem a carne ferida'.\n(A pista foi anotada!)");
+            } else {
+                alert("Está muito escuro para ver qualquer coisa no quadro. Você precisa focar a lanterna nele primeiro.");
             }
-            // Atualiza a barra visual
-            progressoSanidade.style.width = estado.sanidade + '%';
-
-            // Sustos visuais: a lanterna falha se a sanidade estiver baixa (<45%)
-            if (estado.sanidade < 45 && Math.random() > 0.82) {
-                lanterna.style.opacity = '0.1'; // Quase apaga
-                setTimeout(() => lanterna.style.opacity = '1', 120); // Volta ao normal rápido
-            }
-        }
-
-        /* =========================================
-           LÓGICA DE INTERAÇÃO COM OS OBJETOS
-           Onde o enigma do jogo acontece
-           ========================================= */
-        function interagir(objetoId) {
-            if (estado.fimDoJogo) return; // Não interage se o jogo acabou
-
-            // Interação com a Porta
-            if (objetoId === 'porta') {
-                if (estado.temChave) {
-                    // Tem a chave: Vitória
-                    tocarSomTerror(350, 'triangle', 0.8, 0.4);
-                    vencerJogo();
-                } else {
-                    // Não tem a chave: Feedback negativo
-                    tocarSomTerror(110, 'square', 0.2, 0.5);
-                    caixaTexto.innerText = "A porta de ferro com barras pesadas está trancada. Não abre sem a chave.";
-                    atualizarSanidade(-1); // Pequeno susto por falhar
-                }
-            } 
-            
-            // Interação com o Quadro (Contém a Pista)
-            else if (objetoId === 'quadro') {
-                tocarSomTerror(200, 'sine', 0.6, 0.4);
-                if (!estado.quadroObservado) {
-                    caixaTexto.innerText = "Um retrato sinistro... Há algo escrito: 'O segredo repousa onde os panos escondem a carne ferida'.";
-                    estado.quadroObservado = true;
-                    atualizarSanidade(-6); // Sanidade cai ao ver o quadro
-                } else {
-                    caixaTexto.innerText = "A pintura indica que algo está escondido entre tecidos velhos.";
-                }
-            } 
-            
-            // Interação com o Armário (O Esconderijo)
-            else if (objetoId === 'armario') {
-                const domArmario = document.getElementById('armario');
-                
-                if (!estado.quadroObservado) {
-                    // Ainda não viu a pista do quadro
-                    tocarSomTerror(90, 'square', 0.3, 0.4);
-                    // Animação de tremor (está emperrado)
-                    domArmario.classList.add('tremendo');
-                    setTimeout(() => domArmario.classList.remove('tremendo'), 200);
-                    
-                    caixaTexto.innerText = "Um armário metálico. As portas estão totalmente emperradas pela ferrugem.";
-                } else if (!estado.armarioAberto) {
-                    // Viu a pista e o armário ainda está fechado: Acha a chave
-                    tocarSomTerror(160, 'sawtooth', 0.8, 0.5);
-                    caixaTexto.innerText = "Seguindo a pista do quadro, você tateia os panos velhos... Você achou a Chave!";
-                    
-                    estado.armarioAberto = true;
-                    estado.temChave = true;
-                    // Atualiza o HUD
-                    inventarioDiv.innerText = "Inventário: Chave";
-                    inventarioDiv.style.color = "#00ff00"; // Cor verde para sucesso
-                    atualizarSanidade(15); // Alívio mental ao achar item
-                } else {
-                    // Já pegou a chave
-                    caixaTexto.innerText = "O armário metálico agora está aberto e vazio.";
-                }
-            } 
-            
-            // Interação com o Bilhete
-            else if (objetoId === 'bilhete') {
-                tocarSomTerror(450, 'sine', 0.3, 0.3);
-                caixaTexto.innerText = "Um relatório: 'Paciente 402 manifestou pânico severo... Ele ainda está nas paredes'.";
-                atualizarSanidade(-4); // Sanidade cai ao ler o horror
-            }
-        }
-
-        /* =========================================
-           TELA DE SUSTO E FIM DE JOGO (Derrota)
-           ========================================= */
-        function desencadearGameOver() {
-            estado.fimDoJogo = true;
-            clearInterval(estado.intervaloSanidade);
-            
-            // Exibe a imagem do monstro (IMAGEM 4) em tela cheia
-            const jumpscareDiv = document.getElementById('jumpscare');
-            jumpscareDiv.style.display = 'block';
-            
-            // Som ensurdecedor e agudo (O grito)
-            tocarSomTerror(790, 'sawtooth', 1.3, 1.0);
-            tocarSomTerror(100, 'sawtooth', 1.3, 1.0);
-
-            // Aguarda o susto passar antes de mostrar a tela de Game Over
-            setTimeout(() => {
-                jumpscareDiv.style.display = 'none';
-                document.getElementById('game-over').style.display = 'flex';
-                cenario.style.display = 'none';
-            }, 1400); // 1.4 segundos de monstro na tela
-        }
-
-        /* =========================================
-           TELA DE VITÓRIA (Fuga)
-           ========================================= */
-        function vencerJogo() {
-            estado.fimDoJogo = true;
-            clearInterval(estado.intervaloSanidade);
-            document.getElementById('vitoria').style.display = 'flex';
-            cenario.style.display = 'none';
-        }
-
-        /* =========================================
-           REINICIAR JOGO
-           Reseta o estado interno e a interface
-           ========================================= */
-        function reiniciarJogo() {
-            estado.sanidade = 100;
-            estado.temChave = false;
-            estado.quadroObservado = false;
-            estado.armarioAberto = false;
-            estado.fimDoJogo = false;
-            
-            // Reseta a HUD e textos
-            inventarioDiv.innerText = "Inventário: Vazio";
-            inventarioDiv.style.color = "#dcdcdc";
-            caixaTexto.innerText = "A escuridão retornou para preencher a sala... Devo sair rápido.";
-            
-            // Esconde as telas finais
-            document.getElementById('game-over').style.display = 'none';
-            document.getElementById('vitoria').style.display = 'none';
-            
-            // Reinicia o gameplay
-            iniciarJogo();
         }
     </script>
 </body>
