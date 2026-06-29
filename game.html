@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEON OVERDRIVE: EVOLUTION</title>
+    <title>NEON DUNGEON SLAYER</title>
     <style>
         * {
             box-sizing: border-box;
@@ -24,103 +24,61 @@
         #game-container {
             position: relative;
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
             height: 100vh;
-            background: #05050a;
+            background: #050508;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
-            padding: 15px;
             overflow: hidden;
             border: 1px solid #111;
         }
-        /* Top UI compacta */
-        #ui-top {
+        /* Top HUD */
+        #hud {
             width: 100%;
+            padding: 10px;
+            background: rgba(0,0,0,0.5);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        #xp-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #222;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        #xp-bar {
+            width: 0%;
+            height: 100%;
+            background: #00ffff;
+            box-shadow: 0 0 10px #00ffff;
+            transition: width 0.1s linear;
+        }
+        #hud-stats {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            z-index: 10;
+            font-size: 12px;
+            font-weight: bold;
         }
-        #currency-display {
-            font-size: 14px;
-            font-weight: 800;
-            color: #ff00ff;
-            text-shadow: 0 0 10px rgba(255,0,255,0.5);
+        /* Canvas de Combate */
+        canvas {
+            background: #08080f;
+            display: block;
+            width: 100%;
+            flex-grow: 1;
         }
-        #score-box {
-            text-align: right;
-        }
-        #score {
-            font-size: 42px;
-            font-weight: 900;
-            color: #00ffff;
-            line-height: 1;
-            text-shadow: 0 0 15px rgba(0,255,255,0.6);
-        }
-        #combo-text {
-            font-size: 11px;
-            color: #ff0055;
-            font-weight: 800;
-            letter-spacing: 1px;
-        }
-        /* Área Central */
-        #game-zone {
-            position: relative;
-            width: 320px;
-            height: 320px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        #core {
-            width: 80px;
-            height: 80px;
-            border: 4px solid #00ffff;
-            border-radius: 50%;
-            z-index: 5;
-            box-shadow: 0 0 20px rgba(0,255,255,0.3);
-            transition: transform 0.05s linear, border-color 0.1s;
-        }
-        .pulse-perfect {
-            transform: scale(1.2);
-            border-color: #ff00ff !important;
-            box-shadow: 0 0 30px #ff00ff !important;
-        }
-        .pulse-good {
-            transform: scale(1.1);
-            border-color: #ffcc00 !important;
-            box-shadow: 0 0 20px #ffcc00 !important;
-        }
-        .pulse-shield {
-            border-color: #00ff66 !important;
-            box-shadow: 0 0 30px #00ff66 !important;
-        }
-        .pulse-ring {
-            position: absolute;
-            border-radius: 50%;
-            border: 3px solid #ff0055;
-            width: 80px;
-            height: 80px;
-            pointer-events: none;
-            will-change: transform, opacity;
-        }
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            pointer-events: none;
-            border-radius: 50%;
-        }
-        /* Telas (Menus/Upgrades) */
+        /* Telas Popups */
         .screen {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(3, 3, 6, 0.98);
+            background: rgba(4, 4, 8, 0.98);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -130,40 +88,52 @@
             text-align: center;
         }
         h1 {
-            font-size: 36px;
+            font-size: 32px;
             font-weight: 900;
-            letter-spacing: 3px;
-            background: linear-gradient(45deg, #00ffff, #ff00ff);
+            letter-spacing: 2px;
+            background: linear-gradient(45deg, #ff00ff, #00ffff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 5px;
+            margin-bottom: 20px;
         }
-        .subtitle {
-            color: #555;
-            font-size: 12px;
-            margin-bottom: 25px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        /* Menu de Level Up (Escolha de Habilidades) */
+        #level-up-screen {
+            display: none;
+            background: rgba(5, 5, 10, 0.95);
         }
-        #stats {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.05);
-            padding: 12px;
-            border-radius: 8px;
+        .card-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
             width: 100%;
             max-width: 300px;
-            margin-bottom: 20px;
-            font-size: 13px;
-            color: #ccc;
+            margin-top: 20px;
+        }
+        .card {
+            background: #11111a;
+            border: 1px solid #ff00ff;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.1s;
             text-align: left;
         }
-        #stats div {
-            display: flex;
-            justify-content: space-between;
+        .card:active {
+            transform: scale(0.98);
+            background: #221122;
+        }
+        .card-title {
+            font-weight: bold;
+            color: #00ffff;
+            font-size: 14px;
             margin-bottom: 4px;
         }
-        /* Loja de Upgrades Integrada */
-        #shop-container {
+        .card-desc {
+            font-size: 12px;
+            color: #aaa;
+        }
+        /* Loja de Atributos Permanentes */
+        #shop {
             width: 100%;
             max-width: 300px;
             margin-bottom: 25px;
@@ -172,466 +142,252 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(255,255,255,0.04);
-            padding: 8px 12px;
-            margin-bottom: 8px;
+            background: #111;
+            padding: 10px;
+            margin-bottom: 6px;
             border-radius: 6px;
             font-size: 12px;
-            border-left: 3px solid #00ffff;
-        }
-        .shop-item.maxed {
-            border-left-color: #00ff66;
-            opacity: 0.7;
+            border-left: 3px solid #ff00ff;
         }
         .buy-btn {
-            background: #ff00ff;
-            color: #fff;
+            background: #00ffff;
+            color: #000;
             border: none;
-            padding: 5px 10px;
-            font-weight: 700;
-            font-size: 11px;
+            padding: 6px 12px;
+            font-weight: bold;
             border-radius: 4px;
             cursor: pointer;
         }
         .buy-btn:disabled {
             background: #333;
             color: #666;
-            cursor: not-allowed;
         }
         .main-btn {
             background: linear-gradient(135deg, #00ffff, #ff00ff);
             color: #000;
             border: none;
             padding: 15px 40px;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 900;
             border-radius: 30px;
             cursor: pointer;
-            box-shadow: 0 0 20px rgba(0,255,255,0.3);
             width: 100%;
-            max-width: 250px;
+            max-width: 260px;
             text-transform: uppercase;
-        }
-        #feedback-float {
-            font-size: 20px;
-            font-weight: 900;
-            height: 25px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            z-index: 10;
-        }
-        /* Efeitos de Fase/Glitch */
-        .glitch-active {
-            animation: shake 0.1s infinite;
-            background: radial-gradient(circle, #1a0510 0%, #050205 100%) !important;
-        }
-        @keyframes shake {
-            0% { transform: translate(1px, 1px); }
-            50% { transform: translate(-1px, -2px); }
-            100% { transform: translate(2px, -1px); }
+            box-shadow: 0 0 15px rgba(0,255,255,0.3);
         }
     </style>
 </head>
 <body>
 
     <div id="game-container">
-        <div id="ui-top">
-            <div id="currency-display">BITS: <span id="bits-val">0</span></div>
-            <div id="score-box">
-                <div id="score">0</div>
-                <div id="combo-text">COMBO X0</div>
+        <div id="hud">
+            <div id="xp-bar-container"><div id="xp-bar"></div></div>
+            <div id="hud-stats">
+                <div>LVL: <span id="hud-lvl">1</span></div>
+                <div>SALAS: <span id="hud-room">1</span></div>
+                <div>OURO: <span id="hud-gold">0</span></div>
             </div>
         </div>
 
-        <div id="game-zone">
-            <div id="core"></div>
-        </div>
+        <canvas id="gameCanvas"></canvas>
 
-        <div id="feedback-float"></div>
-    </div>
-
-    <div id="menu" class="screen">
-        <h1 id="menu-title">NEON OVERDRIVE</h1>
-        <div id="menu-subtitle" class="subtitle">Mecânica de Sincronia Pura</div>
-        
-        <div id="stats" style="display: none;">
-            <div><span>Pontos Obtidos:</span><strong id="stat-score" style="color:#00ffff">0</strong></div>
-            <div><span>Bits Coletados:</span><strong id="stat-bits" style="color:#ff00ff">0</strong></div>
-            <div><span>Modo da Zona Alcançado:</span><strong id="stat-phase" style="color:#ffcc00">Normal</strong></div>
-        </div>
-
-        <div id="shop-container">
-            <div class="shop-item" id="shop-wp">
-                <div>
-                    <div><strong>Janela Ampliada</strong> (Nível <span id="lvl-wp">1</span>)</div>
-                    <div style="color:#aaa">Facilita acertos perfeitos</div>
+        <!-- Menu Inicial / Game Over -->
+        <div id="menu-screen" class="screen">
+            <h1 id="menu-title">DUNGEON SLAYER</h1>
+            <div id="game-report" style="display:none; font-size:14px; color:#ccc; margin-bottom:15px; background:rgba(255,255,255,0.02); padding:10px; width:100%; max-width:300px; border-radius:6px;">
+                <div>Salas Limpas: <strong id="rep-rooms" style="color:#00ffff">0</strong></div>
+                <div>Ouro Coletado: <strong id="rep-gold" style="color:#ffd700">0</strong></div>
+            </div>
+            
+            <div style="font-size:12px; color:#ff00ff; font-weight:bold; margin-bottom:5px;">LOJA DE ATRIBUTOS PERMANENTES</div>
+            <div id="shop">
+                <div class="shop-item">
+                    <div>
+                        <div><strong>Dano Base</strong> (+2 por nível)</div>
+                        <div style="color:#aaa">Nível atual: <span id="sh-lvl-dmg">1</span></div>
+                    </div>
+                    <button class="buy-btn" id="buy-dmg">C: <span id="sh-cost-dmg">10</span></button>
                 </div>
-                <button class="buy-btn" id="btn-buy-wp">C: <span id="cost-wp">10</span></button>
-            </div>
-            <div class="shop-item" id="shop-sc">
-                <div>
-                    <div><strong>Multiplicador Bits</strong> (Nível <span id="lvl-sc">1</span>)</div>
-                    <div style="color:#aaa">Ganha mais moedas por acerto</div>
+                <div class="shop-item">
+                    <div>
+                        <div><strong>Vida Máxima</strong> (+20 por nível)</div>
+                        <div style="color:#aaa">Nível atual: <span id="sh-lvl-hp">1</span></div>
+                    </div>
+                    <button class="buy-btn" id="buy-hp">C: <span id="sh-cost-hp">15</span></button>
                 </div>
-                <button class="buy-btn" id="btn-buy-sc">C: <span id="cost-sc">15</span></button>
             </div>
-            <div class="shop-item" id="shop-sh">
-                <div>
-                    <div><strong>Escudo de Emergência</strong> (Nível <span id="lvl-sh">0</span>/1)</div>
-                    <div style="color:#aaa">Perdoa 1 erro por partida</div>
-                </div>
-                <button class="buy-btn" id="btn-buy-sh">C: <span id="cost-sh">40</span></button>
-            </div>
+
+            <button class="main-btn" id="start-btn">ENTRAR NA MASMORRA</button>
         </div>
 
-        <button class="main-btn" id="action-btn">INICIAR DRIVE</button>
+        <!-- Tela de Escolha de Habilidade (Dopamina/Card Selection) -->
+        <div id="level-up-screen" class="screen">
+            <h1 style="font-size:24px; margin-bottom:5px;">LEVEL UP!</h1>
+            <div style="color:#00ffff; font-size:13px; font-weight:bold; letter-spacing:1px;">ESCOLHA SEU UPGRADE DE COMBATE</div>
+            <div class="card-container" id="cards-wrapper">
+                <!-- Injetado por JS -->
+            </div>
+        </div>
     </div>
 
     <script>
-        // Engine de Áudio Sintetizado Avançado
-        let audioCtx = null;
-        function getAudio() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            return audioCtx;
-        }
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
 
-        function playSound(type) {
-            const ctx = getAudio();
-            if (!ctx) return;
-            
-            let osc = ctx.createOscillator();
-            let gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-
-            let now = ctx.currentTime;
-
-            if (type === 'perfect') {
-                // Acordo brilhante ascendente rápido
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(523.25, now); // C5
-                osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.1); 
-                gain.gain.setValueAtTime(0.2, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-                osc.start(now); osc.stop(now + 0.12);
-            } else if (type === 'good') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(329.63, now); // E4
-                gain.gain.setValueAtTime(0.15, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-                osc.start(now); osc.stop(now + 0.1);
-            } else if (type === 'phase') {
-                // Efeito Laser de transição de fase
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(800, now);
-                osc.frequency.exponentialRampToValueAtTime(150, now + 0.3);
-                gain.gain.setValueAtTime(0.2, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-                osc.start(now); osc.stop(now + 0.3);
-            } else if (type === 'shield') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(220, now);
-                osc.frequency.exponentialRampToValueAtTime(880, now + 0.2);
-                gain.gain.setValueAtTime(0.25, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-                osc.start(now); osc.stop(now + 0.2);
-            } else if (type === 'fail') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(130, now);
-                osc.frequency.linearRampToValueAtTime(65, now + 0.4);
-                gain.gain.setValueAtTime(0.3, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-                osc.start(now); osc.stop(now + 0.4);
-            }
-        }
-
-        // Elementos DOM
-        const container = document.getElementById('game-container');
-        const core = document.getElementById('core');
-        const gameZone = document.getElementById('game-zone');
-        const scoreDisplay = document.getElementById('score');
-        const comboText = document.getElementById('combo-text');
-        const bitsDisplay = document.getElementById('bits-val');
-        const feedback = document.getElementById('feedback-float');
-        
-        const menu = document.getElementById('menu');
+        // UI DOM
+        const hudLvl = document.getElementById('hud-lvl');
+        const hudRoom = document.getElementById('hud-room');
+        const hudGold = document.getElementById('hud-gold');
+        const xpBar = document.getElementById('xp-bar');
+        const menuScreen = document.getElementById('menu-screen');
+        const levelUpScreen = document.getElementById('level-up-screen');
+        const cardsWrapper = document.getElementById('cards-wrapper');
+        const startBtn = document.getElementById('start-btn');
         const menuTitle = document.getElementById('menu-title');
-        const menuSubtitle = document.getElementById('menu-subtitle');
-        const statsBox = document.getElementById('stats');
-        const actionBtn = document.getElementById('action-btn');
+        const gameReport = document.getElementById('game-report');
 
-        // Itens da loja
-        const lvlWp = document.getElementById('lvl-wp'), costWp = document.getElementById('cost-wp'), btnWp = document.getElementById('btn-buy-wp');
-        const lvlSc = document.getElementById('lvl-sc'), costSc = document.getElementById('cost-sc'), btnSc = document.getElementById('btn-buy-sc');
-        const lvlSh = document.getElementById('lvl-sh'), costSh = document.getElementById('cost-sh'), btnSh = document.getElementById('btn-buy-sh');
+        // Botões Loja
+        const buyDmg = document.getElementById('buy-dmg'), shLvlDmg = document.getElementById('sh-lvl-dmg'), shCostDmg = document.getElementById('sh-cost-dmg');
+        const buyHp = document.getElementById('buy-hp'), shLvlHp = document.getElementById('sh-lvl-hp'), shCostHp = document.getElementById('sh-cost-hp');
 
-        // Estado Persistente de Upgrades (Salvo no Navegador)
-        let totalBits = parseInt(localStorage.getItem('no_bits')) || 0;
-        let upgWindow = parseInt(localStorage.getItem('no_upg_wp')) || 1; 
-        let upgCoin = parseInt(localStorage.getItem('no_upg_sc')) || 1;
-        let upgShieldMax = parseInt(localStorage.getItem('no_upg_sh')) || 0;
+        // Motor de Áudio Sintetizado
+        let audioCtx = null;
+        function playSound(type) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            let osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            let now = audioCtx.currentTime;
 
-        // Estado da Partida Atual
-        let score = 0;
-        let combo = 0;
-        let hasShield = false;
-        let isPlaying = false;
-        let scale = 4.5;
-        let currentRing = null;
-        let clickLocked = false;
-        let loopId = null;
-        let baseSpeed = 0.05;
-        let speedMod = 1.0;
-        let glitched = false;
-
-        // Atualiza a visualização inicial da carteira e loja
-        function updateShopUI() {
-            bitsDisplay.textContent = totalBits;
-            
-            // Upgrade 1: Janela de Precisão
-            lvlWp.textContent = upgWindow;
-            let cWp = upgWindow * 12;
-            costWp.textContent = cWp;
-            btnWp.disabled = totalBits < cWp || upgWindow >= 5;
-            if(upgWindow >= 5) { document.getElementById('shop-wp').classList.add('maxed'); btnWp.textContent = "MAX"; }
-
-            // Upgrade 2: Multiplicador de Moedas
-            lvlSc.textContent = upgCoin;
-            let cSc = upgCoin * 15;
-            costSc.textContent = cSc;
-            btnSc.disabled = totalBits < cSc || upgCoin >= 5;
-            if(upgCoin >= 5) { document.getElementById('shop-sc').classList.add('maxed'); btnSc.textContent = "MAX"; }
-
-            // Upgrade 3: Escudo de vida extra
-            lvlSh.textContent = upgShieldMax;
-            let cSh = 40;
-            costSh.textContent = cSh;
-            btnSh.disabled = totalBits < cSh || upgShieldMax >= 1;
-            if(upgShieldMax >= 1) { document.getElementById('shop-sh').classList.add('maxed'); btnSh.textContent = "PRONTO"; }
-        }
-
-        // Eventos de compra
-        btnWp.addEventListener('click', (e) => { e.stopPropagation(); buyItem('wp', upgWindow * 12); });
-        btnSc.addEventListener('click', (e) => { e.stopPropagation(); buyItem('sc', upgCoin * 15); });
-        btnSh.addEventListener('click', (e) => { e.stopPropagation(); buyItem('sh', 40); });
-
-        function buyItem(type, cost) {
-            if (totalBits >= cost) {
-                totalBits -= cost;
-                if(type === 'wp') upgWindow++;
-                if(type === 'sc') upgCoin++;
-                if(type === 'sh') upgShieldMax = 1;
-                
-                localStorage.setItem('no_bits', totalBits);
-                localStorage.setItem('no_upg_wp', upgWindow);
-                localStorage.setItem('no_upg_sc', upgCoin);
-                localStorage.setItem('no_upg_sh', upgShieldMax);
-                updateShopUI();
-                playSound('perfect');
+            if (type === 'shoot') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.08);
+                gain.gain.setValueAtTime(0.05, now); osc.start(now); osc.stop(now + 0.08);
+            } else if (type === 'hit') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(120, now);
+                gain.gain.setValueAtTime(0.1, now); osc.start(now); osc.stop(now + 0.05);
+            } else if (type === 'xp') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(600, now);
+                osc.frequency.linearRampToValueAtTime(900, now + 0.05);
+                gain.gain.setValueAtTime(0.08, now); osc.start(now); osc.stop(now + 0.05);
+            } else if (type === 'lvl') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.2);
+                gain.gain.setValueAtTime(0.15, now); osc.start(now); osc.stop(now + 0.2);
             }
         }
 
-        // Inicialização do Loop da Partida
-        actionBtn.addEventListener('click', () => { getAudio(); startMatch(); });
+        // Dados Permanentes (Salvos no Navegador)
+        let goldWallet = parseInt(localStorage.getItem('ds_gold')) || 0;
+        let permDmgLvl = parseInt(localStorage.getItem('ds_perm_dmg')) || 1;
+        let permHpLvl = parseInt(localStorage.getItem('ds_perm_hp')) || 1;
+
+        // Atributos de Jogo Dinâmicos
+        let player = { x: 0, y: 0, radius: 12, hp: 100, maxHp: 100, speed: 3.2, dmg: 8, shootCooldown: 25, currentCooldown: 0 };
+        let currentRoom = 1;
+        let level = 1;
+        let xp = 0;
+        let xpNeeded = 15;
+        let goldCollectedThisRun = 0;
         
-        window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                e.preventDefault();
-                if (isPlaying) processInput();
-                else { getAudio(); startMatch(); }
-            }
+        let enemies = [], projectiles = [], gems = [], particles = [];
+        let isPlaying = false, isTouchMoving = false, targetTouchX = 0, targetTouchY = 0;
+        let keys = {};
+
+        // Habilidades obtidas na rodada ativa
+        let upgradesRun = { multiShot: 0, pierce: 0, speedUp: 0, bounce: 0 };
+
+        // Atualizar Loja de Atributos Permanentes
+        function updateShopUI() {
+            hudGold.textContent = goldWallet;
+            
+            shLvlDmg.textContent = permDmgLvl;
+            let cDmg = permDmgLvl * 8;
+            shCostDmg.textContent = cDmg;
+            buyDmg.disabled = goldWallet < cDmg;
+
+            shLvlHp.textContent = permHpLvl;
+            let cHp = permHpLvl * 10;
+            shCostHp.textContent = cHp;
+            buyHp.disabled = goldWallet < cHp;
+        }
+
+        buyDmg.addEventListener('click', (e) => {
+            e.stopPropagation(); let cost = permDmgLvl * 8;
+            if(goldWallet >= cost) { goldWallet -= cost; permDmgLvl++; saveShop(); }
         });
-        container.addEventListener('mousedown', (e) => { e.preventDefault(); processInput(); });
-        container.addEventListener('touchstart', (e) => { e.preventDefault(); processInput(); }, {passive:false});
+        buyHp.addEventListener('click', (e) => {
+            e.stopPropagation(); let cost = permHpLvl * 10;
+            if(goldWallet >= cost) { goldWallet -= cost; permHpLvl++; saveShop(); }
+        });
 
-        function startMatch() {
-            score = 0; combo = 0; speedMod = 1.0; glitched = false;
-            hasShield = upgShieldMax > 0;
-            scoreDisplay.textContent = score;
-            comboText.textContent = `COMBO X0`;
-            feedback.textContent = '';
-            container.classList.remove('glitch-active');
-            menu.style.display = 'none';
-            isPlaying = true;
-            
-            nextCycle();
-            gameLoop();
-        }
-
-        function nextCycle() {
-            if(currentRing) currentRing.remove();
-            clickLocked = false;
-            scale = 4.5;
-            
-            // Dificuldade dinâmica progressiva baseada em pontos
-            speedMod = 1.0 + (score * 0.045) + (Math.random() * 0.03);
-            
-            // Evento imprevisível: Modo Glitch / Fase caótica a cada 10 pontos
-            if (score > 0 && score % 10 === 0 && !glitched) {
-                glitched = true;
-                container.classList.add('glitch-active');
-                playSound('phase');
-                feedback.textContent = "OVERDRIVE MODE";
-                feedback.style.color = "#ff00ff";
-            } else if (score % 10 !== 0) {
-                glitched = false;
-                container.classList.remove('glitch-active');
-            }
-
-            currentRing = document.createElement('div');
-            currentRing.className = 'pulse-ring';
-            gameZone.appendChild(currentRing);
-        }
-
-        function gameLoop() {
-            if (!isPlaying) return;
-
-            scale -= baseSpeed * speedMod;
-
-            if (scale > 0.1) {
-                currentRing.style.transform = `scale(${scale})`;
-                
-                // Feedback de cor preditivo no anel dinâmico
-                let windowTolerance = 0.08 + (upgWindow * 0.02);
-                let diff = Math.abs(scale - 1.0);
-
-                if (diff <= windowTolerance) {
-                    currentRing.style.borderColor = "#00ffff";
-                    currentRing.style.boxShadow = "0 0 20px #00ffff";
-                } else if (diff <= windowTolerance + 0.15) {
-                    currentRing.style.borderColor = "#ffcc00";
-                    currentRing.style.boxShadow = "0 0 10px #ffcc00";
-                } else {
-                    currentRing.style.borderColor = glitched ? "#ff00ff" : "#ff0055";
-                    currentRing.style.boxShadow = "none";
-                }
-            }
-
-            // Perda por inércia (passou direto)
-            if (scale < 0.7 && !clickLocked) {
-                handleError("MUITO TARDE");
-                return;
-            }
-
-            loopId = requestAnimationFrame(gameLoop);
-        }
-
-        function processInput() {
-            if (!isPlaying || clickLocked) return;
-            clickLocked = true;
-
-            let diff = Math.abs(scale - 1.0);
-            // Janela customizada pelos upgrades comprados
-            let perfectWindow = 0.08 + (upgWindow * 0.02); 
-
-            if (diff <= perfectWindow) {
-                // ACERTO PERFEITO
-                combo++;
-                let gain = upgCoin; 
-                totalBits += gain;
-                score += (1 + Math.floor(combo / 4));
-                
-                scoreDisplay.textContent = score;
-                comboText.textContent = `COMBO X${combo}`;
-                bitsDisplay.textContent = totalBits;
-
-                feedback.textContent = combo > 3 ? `INSANO! +${gain}B` : `PERFEITO! +${gain}B`;
-                feedback.style.color = "#00ffff";
-
-                playSound('perfect');
-                spawnExplosion("#00ffff");
-                
-                core.className = 'pulse-perfect';
-                setTimeout(() => core.className = '', 60);
-
-                nextCycle();
-            } else if (diff <= perfectWindow + 0.18) {
-                // ACERTO TRIVIAL / BOM
-                combo = 0;
-                score += 1;
-                scoreDisplay.textContent = score;
-                comboText.textContent = `COMBO X0`;
-                
-                feedback.textContent = "QUASE";
-                feedback.style.color = "#ffcc00";
-                
-                playSound('good');
-                spawnExplosion("#ffcc00");
-
-                core.className = 'pulse-good';
-                setTimeout(() => core.className = '', 60);
-
-                nextCycle();
-            } else {
-                // ERRO DE ADERÊNCIA
-                handleError(scale > 1.0 ? "MUITO CEDO" : "MUITO TARDE");
-            }
-        }
-
-        function handleError(reason) {
-            if (hasShield) {
-                // Ativação automática do escudo comprado na loja
-                hasShield = false;
-                feedback.textContent = "ESCUDO ATIVO!";
-                feedback.style.color = "#00ff66";
-                playSound('shield');
-                core.className = 'pulse-shield';
-                setTimeout(() => core.className = '', 150);
-                nextCycle();
-            } else {
-                endGame(reason);
-            }
-        }
-
-        function spawnExplosion(color) {
-            for(let i=0; i<12; i++) {
-                let p = document.createElement('div');
-                p.className = 'particle';
-                p.style.background = color;
-                p.style.boxShadow = `0 0 8px ${color}`;
-                
-                let angle = Math.random() * Math.PI * 2;
-                let dist = 2 + Math.random() * 5;
-                let x = 0, y = 0, pScale = 1.0;
-
-                gameZone.appendChild(p);
-
-                function move() {
-                    x += Math.cos(angle) * dist;
-                    y += Math.sin(angle) * dist;
-                    pScale -= 0.04;
-                    p.style.transform = `translate(${x}px, ${y}px) scale(${pScale})`;
-                    if(pScale > 0) requestAnimationFrame(move);
-                    else p.remove();
-                }
-                move();
-            }
-        }
-
-        function endGame(reason) {
-            isPlaying = false;
-            cancelAnimationFrame(loopId);
-            playSound('fail');
-            container.classList.remove('glitch-active');
-
-            localStorage.setItem('no_bits', totalBits);
-
-            // Transiciona direto para os dados de fim de jogo e loja atualizada
-            menuTitle.textContent = "DRIVE COMPROMETIDO";
-            menuSubtitle.textContent = reason;
-            
-            document.getElementById('stat-score').textContent = score;
-            document.getElementById('stat-bits').textContent = totalBits;
-            document.getElementById('stat-phase').textContent = score >= 20 ? "Cyber Glitch" : (score >= 10 ? "Overdrive" : "Estável");
-            
-            statsBox.style.display = 'block';
-            actionBtn.textContent = "FORÇAR REINÍCIO";
+        function saveShop() {
+            localStorage.setItem('ds_gold', goldWallet);
+            localStorage.setItem('ds_perm_dmg', permDmgLvl);
+            localStorage.setItem('ds_perm_hp', permHpLvl);
             updateShopUI();
-            menu.style.display = 'flex';
+            playSound('xp');
         }
 
-        // Execução inicial da interface da loja
-        updateShopUI();
-    </script>
-</body>
-</html>
+        // Configuração de tamanho do canvas dinâmico
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight - document.getElementById('hud').clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        // Inputs Teclado e Touch (Arrastar Dedo para andar)
+        window.addEventListener('keydown', e => keys[e.code] = true);
+        window.addEventListener('keyup', e => keys[e.code] = false);
+
+        canvas.addEventListener('touchstart', e => { isTouchMoving = true; setTouchPos(e); }, {passive:false});
+        canvas.addEventListener('touchmove', e => { e.preventDefault(); setTouchPos(e); }, {passive:false});
+        canvas.addEventListener('touchend', () => isTouchMoving = false);
+
+        function setTouchPos(e) {
+            let rect = canvas.getBoundingClientRect();
+            targetTouchX = e.touches[0].clientX - rect.left;
+            targetTouchY = e.touches[0].clientY - rect.top;
+        }
+
+        // Inicializar Partida
+        startBtn.addEventListener('click', () => {
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            resizeCanvas();
+            initRun();
+        });
+
+        function initRun() {
+            currentRoom = 1; level = 1; xp = 0; xpNeeded = 15; goldCollectedThisRun = 0;
+            upgradesRun = { multiShot: 0, pierce: 0, speedUp: 0, bounce: 0 };
+
+            player.maxHp = 100 + (permHpLvl - 1) * 20;
+            player.hp = player.maxHp;
+            player.dmg = 8 + (permDmgLvl - 1) * 2;
+            player.speed = 3.2;
+            player.shootCooldown = 25;
+            player.x = canvas.width / 2;
+            player.y = canvas.height / 2;
+
+            enemies = []; projectiles = []; gems = []; particles = [];
+            hudLvl.textContent = level;
+            hudRoom.textContent = currentRoom;
+            xpBar.style.width = '0%';
+
+            menuScreen.style.display = 'none';
+            isPlaying = true;
+            spawnWave();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function spawnWave() {
+            enemies = [];
+            // Aumenta quantidade e tipos de monstros baseado na sala atual
+            let amount = 4 + currentRoom * 2;
+            for(let i=0; i<amount; i++) {
+                let edge = Math.floor(Math.random() * 4);
+                let ex, ey;
+                if(edge === 0) { ex = Math.random()*canvas.width; ey = -20; }
+                else if(edge === 1) { ex = canvas.width+20; ey = Math.random()*canvas.height; }
+                else if(edge === 2) { ex = Math.random()*canvas.width; ey = canvas.height+20; }
+                else { ex = -20; ey = Math.randomNormally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
