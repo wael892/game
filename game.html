@@ -1,1 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Clinical Parasitology Matrix</title>
+  <style>
+    :root {
+      --bg: #f4f6f7;
+      --card-bg: #ffffff;
+      --text: #1a1a1a;
+      --border: #bcbcbc;
+      --primary: #0056b3;
+      --accent: #222222;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: monospace; font-size: 11px; }
+    body { background: var(--bg); color: var(--text); padding: 8px; }
+    
+    /* Header & Navigation */
+    header { margin-bottom: 8px; border-bottom: 2px dashed var(--text); padding-bottom: 4px; }
+    header h1 { font-size: 14px; font-weight: bold; text-transform: uppercase; }
+    header p { font-size: 10px; color: #555; text-transform: uppercase; }
+    
+    .nav-tabs { display: flex; gap: 2px; margin-bottom: 8px; }
+    .tab-btn { background: #e0e0e0; border: 1px solid var(--border); padding: 4px 8px; cursor: pointer; text-transform: uppercase; font-weight: bold; }
+    .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    
+    /* Tab Content Layout */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    
+    /* High-Density Table System */
+    .table-container { width: 100%; overflow-x: auto; border: 1px solid var(--text); background: var(--card-bg); }
+    table { width: 100%; border-collapse: collapse; text-align: left; white-space: normal; }
+    th, td { border: 1px solid var(--border); padding: 4px; vertical-align: top; line-height: 1.3; }
+    th { background: #eaeaea; font-weight: bold; text-transform: uppercase; border-bottom: 2px solid var(--text); position: sticky; top: 0; }
+    tr:nth-child(even) { background: #f9f9f9; }
+    
+    /* Typography Highlights */
+    .sp-name { font-style: italic; font-weight: bold; color: var(--primary); }
+    .bold-tag { font-weight: bold; text-transform: uppercase; }
+    
+    /* Footer Section */
+    footer { margin-top: 10px; border-top: 1px dashed var(--text); padding-top: 4px; font-size: 9px; text-align: center; color: #666; text-transform: uppercase; }
+  </style>
+</head>
+<body>
 
+  <header>
+    <h1>Advanced Clinical Parasitology Matrix</h1>
+    <p>Student: Wael | Course: Biomedicina | High-Density Reference Guide</p>
+  </header>
+
+  <nav class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab(event, 'page1')">PÁG 1: Protozoários</button>
+    <button class="tab-btn" onclick="switchTab(event, 'page2')">PÁG 2: Nematelmintos</button>
+    <button class="tab-btn" onclick="switchTab(event, 'page3')">PÁG 3: Platelmintos</button>
+  </nav>
+
+  <div id="page1" class="tab-content active">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Espécie / Agente</th>
+            <th>Classificação / Estrutura</th>
+            <th>Mecanismo de Transmissão</th>
+            <th>Nicho Ecológico</th>
+            <th>Forma Infectante vs Diagnóstica</th>
+            <th>Manifestação Clínica e Patogenia</th>
+            <th>Diagnóstico Laboratorial</th>
+            <th>Tratamento Clínico</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="sp-name">Entamoeba histolytica</td>
+            <td>Ameba Patogênica (Sarcomastigophora)</td>
+            <td>Ingestão de água/alimentos (Fecal-oral)</td>
+            <td>Intestino Grosso (Cólon e Ceco); via circulação para órgãos</td>
+            <td><span class="bold-tag">INF:</span> Cisto Maduro Tetranucleado<br><span class="bold-tag">DIA:</span> Cisto ou Trofozoíto Hematófago</td>
+            <td>Úlceras em botão de camisa, disenteria amebiana (muco/sangue), abscessos hepáticos/pulmonares</td>
+            <td><span class="bold-tag">EPF:</span> Hematoxilina-Férrica (estruturas em preto). <span class="bold-tag">Dif:</span> PCR para excluir E. dispar / E. hartmanni</td>
+            <td>Metronidazol, Tinidazol, Iodoquinol</td>
+          </tr>
+          <tr>
+            <td class="sp-name">Trichomonas vaginalis</td>
+            <td>Flagelado Patogênico Urogenital</td>
+            <td>Contato sexual direto (DST); fômites úmidos (raro)</td>
+            <td>Trato genital feminino (vagina/ectocérvice) e uretra/próstata masculina</td>
+            <td><span class="bold-tag">INF:</span> Trofozoíto<br><span class="bold-tag">DIA:</span> Trofozoíto (Não possui fase de cisto)</td>
+            <td>Mulher: Vaginite, corrimento espumoso amarelo-esverdeado fétido, prurido, colo em morango. Homem: Uretrite purulenta</td>
+            <td>Microscopia a fresco (móveis). <span class="bold-tag">Padrão-ouro:</span> Cultura em meio específico (baixa carga). Papanicolau</td>
+            <td>Metronidazol (dose única 2g) ou Tinidazol</td>
+          </tr>
+          <tr>
+            <td class="sp-name">Giardia lamblia</td>
+            <td>Flagelado Patogênico Digestivo</td>
+            <td>Ingestão de cistos em água doce ou alimentos (Fecal-oral)</td>
+            <td>Intestino Delgado (Duodeno e Jejuno); fixação por disco ventral</td>
+            <td><span class="bold-tag">INF:</span> Cisto Oval (2-4 núcleos)<br><span class="bold-tag">DIA:</span> Cisto (formadas) ou Trofozoíto (diarreia)</td>
+            <td>Atrofia de microvilosidades, esteatorreia (fezes gordurosas/fétidas), síndrome de má absorção</td>
+            <td><span class="bold-tag">EPF:</span> Coleta sequencial (3 amostras em dias alternados devido à eliminação intermitente), Faust/Lutz</td>
+            <td>Tinidazol (dose única), Metronidazol ou Nitazoxanida</td>
+          </tr>
+          <tr>
+            <td class="sp-name">Cryptosporidium parvum</td>
+            <td>Coccídeo Entérico (Apicomplexa)</td>
+            <td>Ingestão de oocistos (resistentes ao cloro da rede pública)</td>
+            <td>Vacúolo parasitóforo intracelular (extracitoplasmático) no intestino</td>
+            <td><span class="bold-tag">INF:</span> Oocisto Esporulado<br><span class="bold-tag">DIA:</span> Oocisto Esférico (5 µm) com 4 esporozoítas</td>
+            <td>Destruição severa das microvilosidades. Diarreia aquosa crônica/fatal em pacientes com AIDS</td>
+            <td><span class="bold-tag">Coloração Álcool-Ácido Resistente:</span> Ziehl-Neelsen modificado ou Kinyoun (oocistos vermelhos); ELISA</td>
+            <td>Nitazoxanida ou Espiramicina</td>
+          </tr>
+          <tr>
+            <td class="sp-name">Isospora belli</td>
+            <td>Coccídeo Entérico (Apicomplexa)</td>
+            <td>Ingestão de oocistos esporulados em água/alimentos</td>
+            <td>Células epiteliais da mucosa intestinal (Íleo e jejuno)</td>
+            <td><span class="bold-tag">INF:</span> Oocisto Esporulado no solo<br><span class="bold-tag">DIA:</span> Oocisto Elíptico imaturo nas fezes</td>
+            <td>Enterite severa, eosinofilia tecidual, síndrome de má absorção crônica com desnutrição e caquexia em imunodeficientes</td>
+            <td><span class="bold-tag">EPF por Concentração:</span> Métodos de sedimentação (Ritchie), seguidos por coloração de Kinyoun</td>
+            <td>Sulfametoxazol-Trimetoprima</td>
+          </tr>
+          <tr>
+            <td class="sp-name">Trypanosoma cruzi</td>
+            <td>Flagelado Tecidual (Trypanosomatidae)</td>
+            <td>Contaminação por fezes do vetor barbeiro (Stercoraria)</td>
+            <td>Sangue periférico (agudo) e células musculares/cardíacas (crônico)</td>
+            <td><span class="bold-tag">INF:</span> Tripomastigota Metacíclico<br><span class="bold-tag">DIA:</span> Tripomastigota (sangue) / Amastigota (tecido)</td>
+            <td>Fase Aguda: Sinal de Romaña ou Chagoma. Fase Crônica: Miocardiopatia chagásica, megaesôfago e megacólon</td>
+            <td><span class="bold-tag">Agudo:</span> Exame direto ou gota espessa. <span class="bold-tag">Crônico:</span> Sorologia (ELISA / IFI) ou Xenodiagnóstico</td>
+            <td>Benznidazol</td>
+          </tr>
+          <tr>
+            <td class="sp-name">Leishmania spp.</td>
+            <td>Flagelado Tecidual (Trypanosomatidae)</td>
+            <td>Picada da fêmea do mosquito-palha (Lutzomyia)</td>
+            <td>Macrófagos da pele (Cutânea) ou baço/medula/fígado (Visceral)</td>
+            <td><span class="bold-tag">INF:</span> Promastigota Metacíclico<br><span class="bold-tag">DIA:</span> Amastigota Intracelular</td>
+            <td>LTA: Úlceras cutâneas de bordas elevadas. LV (Kala-azar): Febre longa, hepatoesplenomegalia</td>
+            <td><span class="bold-tag">LTA:</span> Raspado de lesão por Giemsa. <span class="bold-tag">LV:</span> Punção de medula/baço (pesquisa de amastigotas); teste rápido (rK39)</td>
+            <td>Antimonias pentavalentes ou Anfotericina B</td>
+          </tr>
+          <tr>
+            <td class="sp-name">Plasmodium spp.</td>
+            <td>Protozoário Sanguíneo (Apicomplexa)</td>
+            <td>Picada da fêmea do mosquito Anopheles</td>
+            <td>Ciclo pré-eritrocítico (fígado) e ciclo eritrocítico (hemácias)</td>
+            <td><span class="bold-tag">INF:</span> Esporozoíto (saliva do vetor)<br><span class="bold-tag">DIA:</span> Trofozoíta em anel, Esquizonte ou Gametócito</td>
+            <td>Malária: Destruição de hemácias, febre paroxística cíclica (terçã/quartã), calafrios e anemia hemolítica</td>
+            <td><span class="bold-tag">Padrão-Ouro:</span> Gota Espessa de sangue periférico (quantificação) e Esfregaço Delgado (espécie)</td>
+            <td>Cloroquina, Artemisinina, Primaquina</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="page2" class="tab-content">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Espécie / Agente</th>
+            <th>Classificação / Estrutura</th>
+            <th>Mecanismo de Transmissão</th>
+            <th>Nicho Ecológico</th>
+            <th>Forma Infectante vs Diagnóstica</th>
+            <th>Manifestação Clínica e Patogenia</th>
+            <th>Diagnóstico Laboratorial</th>
+            <th>Tratamento Clínico</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="sp-name">Ascaris lumbricoides</td>
+            <td>Geo-helminto Cilíndrico Monoxênico</td>
+            <td>Ingestão de água/alimentos com ovos embrionados</td>
+            <td>Intestino Delgado; larvas realizam Ciclo de Loos pulmonar</td>
+            <td><span class="bold-tag">INF:</span> Ovo contendo larva L3<br><span class="bold-tag">DIA:</span> Ovos férteis/inférteis nas fezes</td>
+            <td>Pulmão: Síndrome de Loeffler (tosse, febre, eosinofilia). Intestino: Obstrução mecânica (bolo de lombriga)</td>
+            <td><span class="bold-tag">EPF:</span> Sedimentação espontânea (Lutz) ou método quantitativo de Kato-Katz</td>
+            <td>Albendazol ou Mebendazol (Contraindicados em gestantes)</td>
+          </tr>
+          <tr>
+            <td class="sp-name">Enterobius vermicularis</td>
+            <td>Nematelminto Monoxênico (Oxiúros)</td>
+            <td>Fecal-oral direta/indireta, poeira, autoinfecção e retroinfecção</td>
+            <td>Intestino Grosso (Ceco, apêndice e reto). Migração anal noturna</td>
+            <td><span class="bold-tag">INF:</span> Ovo embrionado<br><span class="bold-tag">DIA:</span> Ovos na região perianal</td>
+            <td>Prurido anal noturno intenso (migração mecânica da fêmea), insônia, irritabilidade, vulvovaginite/salpingite</td>
+            <td><span class="bold-tag">Padrão-ouro:</span> Método da Fita Adesiva (Graham) ao amanhecer. EPF comum não é indicado</td>
+            <td>Mebendazol, Pamoato de Pirvínio ou Pamoato de Pirantel</td>
+          </tr>
+          <tr>
+            <td class="sp-name">Strongyloides stercoralis</td>
+            <td>Nematelminto Ovivíparo Parasita/Vida Livre</td>
+            <td>Penetração ativa de larvas na pele (pés descalços) ou via oral</td>
+            <td>Intestino delgado (fêmeas). Ciclo de Loos. Autoinfecção interna</td>
+            <td><span class="bold-tag">INF:</span> Larva Filarioide (L3)<br><span class="bold-tag">DIA:</span> Larva Rabditoide (L1) nas fezes</td>
+            <td>Lesão cutânea serpiginosa (larva currens), diarreia. Imunodeprimidos: Síndrome de Hiperinfecção Disseminada</td>
+            <td><span class="bold-tag">Padrão-ouro:</span> Método de Baermann-Moraes ou Rugai (termohidrotropismo). L1 tem vestíbulo bucal curto</td>
+            <td>Ivermectina (alta eficácia) ou Cambendazol / Albendazol</td>
+          </tr>
+          <tr>
+            <td class="sp-name">Wuchereria bancrofti</td>
+            <td>Filarídeo Tecidual Heteroxênico</td>
+            <td>Picada do pernilongo vetor Culex quinquefasciatus</td>
+            <td>Vasos e gânglios linfáticos humanos (pernas, escroto, mamas)</td>
+            <td><span class="bold-tag">INF:</span> Larva L3 (da probóscide)<br><span class="bold-tag">DIA:</span> Microfilárias na corrente sanguínea</td>
+            <td>Obstrução crônica do fluxo linfático, linfangite, linfedema progressivo e Elefantíase</td>
+            <td><span class="bold-tag">Gota espessa de sangue periférico</span> colhida em período noturno (22h às 2h - periodicidade); PCR ou Ultrassom</td>
+            <td>Dietilcarbamazina ou Ivermectina</td>
+          </tr>
+          <tr>
+            <td class="sp-name">Onchocerca volvulus</td>
+            <td>Filarídeo Dérmico Heteroxênico</td>
+            <td>Picada do mosquito borrachudo (Simulium)</td>
+            <td>Tecido conjuntivo e vasos linfáticos superficiais da pele</td>
+            <td><span class="bold-tag">INF:</span> Larva L3 infectante<br><span class="bold-tag">DIA:</span> Microfilárias no líquido tissular</td>
+            <td>Oncocercoma (nódulos fibrosos), oncodermatite com prurido crônico e atrofia; ceratite esclerosante (Cegueira dos Rios)</td>
+            <td><span class="bold-tag">Padrão-ouro:</span> Biópsia de pele por retalho cutâneo a fresco em soro fisiológico. Não usar sangue</td>
+            <td>Doxiciclina, Ivermectina e Extirpação Cirúrgica</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="page3" class="tab-content">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Classe / Espécie</th>
+            <th>Anatomia e Classificação</th>
+            <th>Mecanismo de Transmissão</th>
+            <th>Nicho Ecológico</th>
+            <th>Forma Infectante vs Diagnóstica</th>
+            <th>Manifestação Clínica e Patogenia</th>
+            <th>Diagnóstico Laboratorial</th>
+            <th>Tratamento Clínico</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="sp-name">Schistosoma mansoni</td>
+            <td>Classe Trematoda; dimorfismo (canal ginecóforo)</td>
+            <td>Penetração ativa de larvas em águas ("lagoas de coceira")</td>
+            <td>Sistema porta-hepático e veias mesentéricas inferiores</td>
+            <td><span class="bold-tag">INF:</span> Cercária (cauda bifurcada)<br><span class="bold-tag">DIA:</span> Ovo grande com espículo lateral</td>
+            <td>Aguda: Dermatite cercariana, febre de Katayama. Crônica: Granulomas hepáticos, ascite (barriga d'água)</td>
+            <td><span class="bold-tag">EPF:</span> Método quantitativo de Kato-Katz (contagem de ovos). Lutz (sedimentação). Biópsia retal</td>
+            <td>Praziquantel ou Oxamniquine</td>
+          </tr>
+          <tr>
+            <td class="sp-name">Fasciola hepatica</td>
+            <td>Classe Trematoda; hermafrodita, foliáceo</td>
+            <td>Ingestão de vegetais aquáticos (agrião) contaminados</td>
+            <td>Parênquima hepático e dutos biliares (canalículos)</td>
+            <td><span class="bold-tag">INF:</span> Metacercária (cística na planta)<br><span class="bold-tag">DIA:</span> Ovos operculados nas fezes</td>
+            <td>Destruição do tecido hepático, icterícia, dor em hipocôndrio direito, cólica biliar, fibrose do colédoco</td>
+            <td><span class="bold-tag">EPF:</span> Pesquisa de ovos grandes, elípticos, amarelados com opérculo evidente. Sorologia (ELISA)</td>
+            <td>Triclabendazol ou Nitazoxanida</td>
+          </tr>
+          <tr>
+            <td class="sp-name">Taenia solium (Teníase)</td>
+            <td>Classe Cestoda; escólex armado (ventosas e ganchos)</td>
+            <td>Ingestão de carne de porco crua/mal passada com larvas</td>
+            <td>Intestino Delgado do homem (Hospedeiro Definitivo)</td>
+            <td><span class="bold-tag">INF:</span> Cisticerco (C. cellulosae)<br><span class="bold-tag">DIA:</span> Proglotes grávidas ou ovos nas fezes</td>
+            <td>Geralmente assintomática; dores abdominais vagas, alterações de apetite, diarreia e desnutrição</td>
+            <td><span class="bold-tag">Macroscopia:</span> Proglotes (<12 ramos uterinos). <span class="bold-tag">EPF:</span> Ovos esféricos com casca radiada (idênticos à saginata)</td>
+            <td>Praziquantel, Niclosamida ou Albendazol</td>
+          </tr>
+          <tr>
+            <td class="sp-name">Taenia saginata (Teníase)</td>
+            <td>Classe Cestoda; escólex desarmado (só ventosas)</td>
+            <td>Ingestão de carne de boi crua/mal passada com larvas</td>
+            <td>Intestino Delgado do homem (Hospedeiro Definitivo)</td>
+            <td><span class="bold-tag">INF:</span> Cisticerco (C. bovis)<br><span class="bold-tag">DIA:</span> Proglotes grávidas ou ovos nas fezes</td>
+            <td>Quadro clínico idêntico ao da T. solium (fome excessiva, perda de peso por competição de nutrientes)</td>
+            <td><span class="bold-tag">Morfologia:</span> Proglotes com ramificações uterinas numerosas (>15). Ovos no EPF são indistinguíveis</td>
+            <td>Praziquantel ou Niclosamida</td>
+          </tr>
+          <tr>
+            <td class="sp-name">Cisticercose Humana</td>
+            <td>Larva da Taenia solium tecidual</td>
+            <td>Ingestão acidental de ovos de T. solium (água, vegetais, autoinfecção)</td>
+            <td>Tecido subcutâneo, músculos, globo ocular e SNC</td>
+            <td><span class="bold-tag">INF:</span> Ovo de Taenia solium<br><span class="bold-tag">DIA:</span> Cisticerco calcificado/ativo em imagens</td>
+            <td>Neurocisticercose (NCC): Cefaleia severa, hipertensão intracraniana, epilepsia tardia, convulsões</td>
+            <td><span class="bold-tag">Imagem:</span> Tomografia Computadorizada (TC) ou Ressonância (RM). <span class="bold-tag">Líquer (LCR):</span> Imunoflorescência/ELISA</td>
+            <td>Praziquantel + Dexametasona (corticoide antiafecção inflamatória)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    Advanced Biomedicine Study Deck Matrix - No Snippets Omitted
+  </footer>
+
+  <script>
+    function switchTab(event, tabId) {
+      // Hide all tab contents
+      const contents = document.querySelectorAll('.tab-content');
+      contents.forEach(content => content.classList.remove('active'));
+
+      // Remove active class from all buttons
+      const buttons = document.querySelectorAll('.tab-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+
+      // Show current tab content and add active class to button
+      document.getElementById(tabId).classList.add('active');
+      event.currentTarget.classList.add('active');
+    }
+  </script>
+</body>
+</html>
